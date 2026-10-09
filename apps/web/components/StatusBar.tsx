@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { useConnection } from "@/store/connection";
 import { usePolling } from "@/store/polling";
 import { useAgent } from "@/store/agent";
+import { useLogger } from "@/store/logger";
 import { useUi, type Layout } from "@/store/ui";
 import { StateTag, cx } from "./controls";
 import { useLang, useT } from "./i18n";
@@ -21,6 +22,8 @@ export function StatusBar() {
   const layout = useUi((s) => s.layout);
   const agentStatus = useAgent((s) => s.status);
   const agentVersion = useAgent((s) => s.endpoint?.hello.agentVersion);
+  const logSession = useLogger((s) => s.session);
+  const logSamples = useLogger((s) => s.samples);
   const polling = usePolling((s) => s.running);
   const cycleMs = usePolling((s) => s.cycleMs);
   const intervalMs = usePolling((s) => s.intervalMs);
@@ -80,7 +83,15 @@ export function StatusBar() {
         </Seg>
       )}
       <Seg>
-        <span className="text-muted">{t("status.log")}</span> {t("status.log.none")}
+        <span className="text-muted">{t("status.log")}</span>{" "}
+        {logSession ? (
+          <span>
+            ● {logSession.name} · <span className="tabular-nums">{logSamples}</span>
+            {logSession.source === "agent" ? ` · ${t("status.agent")}` : ""}
+          </span>
+        ) : (
+          t("status.log.none")
+        )}
       </Seg>
       <span className="flex-1" />
       <Seg className="border-l">

@@ -143,7 +143,13 @@ func serialError(name string, err error) error {
 // Do runs one request and counts it, like WebSerialTransport.count.
 func (c *Conn) Do(unit byte, req *modbus.Request, timeout time.Duration) (*modbus.Response, error) {
 	start := time.Now()
-	res, err := c.client.Do(unit, req, timeout)
+	c.mu.Lock()
+	client := c.client
+	c.mu.Unlock()
+	if client == nil {
+		return nil, &modbus.Error{Code: modbus.ErrPortDisconnected, Msg: "reconnecting"}
+	}
+	res, err := client.Do(unit, req, timeout)
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	c.stats.Requests++
@@ -164,6 +170,25 @@ func (c *Conn) Do(unit byte, req *modbus.Request, timeout time.Duration) (*modbu
 		c.stats.Errors++
 	}
 	return res, err
+}
+
+// Reopen replaces a lost client (USB unplugged and plugged back, TCP dropped).
+func (c *Conn) Reopen(onFrame func(c *Conn, f modbus.Frame)) error {
+	c.mu.Lock()
+	old := c.client
+	c.client = nil
+	c.mu.Unlock()
+	if old != nil {
+		_ = old.Close()
+	}
+	fresh, err := openConn(c.ID, c.Params, onFrame)
+	if err != nil {
+		return err
+	}
+	c.mu.Lock()
+	c.client = fresh.client
+	c.mu.Unlock()
+	return nil
 }
 
 // Stats returns a copy of the counters.

@@ -27,7 +27,14 @@ export interface Theme {
   name: string;
   scheme: "dark" | "light";
   palette: Palette;
+  /** Trend pens: distinct from each other, never in a state hue (red, amber, magenta). */
+  pens: string[];
 }
+
+/** 8 pens for dark backgrounds: blues, teals, greens, violet, greys. */
+const DARK_PENS = ["#7aa2f7", "#2ac3de", "#9ece6a", "#a593e0", "#7dcfff", "#c0ca6e", "#a9e5bb", "#c0caf5"];
+/** Darker pens for the high-contrast light theme. */
+const LIGHT_PENS = ["#1f5fbf", "#00796b", "#2e7d32", "#5e35b1", "#0277bd", "#6b6b00", "#00695c", "#37474f"];
 
 export const STATE_TOKENS = ["critical", "warning", "comm", "stale"] as const;
 export const TEXT_TOKENS = ["fg", "muted", "accent", ...STATE_TOKENS] as const;
@@ -59,6 +66,7 @@ export const THEMES: Theme[] = [
       comm: "#e08fe0",
       stale: "#9097b8",
     },
+    pens: DARK_PENS,
   },
   {
     id: "alto-contraste",
@@ -77,6 +85,7 @@ export const THEMES: Theme[] = [
       comm: "#8b1a8b",
       stale: "#595959",
     },
+    pens: LIGHT_PENS,
   },
   {
     id: "gruvbox",
@@ -95,6 +104,7 @@ export const THEMES: Theme[] = [
       comm: "#d787d7",
       stale: "#b8ab97",
     },
+    pens: DARK_PENS,
   },
   {
     id: "nord",
@@ -113,6 +123,7 @@ export const THEMES: Theme[] = [
       comm: "#d0a6ca",
       stale: "#b0b7c7",
     },
+    pens: DARK_PENS,
   },
   {
     id: "catppuccin",
@@ -131,6 +142,7 @@ export const THEMES: Theme[] = [
       comm: "#f5c2e7",
       stale: "#a0a6bd",
     },
+    pens: DARK_PENS,
   },
 ];
 
@@ -146,7 +158,7 @@ const cssVar = (k: string) => `--c-${k.replace(/[A-Z0-9]/g, (m) => "-" + m.toLow
 export function themesCss(): string {
   const block = (sel: string, t: Theme) =>
     `${sel} {\n  color-scheme: ${t.scheme};\n` +
-    Object.entries(t.palette)
+    [...Object.entries(t.palette), ...t.pens.map((v, i) => [`pen${i + 1}`, v] as const)]
       .map(([k, v]) => `  ${cssVar(k)}: ${v};`)
       .join("\n") +
     "\n}\n";

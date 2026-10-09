@@ -5,6 +5,8 @@ import { db } from "@/lib/db";
 import { NUMBERED_MODULES } from "@/lib/modules";
 import { ensureSeed } from "@/lib/seed";
 import { autoConnectAgent } from "@/store/agent";
+import { useLogger } from "@/store/logger";
+import { MarkerDialog } from "@/modules/LoggerModule";
 import { openWriteFromShortcut } from "@/modules/WriteModule";
 import { useConnection } from "@/store/connection";
 import { useUi } from "@/store/ui";
@@ -74,6 +76,12 @@ function useShortcuts(): void {
         }
       } else if (e.key === "w" || e.key === "W") {
         openWriteFromShortcut();
+      } else if (e.key === "l" || e.key === "L") {
+        if (useLogger.getState().session) void useLogger.getState().stop();
+        else if (!runCommand("logger.toggle", ui.focused)) ui.openModule("logger");
+      } else if (e.key === "m" || e.key === "M") {
+        if (useLogger.getState().session) ui.set({ markerOpen: true });
+        else ui.openModule("logger");
       } else if (e.key === "/") {
         ui.set({ paletteOpen: true });
       } else if (e.key === "?") {
@@ -113,6 +121,7 @@ export function AppShell() {
         const first = await db.profiles.orderBy("name").first();
         if (first) useUi.getState().set({ profileId: first.id });
       }
+      await useLogger.getState().resume();
       await autoConnectAgent();
     });
   }, [hydrated]);
@@ -135,6 +144,7 @@ export function AppShell() {
       {hydrated && !firstUseDone && <FirstUse />}
       {helpOpen && <HelpOverlay />}
       <CommandPalette />
+      <MarkerDialog />
     </div>
   );
 }

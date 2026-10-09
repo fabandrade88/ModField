@@ -12,6 +12,7 @@ import (
 	"log/slog"
 	"net/http"
 	"net/url"
+	"path/filepath"
 	"strings"
 	"sync"
 	"testing"
@@ -21,6 +22,7 @@ import (
 
 	"modfield.dev/agent/internal/agent"
 	"modfield.dev/agent/internal/identity"
+	"modfield.dev/agent/internal/logstore"
 )
 
 const site = "https://modfield.app"
@@ -31,16 +33,26 @@ type harness struct {
 	t     *testing.T
 	agent *agent.Agent
 	base  string
+	dir   string
+	stop  func()
 }
 
-func start(t *testing.T) *harness {
+func start(t *testing.T) *harness { return startIn(t, t.TempDir()) }
+
+// startIn runs an agent on dir; the same dir again is an agent restart.
+func startIn(t *testing.T, dir string) *harness {
 	t.Helper()
 	log := slog.New(slog.NewTextHandler(io.Discard, nil))
-	id, err := identity.Open(t.TempDir())
+	id, err := identity.Open(dir)
 	if err != nil {
 		t.Fatal(err)
 	}
 	a := agent.New("test", id, log)
+	a.DataDir = dir
+	if a.Logs, err = logstore.Open(filepath.Join(dir, "logs")); err != nil {
+		t.Fatal(err)
+	}
+	a.ResumeLogs()
 	srv, err := New(Config{OfficialOrigin: site, AnyPort: true, DataDir: t.TempDir()}, a, log)
 	if err != nil {
 		t.Fatal(err)
@@ -50,13 +62,17 @@ func start(t *testing.T) *harness {
 		t.Fatal(err)
 	}
 	go func() { _ = srv.Serve() }()
-	t.Cleanup(func() {
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-		defer cancel()
-		_ = srv.Shutdown(ctx)
-		a.Shutdown()
-	})
-	return &harness{t: t, agent: a, base: fmt.Sprintf("http://127.0.0.1:%d", port)}
+	var once sync.Once
+	stop := func() {
+		once.Do(func() {
+			ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+			defer cancel()
+			_ = srv.Shutdown(ctx)
+			a.Shutdown()
+		})
+	}
+	t.Cleanup(stop)
+	return &harness{t: t, agent: a, base: fmt.Sprintf("http://127.0.0.1:%d", port), dir: dir, stop: stop}
 }
 
 type client struct {
@@ -367,5 +383,83 @@ func TestPairPageShowsCode(t *testing.T) {
 	}
 	if !strings.Contains(res.Header.Get("Content-Security-Policy"), "default-src 'none'") {
 		t.Fatal("pair page without CSP")
+	}
+}
+
+func TestLogSurvivesSessionsAndRestarts(t *testing.T) {
+	dir := t.TempDir()
+	h := startIn(t, dir)
+	sim, err := h.agent.StartDemoSim("127.0.0.1:0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	host, port, _ := strings.Cut(sim.Addr, ":")
+	var p int
+	fmt.Sscan(port, &p)
+	c, _ := h.dial(site)
+	tokenID, secret, pub := h.pair(c)
+	if e := authenticate(t, c, site, tokenID, secret, pub); e != nil {
+		t.Fatal(e)
+	}
+	start, e := c.call("log.start", map[string]any{
+		"name": "comissionamento", "intervalMs": 100, "timeoutMs": 200,
+		"conn":   map[string]any{"kind": "tcp", "host": host, "tcpPort": p},
+		"blocks": []map[string]any{{"unitId": 1, "table": "input", "offset": 0, "quantity": 5}, {"unitId": 9, "table": "holding", "offset": 0, "quantity": 1}},
+	})
+	if e != nil {
+		t.Fatal(e)
+	}
+	id := start["logId"].(string)
+	cyc := c.wait("log.cycle")
+	if cyc["seq"].(float64) < 1 || cyc["results"].([]any)[1].(map[string]any)["error"] != "TIMEOUT" {
+		t.Fatalf("cycle: %v", cyc)
+	}
+
+	// The tab closes: the log goes on.
+	c.c.Close(websocket.StatusNormalClosure, "")
+	time.Sleep(700 * time.Millisecond)
+	c2, _ := h.dial(site)
+	authenticate(t, c2, site, tokenID, secret, pub)
+	r, _ := c2.call("log.fetch", map[string]any{"logId": id, "fromSeq": 1, "max": 1000})
+	recs := r["records"].([]any)
+	if len(recs) < 4 {
+		t.Fatalf("only %d records while no tab was open", len(recs))
+	}
+	first := recs[0].(map[string]any)
+	if first["seq"].(float64) != 1 || len(first["results"].([]any)[0].(map[string]any)["words"].([]any)) != 5 {
+		t.Fatalf("first record: %v", first)
+	}
+	last := recs[len(recs)-1].(map[string]any)["seq"].(float64)
+	c2.call("log.ack", map[string]any{"logId": id, "seq": last})
+
+	// The agent restarts (update, reboot): the log resumes on its own.
+	h.stop()
+	h2 := startIn(t, dir)
+	sim2, err := h2.agent.StartDemoSim(sim.Addr)
+	if err != nil {
+		t.Skipf("simulator port reuse: %v", err)
+	}
+	_ = sim2
+	time.Sleep(600 * time.Millisecond)
+	c3, _ := h2.dial(site)
+	if e := authenticate(t, c3, site, tokenID, secret, pub); e != nil {
+		t.Fatalf("auth after restart: %v", e)
+	}
+	list, _ := c3.call("log.list", nil)
+	logs := list["logs"].([]any)
+	meta := logs[0].(map[string]any)
+	if !meta["running"].(bool) || meta["lastSeq"].(float64) <= last || meta["ackedSeq"].(float64) != last {
+		t.Fatalf("after restart: %v", meta)
+	}
+	if _, e := c3.call("log.delete", map[string]string{"logId": id}); e == nil {
+		t.Fatal("deleted a running log")
+	}
+	c3.call("log.stop", map[string]string{"logId": id})
+	list, _ = c3.call("log.list", nil)
+	if list["logs"].([]any)[0].(map[string]any)["running"].(bool) {
+		t.Fatal("log still running after stop")
+	}
+	if _, e := c3.call("log.delete", map[string]string{"logId": id}); e != nil {
+		t.Fatal(e)
 	}
 }

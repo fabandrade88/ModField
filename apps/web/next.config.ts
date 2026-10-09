@@ -5,7 +5,7 @@ const config: NextConfig = {
   output: "export",
   trailingSlash: true,
   images: { unoptimized: true },
-  transpilePackages: ["@modfield/protocol", "@modfield/transport", "@modfield/ui"],
+  transpilePackages: ["@modfield/protocol", "@modfield/transport", "@modfield/ui", "@modfield/series"],
   poweredByHeader: false,
 };
 

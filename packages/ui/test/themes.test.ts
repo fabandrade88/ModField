@@ -12,7 +12,20 @@ import {
   themesCss,
 } from "../src";
 
-describe.each(THEMES)("$name", ({ palette }) => {
+describe.each(THEMES)("$name", ({ palette, pens }) => {
+  it("has 8 pens readable as graphics (3:1) on every background", () => {
+    expect(pens).toHaveLength(8);
+    for (const pen of pens) for (const bg of BACKGROUND_TOKENS) expect(contrast(pen, palette[bg])).toBeGreaterThanOrEqual(3);
+  });
+
+  it("pens stay out of the state hues", () => {
+    for (const pen of pens) {
+      const { hue, sat } = hueSat(pen);
+      if (sat < 0.15) continue; // greys
+      for (const { center, tolerance } of Object.values(STATE_HUES)) expect(hueDistance(hue, center)).toBeGreaterThan(tolerance + 5);
+    }
+  });
+
   it.each(TEXT_TOKENS.flatMap((fg) => BACKGROUND_TOKENS.map((bg) => [fg, bg] as const)))(
     "%s on %s meets WCAG AA (4.5:1)",
     (fg, bg) => {

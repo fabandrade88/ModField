@@ -1,6 +1,7 @@
 "use client";
 import Dexie, { type EntityTable } from "dexie";
-import type { TagDef } from "@modfield/protocol";
+import type { ReadBlock, TagDef } from "@modfield/protocol";
+import type { SampleBlock } from "@modfield/series";
 import type { SerialSettings } from "@modfield/transport";
 
 export interface Profile {
@@ -74,6 +75,42 @@ export interface ScanRecord {
   result: string;
 }
 
+export type SessionSource = "browser" | "agent";
+export type SessionStatus = "running" | "stopped" | "interrupted";
+
+/** One data logger session. Tags are a snapshot: editing a tag later does not change old data. */
+export interface LogSession {
+  id: string;
+  profileId: string;
+  name: string;
+  startedAt: number;
+  endedAt?: number;
+  stopAt?: number;
+  intervalMs: number;
+  source: SessionSource;
+  status: SessionStatus;
+  tags: TagRow[];
+  /** Agent mode: its log id, the connection and the read plan the agent runs. */
+  agentLogId?: string;
+  plan?: ReadBlock[];
+  /** Last agent sequence stored here (and acknowledged). */
+  lastSeq: number;
+  samples: number;
+  bytes: number;
+}
+
+export interface StoredBlock extends SampleBlock {
+  id?: number;
+  sessionId: string;
+}
+
+export interface Marker {
+  id?: number;
+  sessionId: string;
+  t: number;
+  text: string;
+}
+
 /**
  * Everything stays in this browser's IndexedDB; nothing goes to a server.
  * Backups are the project file export (phase 4).
@@ -85,6 +122,9 @@ export const db = new Dexie("modfield") as Dexie & {
   writes: EntityTable<WriteRecord, "id">;
   scans: EntityTable<ScanRecord, "id">;
   agent: EntityTable<AgentPairing, "id">;
+  sessions: EntityTable<LogSession, "id">;
+  blocks: EntityTable<StoredBlock, "id">;
+  markers: EntityTable<Marker, "id">;
 };
 
 db.version(1).stores({
@@ -95,5 +135,10 @@ db.version(1).stores({
   scans: "++id, t, profileId",
 });
 db.version(2).stores({ agent: "id" });
+db.version(3).stores({
+  sessions: "id, profileId, startedAt, status",
+  blocks: "++id, sessionId, [sessionId+tagId]",
+  markers: "++id, sessionId, t",
+});
 
 export const newId = () => crypto.randomUUID();

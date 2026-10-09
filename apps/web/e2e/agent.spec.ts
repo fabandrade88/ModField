@@ -95,3 +95,36 @@ test("unit ID scan works the same through the agent", async ({ page }) => {
   await page.getByRole("dialog", { name: "Antes de varrer" }).getByRole("button", { name: "Varrer" }).click();
   await expect(scan.getByRole("cell", { name: "respondeu com exceção 02" })).toBeVisible({ timeout: 15_000 });
 });
+
+test("agent log keeps collecting with the page closed and syncs on return", async ({ page, context }) => {
+  await pairAndConnectTcp(page);
+  await openInPane(page, 1, "logger");
+  const logger = pane(page, 1);
+  await expect(logger).toContainText("Coleta no agente");
+  await logger.getByLabel("Nome").fill("Agente 24h");
+  await logger.getByLabel("Intervalo (ms)").fill("200");
+  await logger.getByLabel("Duração (min)").fill("10");
+  await logger.getByRole("button", { name: /Iniciar registro/ }).click();
+  await expect(logger).toContainText("Registrando: Agente 24h");
+  await expect(logger).toContainText("agente");
+  await page.waitForTimeout(1500);
+
+  // Close the tab entirely; the agent goes on.
+  const url = page.url();
+  await page.close();
+  await new Promise((r) => setTimeout(r, 3000));
+  const again = await context.newPage();
+  await again.goto(url);
+  await expect(again.locator("footer")).toContainText(/agente ● 0\.\d+/);
+  await expect(again.locator("footer")).toContainText("Agente 24h");
+  const status = again.locator("footer");
+  // 4.5 s at 200 ms is ~22 cycles of ~12 tags: well over what the first 1.5 s gave.
+  await expect
+    .poll(async () => Number((await status.innerText()).match(/Agente 24h · (\d+)/)?.[1] ?? 0), { timeout: 10_000 })
+    .toBeGreaterThan(200);
+
+  await openInPane(again, 1, "logger");
+  await pane(again, 1).getByRole("button", { name: /Parar/ }).click();
+  await expect(pane(again, 1).getByLabel("Sessão")).toHaveText(/concluída/);
+  await expect(pane(again, 1).locator(".trend canvas")).toBeVisible();
+});

@@ -26,6 +26,7 @@ interface UiState {
   profileId: string;
   helpOpen: boolean;
   paletteOpen: boolean;
+  markerOpen: boolean;
 
   openModule: (id: ModuleId) => void;
   focusPane: (i: number) => void;
@@ -34,7 +35,7 @@ interface UiState {
   setPane: (i: number, id: ModuleId) => void;
   set: (
     patch: Partial<
-      Pick<UiState, "theme" | "propsOpen" | "firstUseDone" | "connTab" | "readTab" | "scanTab" | "profileId" | "helpOpen" | "paletteOpen">
+      Pick<UiState, "theme" | "propsOpen" | "firstUseDone" | "connTab" | "readTab" | "scanTab" | "profileId" | "helpOpen" | "paletteOpen" | "markerOpen">
     >,
   ) => void;
 }
@@ -80,6 +81,7 @@ export const useUi = create<UiState>()(
       profileId: DEMO_PROFILE_ID,
       helpOpen: false,
       paletteOpen: false,
+      markerOpen: false,
 
       openModule: (id) =>
         set((s) => {

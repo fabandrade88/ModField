@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "@fontsource-variable/jetbrains-mono";
 @import "@modfield/ui/themes.css";
+@import "uplot/dist/uPlot.min.css";
 
 /* Shared components live outside the app folder, where Tailwind does not look by default. */
 @source "../../../packages/ui/src";
@@ -81,4 +82,53 @@ body {
 select {
   background-color: var(--c-surface);
   color: var(--c-fg);
+}
+
+/* uPlot, in the tool's palette: no rounded legend boxes, tabular numbers. */
+.trend .u-legend {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--c-fg);
+  text-align: left;
+}
+.trend .u-legend th {
+  font-weight: normal;
+}
+.trend .u-legend .u-value {
+  font-variant-numeric: tabular-nums;
+}
+.trend .u-legend .u-marker {
+  border-radius: 0;
+}
+.trend .u-legend td {
+  padding: 2px 8px 2px 0;
+}
+.trend .u-select {
+  background: color-mix(in srgb, var(--c-accent) 20%, transparent);
+}
+
+/* Pen swatches next to tag names (same colors as the chart). */
+.pen-swatch-1 {
+  background: var(--c-pen-1);
+}
+.pen-swatch-2 {
+  background: var(--c-pen-2);
+}
+.pen-swatch-3 {
+  background: var(--c-pen-3);
+}
+.pen-swatch-4 {
+  background: var(--c-pen-4);
+}
+.pen-swatch-5 {
+  background: var(--c-pen-5);
+}
+.pen-swatch-6 {
+  background: var(--c-pen-6);
+}
+.pen-swatch-7 {
+  background: var(--c-pen-7);
+}
+.pen-swatch-8 {
+  background: var(--c-pen-8);
 }

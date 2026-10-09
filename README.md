@@ -2,7 +2,7 @@
 
 Ferramenta web de diagnóstico, simulação e registro Modbus. A especificação fica no Outline, na coleção **Modbus Tool**.
 
-Estado atual: **fase 3 (agente local)**. Além do modo sem agente: agente em Go com pareamento e autenticação mútua, Modbus TCP, RTU pelo agente com os nomes reais das portas, varredura de IP e simulador TCP. Fase 2: RTU pela Web Serial e modo demonstração no navegador: perfis, tags com leitura agrupada, escrita com confirmação, scanner (IDs, parâmetros, escuta passiva, registradores), cadastro de equipamentos com 43/14, monitor de tráfego e paleta de comandos.
+Estado atual: **fase 4 (data logger e gráficos)**. Coleta no agente com buffer em disco e sincronização por sequência, ou no navegador com a aba aberta; blocos binários no IndexedDB; gráfico uPlot com 8 penas, dois eixos, zoom e marcadores; estatísticas da janela; CSV; arquivo de projeto `.modfield`. Fase 3: Além do modo sem agente: agente em Go com pareamento e autenticação mútua, Modbus TCP, RTU pelo agente com os nomes reais das portas, varredura de IP e simulador TCP. Fase 2: RTU pela Web Serial e modo demonstração no navegador: perfis, tags com leitura agrupada, escrita com confirmação, scanner (IDs, parâmetros, escuta passiva, registradores), cadastro de equipamentos com 43/14, monitor de tráfego e paleta de comandos.
 
 ## Rodar
 
@@ -49,6 +49,7 @@ Localmente, o Playwright aceita qualquer navegador baseado em Chromium:
 |---|---|
 | `packages/protocol` | CRC-16, PDUs (01–06, 15, 16, 43/14), enquadramento RTU por tamanho esperado, tipos de dados e ordem de bytes, endereçamento, códigos de erro, tipos JSON-RPC do agente |
 | `packages/transport` | Interface `Transport`, `WebSerialTransport`, `MockTransport` (o mesmo código RTU numa linha serial simulada), `ModbusClient`, escravos simulados com geradores |
+| `packages/series` | Blocos de amostras (13 bytes/amostra), estatísticas, redução de pontos para o gráfico, CSV canônico |
 | `packages/ui` | Temas (Tokyo Night, alto contraste claro, Gruvbox, Nord, Catppuccin) e teste de contraste WCAG AA |
 | `agent` | Agente em Go: Modbus RTU/TCP próprio (com quadros brutos para o monitor), simulador, pareamento Ed25519/HMAC, WebSocket JSON-RPC, bandeja, atualização assinada |
 | `apps/web` | Next.js com export estático: shell em mosaico, módulos, i18n (pt, en, de), CSP por hash |

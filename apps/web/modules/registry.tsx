@@ -17,9 +17,11 @@ import type { ReactNode } from "react";
 import { PLANNED_PHASE, type ModuleId } from "@/lib/modules";
 import { ConnectionModule } from "./ConnectionModule";
 import { PlannedModule } from "./PlannedModule";
+import { LoggerModule } from "./LoggerModule";
 import { ReadModule } from "./ReadModule";
 import { ScanModule } from "./ScanModule";
 import { SettingsModule } from "./SettingsModule";
+import { StorageModule } from "./StorageModule";
 import { TrafficModule } from "./TrafficModule";
 import { WriteModule } from "./WriteModule";
 
@@ -49,6 +51,10 @@ export function renderModule(id: ModuleId, pane: number): ReactNode {
       return <WriteModule />;
     case "scan":
       return <ScanModule />;
+    case "logger":
+      return <LoggerModule pane={pane} />;
+    case "storage":
+      return <StorageModule />;
     case "settings":
       return <SettingsModule />;
     default:

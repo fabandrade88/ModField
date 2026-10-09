@@ -14,11 +14,12 @@ import (
 	"time"
 
 	"modfield.dev/agent/internal/identity"
+	"modfield.dev/agent/internal/logstore"
 	"modfield.dev/agent/internal/modbus"
 )
 
 // Features advertised in agent.hello; the site hides what is missing.
-var Features = []string{"rtu", "tcp", "poll", "scan.ids", "scan.ip", "sim.tcp", "sim.rtu", "traffic"}
+var Features = []string{"rtu", "tcp", "poll", "scan.ids", "scan.ip", "sim.tcp", "sim.rtu", "traffic", "log"}
 
 // leaseGrace keeps a connection open briefly after its last session leaves, so a page reload reuses it.
 const leaseGrace = 15 * time.Second
@@ -33,6 +34,10 @@ type Agent struct {
 	OpenURL func(url string)
 	// BaseURL is where the agent serves its pages, e.g. http://127.0.0.1:47807.
 	BaseURL string
+	// Logs is the data logger's disk buffer (nil disables log.*).
+	Logs *logstore.Store
+	// DataDir is checked for free space while logging.
+	DataDir string
 
 	mu       sync.Mutex
 	conns    map[string]*Conn
@@ -40,6 +45,7 @@ type Agent struct {
 	polls    map[string]*poll
 	scans    map[string]context.CancelFunc
 	sims     map[string]*simRun
+	loggers  map[string]*logger
 	paused   bool
 }
 
@@ -48,7 +54,7 @@ func New(version string, id *identity.Store, log *slog.Logger) *Agent {
 	return &Agent{
 		Version: version, ID: id, Pairing: identity.NewPairing(), Log: log,
 		conns: map[string]*Conn{}, sessions: map[*Session]bool{}, polls: map[string]*poll{},
-		scans: map[string]context.CancelFunc{}, sims: map[string]*simRun{},
+		scans: map[string]context.CancelFunc{}, sims: map[string]*simRun{}, loggers: map[string]*logger{},
 	}
 }
 
@@ -117,6 +123,11 @@ func (a *Agent) EndSession(s *Session) {
 	for _, p := range polls {
 		a.stopPoll(p.id)
 	}
+	a.mu.Lock()
+	for _, l := range a.loggers {
+		l.unsubscribe(s)
+	}
+	a.mu.Unlock()
 	for _, c := range conns {
 		c.mu.Lock()
 		delete(c.taps, s)
@@ -282,6 +293,8 @@ func (a *Agent) dispatch(s *Session, method string, raw json.RawMessage) (any, e
 		return a.simStop(raw)
 	case "sim.list":
 		return a.simList(), nil
+	case "log.start", "log.stop", "log.list", "log.fetch", "log.ack", "log.subscribe", "log.delete":
+		return a.logMethod(s, method, raw)
 	}
 	return nil, &rpcErrorValue{&rpcError{Code: codeMethod, Message: "unknown method " + method}}
 }
@@ -483,7 +496,13 @@ func (a *Agent) closeNow(c *Conn) {
 	a.mu.Lock()
 	delete(a.conns, c.ID)
 	a.mu.Unlock()
-	_ = c.client.Close()
+	c.mu.Lock()
+	client := c.client
+	c.client = nil
+	c.mu.Unlock()
+	if client != nil {
+		_ = client.Close()
+	}
 	a.Log.Info("connection closed", "conn", c.ID)
 }
 
@@ -597,7 +616,15 @@ func (a *Agent) Shutdown() {
 	for _, c := range a.conns {
 		conns = append(conns, c)
 	}
+	loggers := make([]*logger, 0, len(a.loggers))
+	for _, l := range a.loggers {
+		loggers = append(loggers, l)
+	}
 	a.mu.Unlock()
+	// Loggers stop without being marked stopped: they resume on the next start.
+	for _, l := range loggers {
+		l.halt()
+	}
 	for _, id := range ids {
 		a.stopPoll(id)
 	}
@@ -605,6 +632,10 @@ func (a *Agent) Shutdown() {
 		_, _ = a.simStop(json.RawMessage(fmt.Sprintf(`{"simId":%q}`, id)))
 	}
 	for _, c := range conns {
-		_ = c.client.Close()
+		c.mu.Lock()
+		if c.client != nil {
+			_ = c.client.Close()
+		}
+		c.mu.Unlock()
 	}
 }

@@ -19,6 +19,7 @@ import (
 
 	"modfield.dev/agent/internal/agent"
 	"modfield.dev/agent/internal/identity"
+	"modfield.dev/agent/internal/logstore"
 	"modfield.dev/agent/internal/platform"
 	"modfield.dev/agent/internal/server"
 	"modfield.dev/agent/internal/update"
@@ -77,6 +78,11 @@ func main() {
 		os.Exit(1)
 	}
 	a := agent.New(version, id, log)
+	a.DataDir = *dataDir
+	if a.Logs, err = logstore.Open(filepath.Join(*dataDir, "logs")); err != nil {
+		log.Error("cannot open the log store", "err", err)
+		os.Exit(1)
+	}
 	if !*noBrowser {
 		a.OpenURL = platform.OpenURL
 	}
@@ -107,6 +113,7 @@ func main() {
 			log.Info("demo simulator running", "addr", s.Addr)
 		}
 	}
+	a.ResumeLogs()
 	log.Info("agent ready", "version", version, "url", a.BaseURL, "data", *dataDir, "fingerprint", id.Fingerprint())
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)

@@ -5,8 +5,6 @@ export type ModuleId = (typeof NUMBERED_MODULES)[number] | (typeof FOOTER_MODULE
 /** Roadmap phase in which a module that is still a placeholder arrives. */
 export const PLANNED_PHASE: Partial<Record<ModuleId, number>> = {
   sim: 6,
-  logger: 4,
   report: 5,
-  storage: 4,
   docs: 6,
 };

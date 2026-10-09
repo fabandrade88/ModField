@@ -13,6 +13,8 @@ const SHORTCUTS: [string, Key][] = [
   ["P", "help.k.cycle"],
   ["A", "help.k.addTag"],
   ["W", "help.k.write"],
+  ["L", "help.k.logger"],
+  ["M", "help.k.marker"],
   ["?", "help.k.help"],
 ];
 
