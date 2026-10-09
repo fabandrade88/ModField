@@ -9,7 +9,7 @@ import { UI_STORAGE_KEY } from "@/lib/storage-keys";
 export type Layout = 1 | 2 | 4;
 export type ConnTab = "rtu" | "tcp" | "demo";
 export type ReadTab = "tags" | "block";
-export type ScanTab = "ids" | "serial" | "passive" | "registers";
+export type ScanTab = "ids" | "serial" | "passive" | "registers" | "ip";
 
 interface UiState {
   theme: string;

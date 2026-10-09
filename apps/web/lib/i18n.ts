@@ -1,4 +1,5 @@
 import { de2, en2, pt2 } from "./i18n-parts/phase2";
+import { de3, en3, pt3 } from "./i18n-parts/phase3";
 
 export const LANGS = ["pt", "en", "de"] as const;
 export type Lang = (typeof LANGS)[number];
@@ -50,7 +51,7 @@ const pt = {
   "first.usb": "USB-RS485 neste computador",
   "first.usb.desc": "Modbus RTU pelo navegador (Web Serial). Não precisa instalar nada.",
   "first.tcp": "Rede TCP",
-  "first.tcp.desc": "Modbus TCP. Precisa do agente local (fase 3).",
+  "first.tcp.desc": "Modbus TCP. Precisa do agente local, instalado sem administrador.",
   "first.demo": "Só testar (modo demonstração)",
   "first.demo.desc": "Bancada simulada no navegador: inversor, transmissor de pressão e medidor de vazão.",
 
@@ -72,8 +73,8 @@ const pt = {
   "conn.delay": "Espaço entre requisições (ms)",
   "conn.connect": "Conectar",
   "conn.disconnect": "Desconectar",
-  "conn.noWebSerial": "Este navegador não tem Web Serial. Use Chrome, Edge ou Firefox 151+ no computador, ou o agente local (fase 3).",
-  "conn.tcp.needsAgent": "Modbus TCP passa pelo agente local, que chega na fase 3. Por enquanto, use RTU ou a demonstração.",
+  "conn.noWebSerial": "Este navegador não tem Web Serial. Use Chrome, Edge ou Firefox 151+ no computador, ou pareie o agente local acima.",
+  "conn.tcp.needsAgent": "Modbus TCP passa pelo agente local: o navegador não abre conexões TCP. Pareie o agente acima.",
   "conn.demo.desc": "Bancada simulada no navegador, com o mesmo código RTU da conexão real: enquadramento, CRC e timeouts.",
   "conn.demo.slaves": "Escravos na bancada",
   "conn.demo.unknown": "Peça um ID que não está na lista para ver um TIMEOUT de verdade.",
@@ -158,7 +159,7 @@ const pt = {
   "error.howto": "Como resolver",
 };
 
-export type Dict = typeof pt & typeof pt2;
+export type Dict = typeof pt & typeof pt2 & typeof pt3;
 export type Key = keyof Dict;
 type BaseDict = typeof pt;
 
@@ -201,7 +202,7 @@ const en: BaseDict = {
   "first.usb": "USB-RS485 on this computer",
   "first.usb.desc": "Modbus RTU through the browser (Web Serial). Nothing to install.",
   "first.tcp": "TCP network",
-  "first.tcp.desc": "Modbus TCP. Needs the local agent (phase 3).",
+  "first.tcp.desc": "Modbus TCP. Needs the local agent, installed without administrator rights.",
   "first.demo": "Just try it (demo mode)",
   "first.demo.desc": "Simulated bench in the browser: drive, pressure transmitter and flow meter.",
   "conn.tab.rtu": "RTU (serial)",
@@ -222,8 +223,8 @@ const en: BaseDict = {
   "conn.delay": "Delay between requests (ms)",
   "conn.connect": "Connect",
   "conn.disconnect": "Disconnect",
-  "conn.noWebSerial": "This browser has no Web Serial. Use desktop Chrome, Edge or Firefox 151+, or the local agent (phase 3).",
-  "conn.tcp.needsAgent": "Modbus TCP goes through the local agent, which arrives in phase 3. For now, use RTU or the demo.",
+  "conn.noWebSerial": "This browser has no Web Serial. Use desktop Chrome, Edge or Firefox 151+, or pair the local agent above.",
+  "conn.tcp.needsAgent": "Modbus TCP goes through the local agent: the browser cannot open TCP connections. Pair the agent above.",
   "conn.demo.desc": "Simulated bench in the browser, running the same RTU code as a real connection: framing, CRC and timeouts.",
   "conn.demo.slaves": "Slaves on the bench",
   "conn.demo.unknown": "Ask for an ID that is not listed to see a real TIMEOUT.",
@@ -342,7 +343,7 @@ const de: BaseDict = {
   "first.usb": "USB-RS485 an diesem Computer",
   "first.usb.desc": "Modbus RTU über den Browser (Web Serial). Keine Installation nötig.",
   "first.tcp": "TCP-Netzwerk",
-  "first.tcp.desc": "Modbus TCP. Benötigt den lokalen Agenten (Phase 3).",
+  "first.tcp.desc": "Modbus TCP. Benötigt den lokalen Agenten, installiert ohne Administratorrechte.",
   "first.demo": "Nur ausprobieren (Demo-Modus)",
   "first.demo.desc": "Simulierter Prüfstand im Browser: Umrichter, Drucktransmitter und Durchflussmesser.",
   "conn.tab.rtu": "RTU (seriell)",
@@ -363,8 +364,8 @@ const de: BaseDict = {
   "conn.delay": "Abstand zwischen Anfragen (ms)",
   "conn.connect": "Verbinden",
   "conn.disconnect": "Trennen",
-  "conn.noWebSerial": "Dieser Browser hat kein Web Serial. Verwenden Sie Chrome, Edge oder Firefox 151+ am Desktop, oder den lokalen Agenten (Phase 3).",
-  "conn.tcp.needsAgent": "Modbus TCP läuft über den lokalen Agenten, der in Phase 3 kommt. Bis dahin RTU oder die Demo verwenden.",
+  "conn.noWebSerial": "Dieser Browser hat kein Web Serial. Verwenden Sie Chrome, Edge oder Firefox 151+ am Desktop, oder koppeln Sie oben den lokalen Agenten.",
+  "conn.tcp.needsAgent": "Modbus TCP läuft über den lokalen Agenten: Der Browser kann keine TCP-Verbindungen öffnen. Koppeln Sie oben den Agenten.",
   "conn.demo.desc": "Simulierter Prüfstand im Browser mit demselben RTU-Code wie eine echte Verbindung: Framing, CRC und Timeouts.",
   "conn.demo.slaves": "Slaves am Prüfstand",
   "conn.demo.unknown": "Fragen Sie eine nicht gelistete ID ab, um einen echten TIMEOUT zu sehen.",
@@ -444,7 +445,7 @@ const de: BaseDict = {
   "error.howto": "Lösung",
 };
 
-export const DICTS: Record<Lang, Dict> = { pt: { ...pt, ...pt2 }, en: { ...en, ...en2 }, de: { ...de, ...de2 } };
+export const DICTS: Record<Lang, Dict> = { pt: { ...pt, ...pt2, ...pt3 }, en: { ...en, ...en2, ...en3 }, de: { ...de, ...de2, ...de3 } };
 
 export const LANG_NAMES: Record<Lang, string> = { pt: "Português", en: "English", de: "Deutsch" };
 

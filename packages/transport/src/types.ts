@@ -1,4 +1,4 @@
-import type { Direction, ErrorCode, ModbusRequest, ResponseFor } from "@modfield/protocol";
+import type { Direction, ErrorCode, Framing, ModbusRequest, ResponseFor } from "@modfield/protocol";
 
 export type TransportKind = "webserial" | "agent" | "mock";
 export type ConnState = "disconnected" | "connecting" | "connected" | "error";
@@ -10,6 +10,8 @@ export interface TrafficFrame {
   bytes: Uint8Array;
   /** Set on RX frames that failed, and on TX frames that got no answer. */
   error?: ErrorCode;
+  /** RTU unless it came from a Modbus TCP connection through the agent. */
+  framing?: Framing;
 }
 
 export interface TransportStats {

@@ -1,0 +1,13 @@
+# systemd user unit: ~/.config/systemd/user/modfield-agent.service
+# Enable with: systemctl --user enable --now modfield-agent
+[Unit]
+Description=ModField local agent (Modbus RTU/TCP for the browser)
+After=graphical-session.target
+
+[Service]
+ExecStart=%h/.local/bin/modfield-agent
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=default.target

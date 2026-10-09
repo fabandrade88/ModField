@@ -63,6 +63,26 @@ export function describeRtuFrame(frame: Uint8Array, dir: Direction): FrameSummar
   return { unitId, fc, exception: undefined, text, crcOk };
 }
 
+export type Framing = "rtu" | "tcp";
+
+/**
+ * Describes a Modbus TCP frame (MBAP header + unit + PDU). The summary is the
+ * same as for RTU; crcOk is undefined (TCP has no CRC).
+ */
+export function describeTcpFrame(frame: Uint8Array, dir: Direction): FrameSummary {
+  if (frame.length < 8) return { unitId: frame[6], fc: frame[7], exception: undefined, text: "incomplete frame", crcOk: undefined };
+  // Reuse the RTU decoder on unit + PDU with a dummy CRC, then drop the CRC verdict.
+  const rtuLike = new Uint8Array(frame.length - 6 + 2);
+  rtuLike.set(frame.subarray(6));
+  const d = describeRtuFrame(rtuLike, dir);
+  const tid = ((frame[0] ?? 0) << 8) | (frame[1] ?? 0);
+  return { ...d, text: `#${tid} ${d.text}`, crcOk: undefined };
+}
+
+export function describeFrame(frame: Uint8Array, dir: Direction, framing: Framing = "rtu"): FrameSummary {
+  return framing === "tcp" ? describeTcpFrame(frame, dir) : describeRtuFrame(frame, dir);
+}
+
 /** Expected CRC of a frame body, for showing "CRC esperado" next to a bad frame. */
 export function expectedCrc(frame: Uint8Array): number {
   return crc16(frame, Math.max(0, frame.length - 2));

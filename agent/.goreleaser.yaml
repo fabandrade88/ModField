@@ -1,0 +1,52 @@
+# Release of the agent: binaries, checksums, winget and Homebrew manifests.
+# macOS builds need CGO for the tray icon, so they run on a macOS runner
+# (release workflow, job "darwin"); this file builds the rest.
+version: 2
+project_name: modfield-agent
+
+before:
+  hooks:
+    - sh -c "../scripts/embed-ui.sh"
+
+builds:
+  - id: agent
+    main: ./cmd/modfield-agent
+    binary: modfield-agent
+    env: [CGO_ENABLED=0]
+    goos: [linux, windows]
+    goarch: [amd64, arm64]
+    ldflags:
+      - -s -w -X main.version={{.Version}}
+      - -X modfield.dev/agent/internal/update.Keyring={{.Env.MODFIELD_UPDATE_KEYRING}}
+    flags: [-trimpath]
+
+archives:
+  - formats: [binary]
+    name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"
+
+checksum:
+  name_template: checksums.txt
+
+signs:
+  # minisign over checksums.txt (Linux install.sh verifies it).
+  - id: minisign
+    cmd: minisign
+    stdin: "{{ .Env.MINISIGN_PASSWORD }}"
+    args: ["-S", "-s", "{{ .Env.MINISIGN_KEY_FILE }}", "-m", "${artifact}", "-x", "${signature}"]
+    signature: "${artifact}.minisig"
+    artifacts: checksum
+
+winget:
+  - name: ModField Agent
+    publisher: ModField
+    short_description: Agente local do ModField (Modbus RTU/TCP para o navegador)
+    license: Proprietary # open decision: license
+    # Per-user scope: no administrator.
+    package_identifier: ModField.Agent
+    repository:
+      owner: modfield
+      name: winget-pkgs
+      branch: "modfield-agent-{{.Version}}"
+
+release:
+  draft: true

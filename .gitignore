@@ -8,3 +8,8 @@ playwright-report/
 *.tsbuildinfo
 .DS_Store
 next-env.d.ts
+# The agent embeds the site build; only the placeholder is committed.
+!agent/web/dist/
+agent/web/dist/*
+!agent/web/dist/README.txt
+agent/dist/

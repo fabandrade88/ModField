@@ -17,10 +17,19 @@ export default defineConfig({
     },
     { name: "firefox", use: { ...devices["Desktop Firefox"], viewport } },
   ],
-  webServer: {
-    // Tests run against the static export, CSP included: `pnpm build` first.
-    command: "node scripts/serve.mjs",
-    url: "http://127.0.0.1:3100/pt/",
-    reuseExistingServer: !process.env.CI,
-  },
+  webServer: [
+    {
+      // Tests run against the static export, CSP included: `pnpm build` first.
+      command: "node scripts/serve.mjs",
+      url: "http://127.0.0.1:3100/pt/",
+      reuseExistingServer: !process.env.CI,
+    },
+    {
+      // The real Go agent (needs Go, pinned in mise.toml).
+      command: "node scripts/e2e-agent.mjs",
+      url: "http://127.0.0.1:47807/pair",
+      reuseExistingServer: false,
+      timeout: 180_000,
+    },
+  ],
 });

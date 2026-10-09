@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Per-user LaunchAgent: ~/Library/LaunchAgents/dev.modfield.agent.plist.
+  Starts the agent at login for this user only; no administrator.
+  __AGENT__ is replaced by the installer with the app's path.
+-->
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>dev.modfield.agent</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>__AGENT__</string>
+  </array>
+  <key>RunAtLoad</key>
+  <true/>
+  <key>KeepAlive</key>
+  <dict>
+    <key>SuccessfulExit</key>
+    <false/>
+  </dict>
+  <key>ProcessType</key>
+  <string>Interactive</string>
+  <key>StandardErrorPath</key>
+  <string>/tmp/modfield-agent.log</string>
+</dict>
+</plist>

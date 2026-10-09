@@ -27,6 +27,14 @@ describe("describeRtuFrame", () => {
   });
 });
 
+describe("describeTcpFrame", () => {
+  it("decodes MBAP + PDU", async () => {
+    const { describeTcpFrame } = await import("../src");
+    expect(describeTcpFrame(hex("0007 0000 0006 01 03 0000 0002"), "tx")).toMatchObject({ unitId: 1, fc: 3, text: "#7 Read Holding @0 ×2", crcOk: undefined });
+    expect(describeTcpFrame(hex("0001 0000 0003 01 83 02"), "rx").text).toBe("#1 Read Holding: exception 02 ILLEGAL DATA ADDRESS");
+  });
+});
+
 describe("toHex", () => {
   it("formats bytes", () => expect(toHex(hex("0a ff 00"))).toBe("0A FF 00"));
 });

@@ -1,3 +1,6 @@
+export * from "./agent/b64";
+export * from "./agent/client";
+export * from "./agent/transport";
 export * from "./client";
 export * from "./mock/demo";
 export * from "./mock/serial-port";

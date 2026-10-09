@@ -1,6 +1,7 @@
 "use client";
 import { create } from "zustand";
 import {
+  AgentTransport,
   MockTransport,
   ModbusClient,
   WebSerialTransport,
@@ -14,6 +15,7 @@ import {
   type TransportStats,
 } from "@modfield/transport";
 import { Ring } from "@/lib/ring";
+import { useAgent } from "./agent";
 
 /** Raw traffic stays in memory only: circular buffer of 50,000 frames. */
 export const traffic = new Ring<TrafficFrame>(50_000);
@@ -31,7 +33,7 @@ interface ConnectionState {
   port: SerialPortLike | undefined;
   portLabel: string | undefined;
   /** Last connection, so Ctrl+Enter reconnects the same way. */
-  last: { kind: Transport["kind"]; serial: SerialSettings } | undefined;
+  last: { kind: Transport["kind"]; serial: SerialSettings; agent?: ConstructorParameters<typeof AgentTransport>[1] } | undefined;
   /** True while the scanner owns the port (parameter detection, passive listening). */
   portBusy: boolean;
 
@@ -39,6 +41,7 @@ interface ConnectionState {
   choosePort: () => Promise<void>;
   connectSerial: (serial: SerialSettings, timeoutMs: number) => Promise<void>;
   connectDemo: (timeoutMs?: number) => Promise<void>;
+  connectAgent: (params: ConstructorParameters<typeof AgentTransport>[1], timeoutMs: number) => Promise<void>;
   disconnect: () => Promise<void>;
   /** Ctrl+Enter. Resolves false when there is nothing to reconnect to. */
   toggle: () => Promise<boolean>;
@@ -66,7 +69,7 @@ export const useConnection = create<ConnectionState>()((set, get) => {
     });
   };
 
-  async function attach(transport: Transport, timeoutMs: number, serial: SerialSettings) {
+  async function attach(transport: Transport, timeoutMs: number, serial: SerialSettings, agent?: ConstructorParameters<typeof AgentTransport>[1]) {
     await get().disconnect();
     unsubscribe = [
       transport.on("state", (state) => set({ state })),
@@ -85,7 +88,7 @@ export const useConnection = create<ConnectionState>()((set, get) => {
       error: undefined,
       stats: undefined,
       state: "connecting",
-      last: { kind: transport.kind, serial },
+      last: { kind: transport.kind, serial, agent },
     });
     try {
       await transport.open();
@@ -137,6 +140,13 @@ export const useConnection = create<ConnectionState>()((set, get) => {
       await attach(demoTransport, timeoutMs, demoTransport.settings);
     },
 
+    connectAgent: async (params, timeoutMs) => {
+      const client = useAgent.getState().client;
+      if (!client?.authenticated) return;
+      const serial = params.kind === "rtu" ? { ...params, dataBits: params.dataBits as 7 | 8, stopBits: params.stopBits as 1 | 2 } : get().last?.serial;
+      await attach(new AgentTransport(client, params), timeoutMs, (serial ?? { baudRate: 9600, dataBits: 8, parity: "none", stopBits: 1, interRequestDelayMs: 5 }) as SerialSettings, params);
+    },
+
     disconnect: async () => {
       const t = get().transport;
       unsubscribe.forEach((u) => u());
@@ -151,6 +161,8 @@ export const useConnection = create<ConnectionState>()((set, get) => {
         await get().disconnect();
       } else if (last?.kind === "mock") {
         await get().connectDemo(get().timeoutMs);
+      } else if (last?.kind === "agent" && last.agent) {
+        await get().connectAgent(last.agent, get().timeoutMs);
       } else if (port && last) {
         await get().connectSerial(last.serial, get().timeoutMs);
       } else {

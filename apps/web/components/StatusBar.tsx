@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useConnection } from "@/store/connection";
 import { usePolling } from "@/store/polling";
+import { useAgent } from "@/store/agent";
 import { useUi, type Layout } from "@/store/ui";
 import { StateTag, cx } from "./controls";
 import { useLang, useT } from "./i18n";
@@ -18,6 +19,8 @@ export function StatusBar() {
   const lang = useLang();
   const { state, label, stats, transport } = useConnection();
   const layout = useUi((s) => s.layout);
+  const agentStatus = useAgent((s) => s.status);
+  const agentVersion = useAgent((s) => s.endpoint?.hello.agentVersion);
   const polling = usePolling((s) => s.running);
   const cycleMs = usePolling((s) => s.cycleMs);
   const intervalMs = usePolling((s) => s.intervalMs);
@@ -45,13 +48,22 @@ export function StatusBar() {
   return (
     <footer className="flex h-8 shrink-0 items-stretch border-t border-border bg-surface text-[12px]">
       <Seg>
-        <span className="text-muted">{t("status.agent")}</span> <span className="text-stale">? {t("status.agent.absent")}</span>
+        <span className="text-muted">{t("status.agent")}</span>{" "}
+        {agentStatus === "paired" ? (
+          <span>● {agentVersion}</span>
+        ) : agentStatus === "impostor" || agentStatus === "incompatible" || agentStatus === "rejected" ? (
+          <span className="text-comm">! {t(`status.agent.${agentStatus}`)}</span>
+        ) : agentStatus === "found" || agentStatus === "pairing" ? (
+          <span className="text-warning">○ {t("status.agent.unpaired")}</span>
+        ) : (
+          <span className="text-stale">? {t("status.agent.absent")}</span>
+        )}
       </Seg>
       <Seg>
         <StateTag state={state} />
         {label && <span className="text-muted">{label}</span>}
       </Seg>
-      {transport && <Seg>RTU</Seg>}
+      {transport && <Seg>{transport.kind === "agent" && useConnection.getState().last?.agent?.kind === "tcp" ? "TCP" : "RTU"}</Seg>}
       <Seg>
         <span className="tabular-nums">{rate.toFixed(1)}</span> <span className="text-muted">{t("status.reqs")}</span>
       </Seg>

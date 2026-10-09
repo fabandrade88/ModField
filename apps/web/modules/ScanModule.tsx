@@ -23,6 +23,7 @@ import { useT } from "@/components/i18n";
 import { db, newId, type ScanKind } from "@/lib/db";
 import { describeError } from "@/lib/errors";
 import { updateProfile, useEquipment, useProfile, useTags } from "@/lib/hooks";
+import { useAgent } from "@/store/agent";
 import { demoLine, useConnection } from "@/store/connection";
 import { useUi, type ScanTab } from "@/store/ui";
 
@@ -76,12 +77,14 @@ export function ScanModule() {
           ["serial", t("scan.tab.serial")],
           ["passive", t("scan.tab.passive")],
           ["registers", t("scan.tab.registers")],
+          ["ip", t("scan.tab.ip")],
         ]}
       />
       {tab === "ids" && <IdScan />}
       {tab === "serial" && <SerialScan />}
       {tab === "passive" && <PassiveScan />}
       {tab === "registers" && <RegisterScan />}
+      {tab === "ip" && <IpScan />}
       <ScanLog />
     </div>
   );
@@ -461,7 +464,7 @@ function ScanLog() {
           {scans.slice(0, 20).map((s) => (
             <tr key={s.id} className="border-b border-border/50">
               <td className="pr-3 text-muted tabular-nums">{new Date(s.t).toLocaleString(undefined, { hour12: false })}</td>
-              <td className="pr-3">{t(`scan.tab.${s.kind === "ip" ? "ids" : s.kind}`)}</td>
+              <td className="pr-3">{t(`scan.tab.${s.kind}`)}</td>
               <td className="pr-3 text-muted">{s.params}</td>
               <td>{s.result}</td>
             </tr>
@@ -474,4 +477,141 @@ function ScanLog() {
 
 function clamp(v: number, min: number, max: number, fallback: number): number {
   return Number.isFinite(v) ? Math.min(max, Math.max(min, Math.trunc(v))) : fallback;
+}
+
+interface IpHit {
+  ip: string;
+  unitId: number;
+  answer: "ok" | "exception";
+  exception?: number;
+}
+
+/** TCP range scan, run by the agent (the browser cannot open TCP sockets). */
+function IpScan() {
+  const t = useT();
+  const agent = useAgent();
+  const profile = useProfile();
+  const [from, setFrom] = useState("192.168.0.1");
+  const [to, setTo] = useState("192.168.0.254");
+  const [port, setPort] = useState(502);
+  const [units, setUnits] = useState("1");
+  const [timeoutMs, setTimeoutMs] = useState(300);
+  const [hits, setHits] = useState<IpHit[]>([]);
+  const [progress, setProgress] = useState<P>();
+  const [error, setError] = useState<unknown>();
+  const scanId = useRef<string>(undefined);
+  const { guard, dialog } = useScanGuard();
+
+  if (agent.status !== "paired" || !agent.client) return <Notice>{t("scan.ip.needsAgent")}</Notice>;
+  const client = agent.client;
+  const unitIds = units
+    .split(/[\s,;]+/)
+    .map(Number)
+    .filter((n) => Number.isInteger(n) && n >= 0 && n <= 255);
+
+  const start = () =>
+    guard(() => {
+      setHits([]);
+      setError(undefined);
+      setProgress({ done: 0, total: 1, label: "" });
+      // Notifications can arrive before scan.start answers with the id (a small
+      // range finishes first): keep them until the id is known.
+      const early: { method: string; params: unknown }[] = [];
+      scanId.current = undefined;
+      const handle = (n: { method: string; params: unknown }) => {
+        if (n.method !== "scan.progress" && n.method !== "scan.done") return;
+        if (scanId.current === undefined) {
+          early.push(n);
+          return;
+        }
+        const p = n.params as { scanId: string; done?: number; total?: number; label?: string; hits: IpHit[] };
+        if (p.scanId !== scanId.current) return;
+        setHits(p.hits ?? []);
+        if (n.method === "scan.progress") setProgress({ done: p.done!, total: p.total!, label: p.label! });
+        if (n.method === "scan.done") {
+          off();
+          setProgress(undefined);
+          if (profile) record(profile.id, "ip", `${from}..${to}:${port} · ${unitIds.join(",")}`, p.hits.map((h) => `${h.ip}#${h.unitId}`).join(", ") || "—");
+        }
+      };
+      const off = client.on("notification", handle);
+      client
+        .call<{ scanId: string }>("scan.start", { kind: "ip", from, to, port, unitIds, timeoutMs })
+        .then((r) => {
+          scanId.current = r.scanId;
+          early.splice(0).forEach(handle);
+        })
+        .catch((e: unknown) => {
+          off();
+          setProgress(undefined);
+          setError(e);
+        });
+    });
+
+  const use = (h: IpHit) => {
+    if (!profile) return;
+    updateProfile(profile.id, { tcp: { host: h.ip, port } });
+    useUi.getState().set({ connTab: "tcp" });
+    useUi.getState().openModule("connection");
+  };
+
+  return (
+    <div className="flex flex-col gap-3">
+      <p className="text-muted">{t("scan.ip.help")}</p>
+      <div className="flex flex-wrap items-end gap-2">
+        <Field label={t("scan.from")}>
+          <Input value={from} onChange={(e) => setFrom(e.target.value.trim())} className="w-36" />
+        </Field>
+        <Field label={t("scan.to")}>
+          <Input value={to} onChange={(e) => setTo(e.target.value.trim())} className="w-36" />
+        </Field>
+        <Field label={t("conn.tcp.port")}>
+          <Input type="number" min={1} max={65535} value={port} onChange={(e) => setPort(clamp(e.target.valueAsNumber, 1, 65535, 502))} className="w-24" />
+        </Field>
+        <Field label={t("scan.ip.units")}>
+          <Input value={units} onChange={(e) => setUnits(e.target.value)} className="w-24" />
+        </Field>
+        <Field label={t("conn.timeout")}>
+          <Input type="number" min={50} max={5000} value={timeoutMs} onChange={(e) => setTimeoutMs(clamp(e.target.valueAsNumber, 50, 5000, 300))} className="w-24" />
+        </Field>
+        {progress ? (
+          <Button onClick={() => scanId.current && void client.call("scan.stop", { scanId: scanId.current })}>{t("scan.stop")}</Button>
+        ) : (
+          <Button variant="primary" disabled={!unitIds.length} onClick={start}>
+            {t("scan.start")}
+          </Button>
+        )}
+        {progress && <Progress {...progress} />}
+      </div>
+      <p className="text-[12px] text-muted">{t("scan.ip.limits")}</p>
+      {error !== undefined && <ErrorBox {...describeError(t, error)} />}
+      {hits.length > 0 && (
+        <table className="text-left">
+          <thead className="text-[12px] text-muted">
+            <tr>
+              <th className="pr-4 font-normal">IP</th>
+              <th className="pr-4 font-normal">{t("read.unit")}</th>
+              <th className="pr-4 font-normal">{t("scan.answer")}</th>
+              <th />
+            </tr>
+          </thead>
+          <tbody>
+            {hits.map((h) => (
+              <tr key={`${h.ip}#${h.unitId}`} className="h-8 border-b border-border/50">
+                <td className="pr-4 tabular-nums">{h.ip}</td>
+                <td className="pr-4 tabular-nums">{h.unitId}</td>
+                <td className={`pr-4 ${h.answer === "exception" ? "text-warning" : ""}`}>
+                  {h.answer === "ok" ? t("scan.answer.ok") : t("scan.answer.exception", { code: String(h.exception ?? 0).padStart(2, "0") })}
+                </td>
+                <td>
+                  <Button onClick={() => use(h)}>{t("scan.ip.use")}</Button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+      {dialog}
+    </div>
+  );
 }

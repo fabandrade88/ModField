@@ -7,8 +7,10 @@ import { db, newId, type Equipment, type Profile } from "@/lib/db";
 import { describeError } from "@/lib/errors";
 import { updateProfile, useEquipment, useProfile, useProfiles } from "@/lib/hooks";
 import { blankProfile } from "@/lib/seed";
+import { useAgent } from "@/store/agent";
 import { useConnection } from "@/store/connection";
 import { useUi } from "@/store/ui";
+import { AgentSection } from "./connection/AgentSection";
 
 const BAUDS = [1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200] as const;
 
@@ -24,6 +26,7 @@ export function ConnectionModule() {
   return (
     <div className="flex flex-col gap-4 p-3">
       <ProfileBar />
+      <AgentSection />
       <Tabs
         value={tab}
         onChange={(connTab) => setUi({ connTab })}
@@ -42,7 +45,7 @@ export function ConnectionModule() {
       {c.portBusy && <Notice tone="warning">{t("conn.portBusy")}</Notice>}
 
       {profile && tab === "rtu" && <RtuTab profile={profile} connected={connected} />}
-      {tab === "tcp" && <Notice>{t("conn.tcp.needsAgent")}</Notice>}
+      {profile && tab === "tcp" && <TcpTab profile={profile} connected={connected} />}
       {tab === "demo" && <DemoTab connected={connected} />}
 
       {profile && <CommonSettings profile={profile} />}
@@ -136,23 +139,71 @@ function ProfileBar() {
 function RtuTab({ profile, connected }: { profile: Profile; connected: boolean }) {
   const t = useT();
   const c = useConnection();
+  const agent = useAgent();
   // Web Serial exists only in the browser; render the notice after mount to avoid a hydration mismatch.
   const [hasSerial, setHasSerial] = useState<boolean | undefined>(undefined);
   useEffect(() => setHasSerial(Boolean(getSerial())), []);
-  if (hasSerial === false) return <Notice>{t("conn.noWebSerial")}</Notice>;
+  const paired = agent.status === "paired";
+  const via = paired && (profile.rtuVia === "agent" || hasSerial === false) ? "agent" : "browser";
+  if (hasSerial === false && !paired) return <Notice>{t("conn.noWebSerial")}</Notice>;
 
   const s = profile.serial;
   const setSerial = (patch: Partial<Profile["serial"]>) => updateProfile(profile.id, { serial: { ...s, ...patch } });
+  const connect = () =>
+    via === "agent"
+      ? profile.agentPort && void c.connectAgent({ kind: "rtu", port: profile.agentPort, ...s }, profile.timeoutMs)
+      : void c.connectSerial(s, profile.timeoutMs);
+  const connectedHere = connected && c.transport?.kind === (via === "agent" ? "agent" : "webserial");
   return (
     <div className="flex flex-col gap-3">
-      <Field label={t("conn.port")} hint={t("conn.port.help")}>
-        <div className="flex items-center gap-2">
-          <Button onClick={() => void c.choosePort()} disabled={connected}>
-            {t("conn.port.choose")}
-          </Button>
-          <span className={c.portLabel ? "" : "text-muted"}>{c.portLabel ?? t("conn.port.none")}</span>
+      {paired && (
+        <div role="radiogroup" aria-label={t("conn.via")} className="flex flex-wrap gap-4">
+          {(["browser", "agent"] as const).map((v) => (
+            <label key={v} className="flex min-h-8 items-center gap-2">
+              <input
+                type="radio"
+                name="rtu-via"
+                className="size-4"
+                checked={via === v}
+                disabled={connected || (v === "browser" && hasSerial === false)}
+                onChange={() => updateProfile(profile.id, { rtuVia: v })}
+              />
+              {t(v === "agent" ? "conn.via.agent" : "conn.via.browser")}
+            </label>
+          ))}
         </div>
-      </Field>
+      )}
+      {via === "agent" ? (
+        <Field label={t("conn.port")} hint={t("conn.agentPort.help")}>
+          <div className="flex items-center gap-2">
+            <Select
+              value={profile.agentPort ?? ""}
+              options={[
+                { value: "", label: t("conn.port.none") },
+                ...agent.serialPorts.map((p) => ({
+                  value: p.name,
+                  label: [p.name, p.product, p.vid ? `${p.vid.toUpperCase()}:${p.pid?.toUpperCase()}` : ""].filter(Boolean).join(" · "),
+                })),
+              ]}
+              onChange={(agentPort) => updateProfile(profile.id, { agentPort: agentPort || undefined })}
+              disabled={connected}
+              className="min-w-64"
+            />
+            <Button onClick={() => void agent.refreshPorts()} disabled={connected}>
+              {t("conn.refreshPorts")}
+            </Button>
+          </div>
+        </Field>
+      ) : (
+        <Field label={t("conn.port")} hint={t("conn.port.help")}>
+          <div className="flex items-center gap-2">
+            <Button onClick={() => void c.choosePort()} disabled={connected}>
+              {t("conn.port.choose")}
+            </Button>
+            <span className={c.portLabel ? "" : "text-muted"}>{c.portLabel ?? t("conn.port.none")}</span>
+          </div>
+        </Field>
+      )}
       <div className="grid grid-cols-[repeat(auto-fill,minmax(9rem,1fr))] gap-3">
         <Field label={t("conn.baud")}>
           <Select value={s.baudRate} options={BAUDS} onChange={(baudRate) => setSerial({ baudRate })} disabled={connected} />
@@ -187,17 +238,64 @@ function RtuTab({ profile, connected }: { profile: Profile; connected: boolean }
         </Field>
       </div>
       <div>
-        {connected && c.transport?.kind === "webserial" ? (
+        {connectedHere ? (
           <Button onClick={() => void c.disconnect()} shortcut="Ctrl+Enter">
             {t("conn.disconnect")}
           </Button>
         ) : (
-          <Button variant="primary" onClick={() => void c.connectSerial(s, profile.timeoutMs)} shortcut="Ctrl+Enter" disabled={c.portBusy}>
+          <Button variant="primary" onClick={connect} shortcut="Ctrl+Enter" disabled={c.portBusy || (via === "agent" && !profile.agentPort)}>
             {t("conn.connect")}
           </Button>
         )}
       </div>
     </div>
+  );
+}
+
+function TcpTab({ profile, connected }: { profile: Profile; connected: boolean }) {
+  const t = useT();
+  const c = useConnection();
+  const agent = useAgent();
+  if (agent.status !== "paired") return <Notice>{t("conn.tcp.needsAgent")}</Notice>;
+  const tcp = profile.tcp;
+  const connect = () => void c.connectAgent({ kind: "tcp", host: tcp.host.trim(), tcpPort: tcp.port }, profile.timeoutMs);
+  return (
+    <form
+      className="flex flex-col gap-3"
+      onSubmit={(e) => {
+        e.preventDefault();
+        connect();
+      }}
+    >
+      <div className="flex flex-wrap items-end gap-3">
+        <Field label={t("conn.tcp.host")}>
+          <Input value={tcp.host} onChange={(e) => updateProfile(profile.id, { tcp: { ...tcp, host: e.target.value } })} disabled={connected} className="w-48" />
+        </Field>
+        <Field label={t("conn.tcp.port")}>
+          <Input
+            type="number"
+            min={1}
+            max={65535}
+            value={tcp.port}
+            onChange={(e) => updateProfile(profile.id, { tcp: { ...tcp, port: clamp(e.target.valueAsNumber, 1, 65535, 502) } })}
+            disabled={connected}
+            className="w-24"
+          />
+        </Field>
+      </div>
+      <p className="text-[12px] text-muted">{t("conn.tcp.unitHint")}</p>
+      <div>
+        {connected && c.transport?.kind === "agent" && c.last?.agent?.kind === "tcp" ? (
+          <Button onClick={() => void c.disconnect()} shortcut="Ctrl+Enter">
+            {t("conn.disconnect")}
+          </Button>
+        ) : (
+          <Button type="submit" variant="primary" shortcut="Ctrl+Enter" disabled={!tcp.host.trim()}>
+            {t("conn.connect")}
+          </Button>
+        )}
+      </div>
+    </form>
   );
 }
 

@@ -1,0 +1,64 @@
+name: Release agent
+
+on:
+  push:
+    tags: ["agent-v*"]
+
+# Signing needs certificates that are still an open decision (see the spec:
+# Authenticode vendor or Azure Trusted Signing, Apple Developer ID). Steps that
+# need them are skipped while the secrets are missing.
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with: { fetch-depth: 0 }
+      - uses: jdx/mise-action@v2
+      - run: pnpm install --frozen-lockfile && pnpm build
+      - run: sudo apt-get install -y minisign
+      - uses: goreleaser/goreleaser-action@v6
+        with:
+          workdir: agent
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MODFIELD_UPDATE_KEYRING: ${{ secrets.MODFIELD_UPDATE_KEYRING }}
+          MINISIGN_KEY_FILE: ${{ secrets.MINISIGN_KEY_FILE }}
+          MINISIGN_PASSWORD: ${{ secrets.MINISIGN_PASSWORD }}
+
+  windows-installer:
+    needs: build
+    runs-on: windows-latest
+    strategy:
+      matrix: { arch: [x64, arm64] }
+    steps:
+      - uses: actions/checkout@v5
+      - uses: jdx/mise-action@v2
+      - run: pnpm install --frozen-lockfile && pnpm build && sh scripts/embed-ui.sh
+        shell: bash
+      - run: go build -trimpath -ldflags "-s -w -X main.version=${GITHUB_REF_NAME#agent-v}" -o modfield-agent.exe ./cmd/modfield-agent
+        working-directory: agent
+        shell: bash
+        env: { GOARCH: "${{ matrix.arch == 'x64' && 'amd64' || 'arm64' }}" }
+      - name: Sign executable (Authenticode)
+        if: ${{ secrets.WINDOWS_SIGNING_CERT != '' }}
+        run: echo "sign agent/modfield-agent.exe with the chosen provider"
+      - run: iscc /DVersion=${{ github.ref_name }} /DArch=${{ matrix.arch }} /DBinary=..\..\modfield-agent.exe agent\installer\windows\modfield-agent.iss
+
+  darwin:
+    needs: build
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: jdx/mise-action@v2
+      - run: pnpm install --frozen-lockfile && pnpm build && sh scripts/embed-ui.sh
+      # CGO on: the tray icon needs Cocoa.
+      - run: |
+          for arch in arm64 amd64; do
+            CGO_ENABLED=1 GOARCH=$arch go build -trimpath -ldflags "-s -w -X main.version=${GITHUB_REF_NAME#agent-v}" -o modfield-agent-$arch ./cmd/modfield-agent
+          done
+          lipo -create -output modfield-agent modfield-agent-arm64 modfield-agent-amd64
+        working-directory: agent
+      - name: Sign and notarize (Developer ID)
+        if: ${{ secrets.APPLE_DEVELOPER_ID != '' }}
+        run: echo "codesign --options runtime, notarytool submit, staple, then build the .dmg"

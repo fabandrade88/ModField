@@ -4,6 +4,7 @@ import { runCommand } from "@/lib/commands";
 import { db } from "@/lib/db";
 import { NUMBERED_MODULES } from "@/lib/modules";
 import { ensureSeed } from "@/lib/seed";
+import { autoConnectAgent } from "@/store/agent";
 import { openWriteFromShortcut } from "@/modules/WriteModule";
 import { useConnection } from "@/store/connection";
 import { useUi } from "@/store/ui";
@@ -112,6 +113,7 @@ export function AppShell() {
         const first = await db.profiles.orderBy("name").first();
         if (first) useUi.getState().set({ profileId: first.id });
       }
+      await autoConnectAgent();
     });
   }, [hydrated]);
 

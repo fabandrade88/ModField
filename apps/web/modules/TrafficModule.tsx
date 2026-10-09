@@ -1,5 +1,5 @@
 "use client";
-import { describeRtuFrame, functionName, toHex } from "@modfield/protocol";
+import { describeFrame, functionName, toHex } from "@modfield/protocol";
 import type { TrafficFrame } from "@modfield/transport";
 import { useMemo, useState } from "react";
 import { Button, Select, cx } from "@/components/controls";
@@ -18,7 +18,7 @@ function time(t: number): string {
 }
 
 export function trafficLine(f: TrafficFrame): string {
-  const d = describeRtuFrame(f.bytes, f.dir);
+  const d = describeFrame(f.bytes, f.dir, f.framing);
   return `${new Date(f.t).toISOString()} ${f.dir.toUpperCase()} ${toHex(f.bytes) || "—"}  ${f.bytes.length ? d.text : ""}${f.error ? `  [${f.error}]` : ""}`;
 }
 
@@ -30,7 +30,8 @@ export function TrafficModule() {
   const [onlyErrors, setOnlyErrors] = useState(false);
   const [fc, setFc] = useState(0);
 
-  const filter = (f: TrafficFrame) => (!onlyErrors || Boolean(f.error)) && (!fc || ((f.bytes[1] ?? 0) & 0x7f) === fc);
+  const fcOf = (f: TrafficFrame) => ((f.framing === "tcp" ? f.bytes[7] : f.bytes[1]) ?? 0) & 0x7f;
+  const filter = (f: TrafficFrame) => (!onlyErrors || Boolean(f.error)) && (!fc || fcOf(f) === fc);
   const frames = useMemo(() => {
     void version;
     const filtering = onlyErrors || fc !== 0;
@@ -77,7 +78,7 @@ export function TrafficModule() {
             </thead>
             <tbody>
               {frames.map((f, i) => {
-                const d = describeRtuFrame(f.bytes, f.dir);
+                const d = describeFrame(f.bytes, f.dir, f.framing);
                 return (
                   <tr key={`${f.t}-${i}`} className="border-b border-border/40 align-top">
                     <td className="px-2 py-0.5 whitespace-nowrap text-muted tabular-nums">{time(f.t)}</td>
