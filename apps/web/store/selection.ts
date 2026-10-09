@@ -2,7 +2,9 @@
 import { create } from "zustand";
 import type { ByteOrder, DataType, Table } from "@modfield/protocol";
 
-export interface SelectedTag {
+/** A row read in the Block tab, not saved as a tag. */
+export interface BlockSelection {
+  kind: "block";
   unitId: number;
   table: Table;
   offset: number;
@@ -12,6 +14,9 @@ export interface SelectedTag {
   value: number | string | undefined;
 }
 
-export const useSelection = create<{ tag: SelectedTag | undefined; select: (t: SelectedTag | undefined) => void }>()(
-  (set) => ({ tag: undefined, select: (tag) => set({ tag }) }),
-);
+export type Selection = BlockSelection | { kind: "tag"; tagId: string };
+
+export const useSelection = create<{ sel: Selection | undefined; select: (s: Selection | undefined) => void }>()((set) => ({
+  sel: undefined,
+  select: (sel) => set({ sel }),
+}));

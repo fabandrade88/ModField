@@ -16,7 +16,7 @@ jobs:
       # Protocol (CRC, framing, types), transport (RTU over the simulated line), theme contrast.
       - run: pnpm test
       - run: pnpm build
-      - run: pnpm --filter @modfield/web exec playwright install --with-deps chromium
+      - run: pnpm --filter @modfield/web exec playwright install --with-deps chromium firefox
       - run: pnpm test:e2e
         env:
           CI: "true"

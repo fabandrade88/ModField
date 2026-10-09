@@ -1,3 +1,5 @@
+import { de2, en2, pt2 } from "./i18n-parts/phase2";
+
 export const LANGS = ["pt", "en", "de"] as const;
 export type Lang = (typeof LANGS)[number];
 
@@ -156,10 +158,11 @@ const pt = {
   "error.howto": "Como resolver",
 };
 
-export type Dict = typeof pt;
+export type Dict = typeof pt & typeof pt2;
 export type Key = keyof Dict;
+type BaseDict = typeof pt;
 
-const en: Dict = {
+const en: BaseDict = {
   "app.name": "ModField",
   "nav.label": "Modules",
   "module.connection": "Connection",
@@ -300,7 +303,7 @@ const en: Dict = {
   "error.howto": "How to fix",
 };
 
-const de: Dict = {
+const de: BaseDict = {
   "app.name": "ModField",
   "nav.label": "Module",
   "module.connection": "Verbindung",
@@ -441,7 +444,7 @@ const de: Dict = {
   "error.howto": "Lösung",
 };
 
-export const DICTS: Record<Lang, Dict> = { pt, en, de };
+export const DICTS: Record<Lang, Dict> = { pt: { ...pt, ...pt2 }, en: { ...en, ...en2 }, de: { ...de, ...de2 } };
 
 export const LANG_NAMES: Record<Lang, string> = { pt: "Português", en: "English", de: "Deutsch" };
 

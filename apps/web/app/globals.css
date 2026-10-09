@@ -2,6 +2,9 @@
 @import "@fontsource-variable/jetbrains-mono";
 @import "@modfield/ui/themes.css";
 
+/* Shared components live outside the app folder, where Tailwind does not look by default. */
+@source "../../../packages/ui/src";
+
 /* Colors come from CSS variables, so themes switch without recompiling. */
 @theme inline {
   --color-bg: var(--c-bg);

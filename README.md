@@ -2,7 +2,7 @@
 
 Ferramenta web de diagnóstico, simulação e registro Modbus. A especificação fica no Outline, na coleção **Modbus Tool**.
 
-Estado atual: **fase 1 (fundação)**. O modo sem agente está começando: RTU pela Web Serial e modo demonstração no navegador.
+Estado atual: **fase 2 (diagnóstico sem agente)**. RTU pela Web Serial e modo demonstração no navegador: perfis, tags com leitura agrupada, escrita com confirmação, scanner (IDs, parâmetros, escuta passiva, registradores), cadastro de equipamentos com 43/14, monitor de tráfego e paleta de comandos.
 
 ## Rodar
 
@@ -24,7 +24,7 @@ pnpm --filter @modfield/web serve   # http://127.0.0.1:3100/pt/
 ```sh
 pnpm test             # Vitest: protocol, transport, ui
 pnpm typecheck
-pnpm build && pnpm test:e2e         # Playwright contra o build estático
+pnpm build && pnpm test:e2e         # Playwright (Chromium e Firefox) contra o build estático
 ```
 
 Localmente, o Playwright aceita qualquer navegador baseado em Chromium:

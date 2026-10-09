@@ -2,7 +2,7 @@
  * Keyboard commands that a module handles (R, P...). Handlers register per
  * pane; the focused pane wins, otherwise the first pane that has one.
  */
-export type CommandName = "read.now" | "read.cycle";
+export type CommandName = "read.now" | "read.cycle" | "tag.add";
 
 const handlers = new Map<CommandName, Map<number, () => void>>();
 

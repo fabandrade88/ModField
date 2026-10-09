@@ -3,10 +3,22 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "exports": { ".": "./src/index.ts", "./themes.css": "./src/themes.css" },
+  "exports": {
+    ".": "./src/index.ts",
+    "./components": "./src/components.tsx",
+    "./themes.css": "./src/themes.css"
+  },
   "scripts": {
     "typecheck": "tsc -p .",
     "gen": "node scripts/gen-css.ts"
   },
-  "devDependencies": { "typescript": "^6.0.0", "vitest": "^5.0.0" }
+  "devDependencies": {
+    "@types/react": "^19.3.0",
+    "react": "^19.3.0",
+    "typescript": "^6.0.0",
+    "vitest": "^5.0.0"
+  },
+  "peerDependencies": {
+    "react": "^19"
+  }
 }

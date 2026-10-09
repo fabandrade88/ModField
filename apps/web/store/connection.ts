@@ -1,7 +1,6 @@
 "use client";
 import { create } from "zustand";
 import {
-  DEFAULT_SERIAL,
   MockTransport,
   ModbusClient,
   WebSerialTransport,
@@ -28,26 +27,34 @@ interface ConnectionState {
   error: unknown;
   /** Bumped (at most once per frame) when traffic arrives, so views re-render. */
   trafficVersion: number;
-  serial: SerialSettings;
   timeoutMs: number;
   port: SerialPortLike | undefined;
   portLabel: string | undefined;
-  /** Kind of the last connection, so Ctrl+Enter reconnects the same way. */
-  lastKind: Transport["kind"] | undefined;
+  /** Last connection, so Ctrl+Enter reconnects the same way. */
+  last: { kind: Transport["kind"]; serial: SerialSettings } | undefined;
+  /** True while the scanner owns the port (parameter detection, passive listening). */
+  portBusy: boolean;
 
-  setSerial: (patch: Partial<SerialSettings>) => void;
   setTimeoutMs: (ms: number) => void;
   choosePort: () => Promise<void>;
-  connectSerial: () => Promise<void>;
-  connectDemo: () => Promise<void>;
+  connectSerial: (serial: SerialSettings, timeoutMs: number) => Promise<void>;
+  connectDemo: (timeoutMs?: number) => Promise<void>;
   disconnect: () => Promise<void>;
   /** Ctrl+Enter. Resolves false when there is nothing to reconnect to. */
   toggle: () => Promise<boolean>;
   clearTraffic: () => void;
+  setPortBusy: (busy: boolean) => void;
 }
 
 let unsubscribe: (() => void)[] = [];
 let bumpScheduled = false;
+/** The demo keeps one simulated line across reconnects, so writes survive Ctrl+Enter. */
+let demoTransport: MockTransport | undefined;
+
+export function demoLine() {
+  demoTransport ??= new MockTransport();
+  return demoTransport.line;
+}
 
 export const useConnection = create<ConnectionState>()((set, get) => {
   const bump = () => {
@@ -59,7 +66,7 @@ export const useConnection = create<ConnectionState>()((set, get) => {
     });
   };
 
-  async function attach(transport: Transport) {
+  async function attach(transport: Transport, timeoutMs: number, serial: SerialSettings) {
     await get().disconnect();
     unsubscribe = [
       transport.on("state", (state) => set({ state })),
@@ -69,8 +76,17 @@ export const useConnection = create<ConnectionState>()((set, get) => {
         bump();
       }),
     ];
-    const client = new ModbusClient(transport, { timeoutMs: get().timeoutMs });
-    set({ transport, client, label: transport.label, error: undefined, stats: undefined, state: "connecting", lastKind: transport.kind });
+    const client = new ModbusClient(transport, { timeoutMs });
+    set({
+      transport,
+      client,
+      timeoutMs,
+      label: transport.label,
+      error: undefined,
+      stats: undefined,
+      state: "connecting",
+      last: { kind: transport.kind, serial },
+    });
     try {
       await transport.open();
       set({ state: transport.state, stats: { ...transport.stats } });
@@ -87,13 +103,12 @@ export const useConnection = create<ConnectionState>()((set, get) => {
     stats: undefined,
     error: undefined,
     trafficVersion: 0,
-    serial: { ...DEFAULT_SERIAL },
     timeoutMs: 1000,
     port: undefined,
     portLabel: undefined,
-    lastKind: undefined,
+    last: undefined,
+    portBusy: false,
 
-    setSerial: (patch) => set((s) => ({ serial: { ...s.serial, ...patch } })),
     setTimeoutMs: (timeoutMs) => {
       const c = get().client;
       if (c) c.options.timeoutMs = timeoutMs;
@@ -111,13 +126,16 @@ export const useConnection = create<ConnectionState>()((set, get) => {
       }
     },
 
-    connectSerial: async () => {
-      const { port, serial } = get();
+    connectSerial: async (serial, timeoutMs) => {
+      const { port } = get();
       if (!port) return get().choosePort();
-      await attach(new WebSerialTransport(port, { ...serial }));
+      await attach(new WebSerialTransport(port, { ...serial }), timeoutMs, serial);
     },
 
-    connectDemo: () => attach(new MockTransport()),
+    connectDemo: async (timeoutMs = 1000) => {
+      demoTransport ??= new MockTransport();
+      await attach(demoTransport, timeoutMs, demoTransport.settings);
+    },
 
     disconnect: async () => {
       const t = get().transport;
@@ -128,13 +146,13 @@ export const useConnection = create<ConnectionState>()((set, get) => {
     },
 
     toggle: async () => {
-      const { transport, state, lastKind, port } = get();
+      const { transport, state, last, port } = get();
       if (transport && (state === "connected" || state === "connecting")) {
         await get().disconnect();
-      } else if (lastKind === "mock") {
-        await get().connectDemo();
-      } else if (port) {
-        await get().connectSerial();
+      } else if (last?.kind === "mock") {
+        await get().connectDemo(get().timeoutMs);
+      } else if (port && last) {
+        await get().connectSerial(last.serial, get().timeoutMs);
       } else {
         return false;
       }
@@ -145,5 +163,7 @@ export const useConnection = create<ConnectionState>()((set, get) => {
       traffic.clear();
       set((s) => ({ trafficVersion: s.trafficVersion + 1 }));
     },
+
+    setPortBusy: (portBusy) => set({ portBusy }),
   };
 });

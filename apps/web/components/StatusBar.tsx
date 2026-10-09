@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { useConnection } from "@/store/connection";
+import { usePolling } from "@/store/polling";
 import { useUi, type Layout } from "@/store/ui";
 import { StateTag, cx } from "./controls";
 import { useLang, useT } from "./i18n";
@@ -17,6 +18,10 @@ export function StatusBar() {
   const lang = useLang();
   const { state, label, stats, transport } = useConnection();
   const layout = useUi((s) => s.layout);
+  const polling = usePolling((s) => s.running);
+  const cycleMs = usePolling((s) => s.cycleMs);
+  const intervalMs = usePolling((s) => s.intervalMs);
+  const slow = polling && cycleMs !== undefined && cycleMs > intervalMs;
   const setLayout = useUi((s) => s.setLayout);
   const setUi = useUi((s) => s.set);
   const [now, setNow] = useState<Date>();
@@ -56,6 +61,12 @@ export function StatusBar() {
       <Seg className={stats?.crcErrors ? "text-comm" : undefined}>
         <span className="tabular-nums">{stats?.crcErrors ?? 0}</span> <span className={stats?.crcErrors ? "" : "text-muted"}>{t("status.crc")}</span>
       </Seg>
+      {polling && cycleMs !== undefined && (
+        <Seg className={slow ? "text-warning" : undefined}>
+          <span className={slow ? "" : "text-muted"}>{slow ? "! " : ""}{t("status.cycle")}</span>
+          <span className="tabular-nums">{cycleMs.toFixed(0)} ms</span>
+        </Seg>
+      )}
       <Seg>
         <span className="text-muted">{t("status.log")}</span> {t("status.log.none")}
       </Seg>

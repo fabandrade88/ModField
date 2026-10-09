@@ -1,11 +1,14 @@
 "use client";
 import { DEMO_SLAVES, getSerial } from "@modfield/transport";
 import { useEffect, useState } from "react";
-import { Button, ErrorBox, Field, Input, Notice, Section, Select, StateTag, cx } from "@/components/controls";
+import { Button, Dialog, ErrorBox, Field, Input, Notice, Section, Select, StateTag, Tabs, cx } from "@/components/controls";
 import { useT } from "@/components/i18n";
+import { db, newId, type Equipment, type Profile } from "@/lib/db";
 import { describeError } from "@/lib/errors";
+import { updateProfile, useEquipment, useProfile, useProfiles } from "@/lib/hooks";
+import { blankProfile } from "@/lib/seed";
 import { useConnection } from "@/store/connection";
-import { useUi, type ConnTab } from "@/store/ui";
+import { useUi } from "@/store/ui";
 
 const BAUDS = [1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200] as const;
 
@@ -13,83 +16,124 @@ export function ConnectionModule() {
   const t = useT();
   const tab = useUi((s) => s.connTab);
   const setUi = useUi((s) => s.set);
+  const profile = useProfile();
   const c = useConnection();
   const connected = c.state === "connected" || c.state === "connecting";
   const err = c.error ? describeError(t, c.error, { timeout: c.timeoutMs }) : undefined;
 
-  const tabs: [ConnTab, string][] = [
-    ["rtu", t("conn.tab.rtu")],
-    ["tcp", t("conn.tab.tcp")],
-    ["demo", t("conn.tab.demo")],
-  ];
-
   return (
     <div className="flex flex-col gap-4 p-3">
-      <div role="tablist" className="flex gap-1 border-b border-border">
-        {tabs.map(([id, label]) => (
-          <button
-            key={id}
-            role="tab"
-            type="button"
-            aria-selected={tab === id}
-            onClick={() => setUi({ connTab: id })}
-            className={cx(
-              "-mb-px min-h-8 border-b-2 px-3",
-              tab === id ? "border-accent text-fg" : "border-transparent text-muted hover:text-fg",
-            )}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
+      <ProfileBar />
+      <Tabs
+        value={tab}
+        onChange={(connTab) => setUi({ connTab })}
+        tabs={[
+          ["rtu", t("conn.tab.rtu")],
+          ["tcp", t("conn.tab.tcp")],
+          ["demo", t("conn.tab.demo")],
+        ]}
+      />
 
       <div className="flex items-center gap-3">
         <StateTag state={c.state} />
         {c.label && <span className="text-muted">{c.label}</span>}
       </div>
       {err && <ErrorBox {...err} />}
+      {c.portBusy && <Notice tone="warning">{t("conn.portBusy")}</Notice>}
 
-      {tab === "rtu" && <RtuTab connected={connected} />}
+      {profile && tab === "rtu" && <RtuTab profile={profile} connected={connected} />}
       {tab === "tcp" && <Notice>{t("conn.tcp.needsAgent")}</Notice>}
-      {tab === "demo" && (
-        <div className="flex flex-col gap-3">
-          <p className="text-muted">{t("conn.demo.desc")}</p>
-          <Section title={t("conn.demo.slaves")}>
-            <table className="w-full text-left">
-              <tbody>
-                {DEMO_SLAVES.map((s) => (
-                  <tr key={s.unitId} className="border-b border-border/50">
-                    <td className="w-12 py-1 pr-2 tabular-nums">{s.unitId}</td>
-                    <td className="py-1">{s.name}</td>
-                    <td className="py-1 text-muted">
-                      {s.points.map((p) => `${p.table} ${p.address}${p.type ? ` ${p.type}${p.order && p.order !== "ABCD" ? ` ${p.order}` : ""}` : ""}`).join(" · ")}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            <p className="text-[12px] text-muted">{t("conn.demo.unknown")}</p>
-          </Section>
-          <div>
-            {connected && c.transport?.kind === "mock" ? (
-              <Button onClick={() => void c.disconnect()} shortcut="Ctrl+Enter">
-                {t("conn.disconnect")}
-              </Button>
-            ) : (
-              <Button variant="primary" onClick={() => void c.connectDemo()} shortcut="Ctrl+Enter">
-                {t("conn.connect")}
-              </Button>
-            )}
-          </div>
-        </div>
-      )}
+      {tab === "demo" && <DemoTab connected={connected} />}
 
+      {profile && <CommonSettings profile={profile} />}
       {c.stats && <Counters />}
+      {profile && <EquipmentSection profile={profile} />}
     </div>
   );
 }
 
-function RtuTab({ connected }: { connected: boolean }) {
+function ProfileBar() {
+  const t = useT();
+  const profiles = useProfiles();
+  const profileId = useUi((s) => s.profileId);
+  const setUi = useUi((s) => s.set);
+  const [renaming, setRenaming] = useState<string>();
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const current = profiles.find((p) => p.id === profileId);
+
+  const create = async () => {
+    const p = blankProfile(t("profile.new.name", { n: profiles.length + 1 }));
+    await db.profiles.add(p);
+    setUi({ profileId: p.id });
+    setRenaming(p.name);
+  };
+
+  const remove = async () => {
+    if (!current || profiles.length < 2) return;
+    await db.transaction("rw", db.profiles, db.tags, db.equipment, async () => {
+      await db.tags.where("profileId").equals(current.id).delete();
+      await db.equipment.where("profileId").equals(current.id).delete();
+      await db.profiles.delete(current.id);
+    });
+    setUi({ profileId: profiles.find((p) => p.id !== current.id)!.id });
+    setConfirmDelete(false);
+  };
+
+  return (
+    <div className="flex flex-wrap items-end gap-2">
+      {renaming !== undefined && current ? (
+        <form
+          className="flex items-end gap-2"
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (renaming.trim()) updateProfile(current.id, { name: renaming.trim() });
+            setRenaming(undefined);
+          }}
+        >
+          <Field label={t("profile.name")}>
+            <Input autoFocus value={renaming} onChange={(e) => setRenaming(e.target.value)} className="w-64" />
+          </Field>
+          <Button type="submit" variant="primary">
+            {t("common.save")}
+          </Button>
+        </form>
+      ) : (
+        <Field label={t("profile.label")}>
+          <Select
+            value={profileId}
+            options={profiles.map((p) => ({ value: p.id, label: p.name }))}
+            onChange={(id) => setUi({ profileId: id })}
+            className="w-64"
+          />
+        </Field>
+      )}
+      <Button onClick={() => void create()}>{t("profile.new")}</Button>
+      <Button onClick={() => setRenaming(current?.name ?? "")} disabled={!current}>
+        {t("profile.rename")}
+      </Button>
+      <Button onClick={() => setConfirmDelete(true)} disabled={profiles.length < 2}>
+        {t("profile.delete")}
+      </Button>
+      <Dialog
+        open={confirmDelete}
+        onClose={() => setConfirmDelete(false)}
+        title={t("profile.delete.title", { name: current?.name ?? "" })}
+        footer={
+          <>
+            <Button onClick={() => setConfirmDelete(false)}>{t("common.cancel")}</Button>
+            <Button variant="danger" onClick={() => void remove()}>
+              {t("profile.delete")}
+            </Button>
+          </>
+        }
+      >
+        {t("profile.delete.body")}
+      </Dialog>
+    </div>
+  );
+}
+
+function RtuTab({ profile, connected }: { profile: Profile; connected: boolean }) {
   const t = useT();
   const c = useConnection();
   // Web Serial exists only in the browser; render the notice after mount to avoid a hydration mismatch.
@@ -97,7 +141,8 @@ function RtuTab({ connected }: { connected: boolean }) {
   useEffect(() => setHasSerial(Boolean(getSerial())), []);
   if (hasSerial === false) return <Notice>{t("conn.noWebSerial")}</Notice>;
 
-  const s = c.serial;
+  const s = profile.serial;
+  const setSerial = (patch: Partial<Profile["serial"]>) => updateProfile(profile.id, { serial: { ...s, ...patch } });
   return (
     <div className="flex flex-col gap-3">
       <Field label={t("conn.port")} hint={t("conn.port.help")}>
@@ -110,10 +155,10 @@ function RtuTab({ connected }: { connected: boolean }) {
       </Field>
       <div className="grid grid-cols-[repeat(auto-fill,minmax(9rem,1fr))] gap-3">
         <Field label={t("conn.baud")}>
-          <Select value={s.baudRate} options={BAUDS} onChange={(baudRate) => c.setSerial({ baudRate })} disabled={connected} />
+          <Select value={s.baudRate} options={BAUDS} onChange={(baudRate) => setSerial({ baudRate })} disabled={connected} />
         </Field>
         <Field label={t("conn.dataBits")}>
-          <Select value={s.dataBits} options={[8, 7] as const} onChange={(dataBits) => c.setSerial({ dataBits })} disabled={connected} />
+          <Select value={s.dataBits} options={[8, 7] as const} onChange={(dataBits) => setSerial({ dataBits })} disabled={connected} />
         </Field>
         <Field label={t("conn.parity")}>
           <Select
@@ -123,22 +168,12 @@ function RtuTab({ connected }: { connected: boolean }) {
               { value: "even", label: t("conn.parity.even") },
               { value: "odd", label: t("conn.parity.odd") },
             ] as const}
-            onChange={(parity) => c.setSerial({ parity })}
+            onChange={(parity) => setSerial({ parity })}
             disabled={connected}
           />
         </Field>
         <Field label={t("conn.stopBits")}>
-          <Select value={s.stopBits} options={[1, 2] as const} onChange={(stopBits) => c.setSerial({ stopBits })} disabled={connected} />
-        </Field>
-        <Field label={t("conn.timeout")}>
-          <Input
-            type="number"
-            min={20}
-            max={10000}
-            step={10}
-            value={c.timeoutMs}
-            onChange={(e) => c.setTimeoutMs(clamp(e.target.valueAsNumber, 20, 10000, 1000))}
-          />
+          <Select value={s.stopBits} options={[1, 2] as const} onChange={(stopBits) => setSerial({ stopBits })} disabled={connected} />
         </Field>
         <Field label={t("conn.delay")}>
           <Input
@@ -146,7 +181,7 @@ function RtuTab({ connected }: { connected: boolean }) {
             min={0}
             max={1000}
             value={s.interRequestDelayMs}
-            onChange={(e) => c.setSerial({ interRequestDelayMs: clamp(e.target.valueAsNumber, 0, 1000, 5) })}
+            onChange={(e) => setSerial({ interRequestDelayMs: clamp(e.target.valueAsNumber, 0, 1000, 5) })}
             disabled={connected}
           />
         </Field>
@@ -157,11 +192,84 @@ function RtuTab({ connected }: { connected: boolean }) {
             {t("conn.disconnect")}
           </Button>
         ) : (
-          <Button variant="primary" onClick={() => void c.connectSerial()} shortcut="Ctrl+Enter">
+          <Button variant="primary" onClick={() => void c.connectSerial(s, profile.timeoutMs)} shortcut="Ctrl+Enter" disabled={c.portBusy}>
             {t("conn.connect")}
           </Button>
         )}
       </div>
+    </div>
+  );
+}
+
+function DemoTab({ connected }: { connected: boolean }) {
+  const t = useT();
+  const c = useConnection();
+  const profile = useProfile();
+  return (
+    <div className="flex flex-col gap-3">
+      <p className="text-muted">{t("conn.demo.desc")}</p>
+      <Section title={t("conn.demo.slaves")}>
+        <table className="w-full text-left">
+          <tbody>
+            {DEMO_SLAVES.map((s) => (
+              <tr key={s.unitId} className="border-b border-border/50">
+                <td className="w-12 py-1 pr-2 tabular-nums">{s.unitId}</td>
+                <td className="py-1">{s.name}</td>
+                <td className="py-1 text-muted">
+                  {s.points
+                    .map((p) => `${p.table} ${p.address}${p.type ? ` ${p.type}${p.order && p.order !== "ABCD" ? ` ${p.order}` : ""}` : ""}`)
+                    .join(" · ")}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <p className="text-[12px] text-muted">{t("conn.demo.unknown")}</p>
+      </Section>
+      <div>
+        {connected && c.transport?.kind === "mock" ? (
+          <Button onClick={() => void c.disconnect()} shortcut="Ctrl+Enter">
+            {t("conn.disconnect")}
+          </Button>
+        ) : (
+          <Button variant="primary" onClick={() => void c.connectDemo(profile?.timeoutMs)} shortcut="Ctrl+Enter" disabled={c.portBusy}>
+            {t("conn.connect")}
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function CommonSettings({ profile }: { profile: Profile }) {
+  const t = useT();
+  const setTimeoutMs = useConnection((s) => s.setTimeoutMs);
+  return (
+    <div className="flex flex-wrap items-end gap-3">
+      <Field label={t("conn.timeout")}>
+        <Input
+          type="number"
+          min={20}
+          max={10000}
+          step={10}
+          value={profile.timeoutMs}
+          onChange={(e) => {
+            const v = clamp(e.target.valueAsNumber, 20, 10000, 1000);
+            updateProfile(profile.id, { timeoutMs: v });
+            setTimeoutMs(v);
+          }}
+          className="w-32"
+        />
+      </Field>
+      <label className="flex min-h-8 items-center gap-2">
+        <input
+          type="checkbox"
+          className="size-4"
+          checked={profile.forceMultipleWrite}
+          onChange={(e) => updateProfile(profile.id, { forceMultipleWrite: e.target.checked })}
+        />
+        {t("conn.forceFc16")}
+      </label>
     </div>
   );
 }
@@ -187,6 +295,108 @@ function Counters() {
           </div>
         ))}
       </dl>
+    </Section>
+  );
+}
+
+function EquipmentSection({ profile }: { profile: Profile }) {
+  const t = useT();
+  const equipment = useEquipment();
+  const client = useConnection((s) => s.client);
+  const [busy, setBusy] = useState<string>();
+  const [error, setError] = useState<{ id: string; e: unknown }>();
+
+  const add = () =>
+    db.equipment.add({
+      id: newId(),
+      profileId: profile.id,
+      unitId: Math.max(0, ...equipment.map((e) => e.unitId)) + 1,
+      manufacturer: "",
+      model: "",
+      serialNumber: "",
+      tag: "",
+      firmware: "",
+    });
+
+  const identify = async (eq: Equipment) => {
+    if (!client) return;
+    setBusy(eq.id);
+    setError(undefined);
+    try {
+      const o = await client.readDeviceId(eq.unitId);
+      await db.equipment.update(eq.id, {
+        manufacturer: o[0] ?? eq.manufacturer,
+        model: o[5] ?? o[4] ?? o[1] ?? eq.model,
+        firmware: o[2] ?? eq.firmware,
+      });
+    } catch (e) {
+      setError({ id: eq.id, e });
+    } finally {
+      setBusy(undefined);
+    }
+  };
+
+  const cols: [keyof Equipment, string, string][] = [
+    ["manufacturer", t("eq.manufacturer"), "w-32"],
+    ["model", t("eq.model"), "w-28"],
+    ["serialNumber", t("eq.serial"), "w-28"],
+    ["tag", t("eq.tag"), "w-40"],
+    ["firmware", t("eq.firmware"), "w-20"],
+  ];
+  const err = error && describeError(t, error.e, { unit: equipment.find((e) => e.id === error.id)?.unitId });
+
+  return (
+    <Section title={t("eq.title")} actions={<Button onClick={() => void add()}>{t("eq.add")}</Button>}>
+      {equipment.length === 0 ? (
+        <p className="text-muted">{t("eq.empty")}</p>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="text-left">
+            <thead className="text-[12px] text-muted">
+              <tr>
+                <th className="pr-2 font-normal">{t("read.unit")}</th>
+                {cols.map(([k, label]) => (
+                  <th key={k} className="pr-2 font-normal">
+                    {label}
+                  </th>
+                ))}
+                <th />
+              </tr>
+            </thead>
+            <tbody>
+              {equipment.map((eq) => (
+                <tr key={eq.id}>
+                  <td className="py-0.5 pr-2">
+                    <Input
+                      aria-label={t("read.unit")}
+                      type="number"
+                      min={1}
+                      max={247}
+                      value={eq.unitId}
+                      onChange={(e) => void db.equipment.update(eq.id, { unitId: clamp(e.target.valueAsNumber, 1, 247, 1) })}
+                      className="w-16"
+                    />
+                  </td>
+                  {cols.map(([k, label, w]) => (
+                    <td key={k} className="py-0.5 pr-2">
+                      <Input aria-label={label} value={String(eq[k])} onChange={(e) => void db.equipment.update(eq.id, { [k]: e.target.value })} className={w} />
+                    </td>
+                  ))}
+                  <td className="flex gap-1 py-0.5">
+                    <Button onClick={() => void identify(eq)} disabled={!client || busy !== undefined} title={t("eq.identify.hint")}>
+                      {busy === eq.id ? "…" : t("eq.identify")}
+                    </Button>
+                    <Button variant="ghost" aria-label={t("common.delete")} onClick={() => void db.equipment.delete(eq.id)}>
+                      ×
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      {err && <ErrorBox {...err} />}
     </Section>
   );
 }

@@ -6,6 +6,7 @@ import { useUi } from "@/store/ui";
 import { Kbd } from "./controls";
 import { useT } from "./i18n";
 import type { Key } from "@/lib/i18n";
+import { DEMO_PROFILE_ID } from "@/lib/seed";
 
 /** One screen, three choices, no balloon tour. */
 export function FirstUse() {
@@ -47,7 +48,7 @@ export function FirstUse() {
         setLayout(2);
         setPane(1, "traffic");
         setPane(0, "read");
-        set({ connTab: "demo" });
+        set({ connTab: "demo", profileId: DEMO_PROFILE_ID, readTab: "tags" });
         void connectDemo();
       },
     },

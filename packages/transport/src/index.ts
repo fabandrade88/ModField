@@ -3,6 +3,8 @@ export * from "./mock/demo";
 export * from "./mock/serial-port";
 export * from "./mock/slave";
 export * from "./mock/transport";
+export * from "./poller";
+export * from "./scan";
 export * from "./types";
 export * from "./webserial/serial-types";
 export * from "./webserial/transport";

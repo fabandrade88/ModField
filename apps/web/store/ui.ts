@@ -3,10 +3,13 @@ import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { DEFAULT_THEME } from "@modfield/ui";
 import type { ModuleId } from "@/lib/modules";
+import { DEMO_PROFILE_ID } from "@/lib/seed";
 import { UI_STORAGE_KEY } from "@/lib/storage-keys";
 
 export type Layout = 1 | 2 | 4;
 export type ConnTab = "rtu" | "tcp" | "demo";
+export type ReadTab = "tags" | "block";
+export type ScanTab = "ids" | "serial" | "passive" | "registers";
 
 interface UiState {
   theme: string;
@@ -17,14 +20,23 @@ interface UiState {
   propsOpen: boolean;
   firstUseDone: boolean;
   connTab: ConnTab;
+  readTab: ReadTab;
+  scanTab: ScanTab;
+  /** Active connection profile (IndexedDB id). */
+  profileId: string;
   helpOpen: boolean;
+  paletteOpen: boolean;
 
   openModule: (id: ModuleId) => void;
   focusPane: (i: number) => void;
   moveFocus: (delta: 1 | -1) => void;
   setLayout: (l: Layout) => void;
   setPane: (i: number, id: ModuleId) => void;
-  set: (patch: Partial<Pick<UiState, "theme" | "propsOpen" | "firstUseDone" | "connTab" | "helpOpen">>) => void;
+  set: (
+    patch: Partial<
+      Pick<UiState, "theme" | "propsOpen" | "firstUseDone" | "connTab" | "readTab" | "scanTab" | "profileId" | "helpOpen" | "paletteOpen">
+    >,
+  ) => void;
 }
 
 
@@ -63,7 +75,11 @@ export const useUi = create<UiState>()(
       propsOpen: true,
       firstUseDone: false,
       connTab: "rtu",
+      readTab: "tags",
+      scanTab: "ids",
+      profileId: DEMO_PROFILE_ID,
       helpOpen: false,
+      paletteOpen: false,
 
       openModule: (id) =>
         set((s) => {
@@ -87,13 +103,16 @@ export const useUi = create<UiState>()(
       storage: safeStorage,
       // Rehydrated by AppShell after mount, so the first render matches the static HTML.
       skipHydration: true,
-      partialize: ({ theme, layout, panes, propsOpen, firstUseDone, connTab }) => ({
+      partialize: ({ theme, layout, panes, propsOpen, firstUseDone, connTab, readTab, scanTab, profileId }) => ({
         theme,
         layout,
         panes,
         propsOpen,
         firstUseDone,
         connTab,
+        readTab,
+        scanTab,
+        profileId,
       }),
     },
   ),

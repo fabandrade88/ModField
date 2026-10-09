@@ -1,9 +1,13 @@
 "use client";
 import { useEffect, useState } from "react";
 import { runCommand } from "@/lib/commands";
+import { db } from "@/lib/db";
 import { NUMBERED_MODULES } from "@/lib/modules";
+import { ensureSeed } from "@/lib/seed";
+import { openWriteFromShortcut } from "@/modules/WriteModule";
 import { useConnection } from "@/store/connection";
 import { useUi } from "@/store/ui";
+import { CommandPalette } from "./CommandPalette";
 import { FirstUse } from "./FirstUse";
 import { HelpOverlay } from "./HelpOverlay";
 import { PropertiesPanel } from "./PropertiesPanel";
@@ -25,16 +29,19 @@ function useShortcuts(): void {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const ui = useUi.getState();
-      if (e.key === "Escape" && ui.helpOpen) {
-        ui.set({ helpOpen: false });
-        return;
-      }
+      // Open dialogs (help, palette, write confirmation) handle their own keys.
+      if (document.querySelector("dialog[open]")) return;
       if (!ui.firstUseDone) {
         const n = Number(e.key);
         if (n >= 1 && n <= 3 && !isTyping(e.target)) {
           document.querySelectorAll<HTMLButtonElement>("[data-option]")[n - 1]?.click();
           e.preventDefault();
         }
+        return;
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        ui.set({ paletteOpen: true });
         return;
       }
       if (e.ctrlKey && e.key === "Enter") {
@@ -45,7 +52,7 @@ function useShortcuts(): void {
           .then((ok) => ok || ui.openModule("connection"));
         return;
       }
-      if (e.ctrlKey || e.metaKey || e.altKey || isTyping(e.target) || ui.helpOpen) return;
+      if (e.ctrlKey || e.metaKey || e.altKey || isTyping(e.target)) return;
 
       const n = Number(e.key);
       if (Number.isInteger(n) && n >= 1 && n <= NUMBERED_MODULES.length) {
@@ -58,6 +65,16 @@ function useShortcuts(): void {
         if (!runCommand("read.now", ui.focused)) return;
       } else if (e.key === "p" || e.key === "P") {
         if (!runCommand("read.cycle", ui.focused)) return;
+      } else if (e.key === "a" || e.key === "A") {
+        if (!runCommand("tag.add", ui.focused)) {
+          ui.set({ readTab: "tags" });
+          ui.openModule("read");
+          setTimeout(() => runCommand("tag.add", useUi.getState().focused), 50);
+        }
+      } else if (e.key === "w" || e.key === "W") {
+        openWriteFromShortcut();
+      } else if (e.key === "/") {
+        ui.set({ paletteOpen: true });
       } else if (e.key === "?") {
         ui.set({ helpOpen: true });
       } else {
@@ -86,6 +103,18 @@ export function AppShell() {
     document.documentElement.dataset.theme = theme;
   }, [theme]);
 
+  // First run: the demo profile. A profile deleted in another tab falls back to the first one.
+  useEffect(() => {
+    if (!hydrated) return;
+    void ensureSeed().then(async () => {
+      const id = useUi.getState().profileId;
+      if (!(await db.profiles.get(id))) {
+        const first = await db.profiles.orderBy("name").first();
+        if (first) useUi.getState().set({ profileId: first.id });
+      }
+    });
+  }, [hydrated]);
+
   useEffect(() => {
     // Ask the browser not to evict our data under storage pressure.
     void navigator.storage?.persist?.().catch(() => undefined);
@@ -103,6 +132,7 @@ export function AppShell() {
       <StatusBar />
       {hydrated && !firstUseDone && <FirstUse />}
       {helpOpen && <HelpOverlay />}
+      <CommandPalette />
     </div>
   );
 }

@@ -33,6 +33,9 @@ export interface SimPoint {
   /** Display name, used by the demo UI. */
   name?: string;
   unit?: string;
+  /** How the demo profile scales the raw value (what a vendor manual would say). */
+  scale?: { rawMin: number; rawMax: number; engMin: number; engMax: number };
+  decimals?: number;
 }
 
 export interface SimSlaveConfig {
