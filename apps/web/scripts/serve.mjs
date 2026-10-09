@@ -1,0 +1,30 @@
+// Serves out/ like a static host, for e2e tests and local checks: no server code.
+import { createReadStream, existsSync, statSync } from "node:fs";
+import { createServer } from "node:http";
+import { extname, join, normalize } from "node:path";
+
+const ROOT = new URL("../out/", import.meta.url).pathname;
+const PORT = Number(process.env.PORT ?? 3100);
+const TYPES = {
+  ".html": "text/html; charset=utf-8",
+  ".js": "text/javascript",
+  ".css": "text/css",
+  ".woff2": "font/woff2",
+  ".svg": "image/svg+xml",
+  ".txt": "text/plain; charset=utf-8",
+  ".json": "application/json",
+  ".ico": "image/x-icon",
+};
+
+createServer((req, res) => {
+  const url = new URL(req.url ?? "/", "http://x");
+  let path = normalize(join(ROOT, decodeURIComponent(url.pathname)));
+  if (!path.startsWith(ROOT)) return res.writeHead(403).end();
+  if (existsSync(path) && statSync(path).isDirectory()) path = join(path, "index.html");
+  if (!existsSync(path)) {
+    res.writeHead(404, { "content-type": TYPES[".html"] });
+    return createReadStream(join(ROOT, "404.html")).pipe(res);
+  }
+  res.writeHead(200, { "content-type": TYPES[extname(path)] ?? "application/octet-stream" });
+  createReadStream(path).pipe(res);
+}).listen(PORT, "127.0.0.1", () => console.log(`serving out/ on http://127.0.0.1:${PORT}`));

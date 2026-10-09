@@ -1,0 +1,85 @@
+/* Generated from themes.ts by `pnpm --filter @modfield/ui gen`. Do not edit. */
+:root {
+  color-scheme: dark;
+  --c-bg: #1a1b26;
+  --c-surface: #16161e;
+  --c-surface-2: #24283b;
+  --c-border: #2f3449;
+  --c-fg: #c0caf5;
+  --c-muted: #a9b1d6;
+  --c-accent: #7aa2f7;
+  --c-critical: #f7768e;
+  --c-warning: #e0af68;
+  --c-comm: #e08fe0;
+  --c-stale: #9097b8;
+}
+:root[data-theme="tokyo-night"] {
+  color-scheme: dark;
+  --c-bg: #1a1b26;
+  --c-surface: #16161e;
+  --c-surface-2: #24283b;
+  --c-border: #2f3449;
+  --c-fg: #c0caf5;
+  --c-muted: #a9b1d6;
+  --c-accent: #7aa2f7;
+  --c-critical: #f7768e;
+  --c-warning: #e0af68;
+  --c-comm: #e08fe0;
+  --c-stale: #9097b8;
+}
+:root[data-theme="alto-contraste"] {
+  color-scheme: light;
+  --c-bg: #ffffff;
+  --c-surface: #f4f4f4;
+  --c-surface-2: #e6e6e6;
+  --c-border: #8a8a8a;
+  --c-fg: #000000;
+  --c-muted: #3d3d3d;
+  --c-accent: #0047b3;
+  --c-critical: #b00020;
+  --c-warning: #8a5300;
+  --c-comm: #8b1a8b;
+  --c-stale: #595959;
+}
+:root[data-theme="gruvbox"] {
+  color-scheme: dark;
+  --c-bg: #282828;
+  --c-surface: #1d2021;
+  --c-surface-2: #3c3836;
+  --c-border: #504945;
+  --c-fg: #ebdbb2;
+  --c-muted: #bdae93;
+  --c-accent: #9fbcb0;
+  --c-critical: #ff7b6e;
+  --c-warning: #fabd2f;
+  --c-comm: #d787d7;
+  --c-stale: #b8ab97;
+}
+:root[data-theme="nord"] {
+  color-scheme: dark;
+  --c-bg: #2e3440;
+  --c-surface: #272c36;
+  --c-surface-2: #3b4252;
+  --c-border: #4c566a;
+  --c-fg: #eceff4;
+  --c-muted: #d8dee9;
+  --c-accent: #88c0d0;
+  --c-critical: #f2a1a7;
+  --c-warning: #ebcb8b;
+  --c-comm: #d0a6ca;
+  --c-stale: #b0b7c7;
+}
+:root[data-theme="catppuccin"] {
+  color-scheme: dark;
+  --c-bg: #1e1e2e;
+  --c-surface: #181825;
+  --c-surface-2: #313244;
+  --c-border: #45475a;
+  --c-fg: #cdd6f4;
+  --c-muted: #bac2de;
+  --c-accent: #89b4fa;
+  --c-critical: #f38ba8;
+  --c-warning: #f9e2af;
+  --c-comm: #f5c2e7;
+  --c-stale: #a0a6bd;
+}

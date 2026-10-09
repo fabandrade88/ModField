@@ -1,0 +1,81 @@
+@import "tailwindcss";
+@import "@fontsource-variable/jetbrains-mono";
+@import "@modfield/ui/themes.css";
+
+/* Colors come from CSS variables, so themes switch without recompiling. */
+@theme inline {
+  --color-bg: var(--c-bg);
+  --color-surface: var(--c-surface);
+  --color-surface-2: var(--c-surface-2);
+  --color-border: var(--c-border);
+  --color-fg: var(--c-fg);
+  --color-muted: var(--c-muted);
+  --color-accent: var(--c-accent);
+  --color-critical: var(--c-critical);
+  --color-warning: var(--c-warning);
+  --color-comm: var(--c-comm);
+  --color-stale: var(--c-stale);
+  --font-mono: "JetBrains Mono Variable", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --font-sans: var(--font-mono);
+}
+
+/* No rounded bubbles: corners are 0 to 4 px. */
+@theme {
+  --radius-xs: 1px;
+  --radius-sm: 2px;
+  --radius-md: 3px;
+  --radius-lg: 4px;
+  --radius-xl: 4px;
+  --radius-2xl: 4px;
+  --radius-3xl: 4px;
+  --radius-full: 4px;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background: var(--c-bg);
+  color: var(--c-fg);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.45;
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 1px;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--c-accent) 35%, transparent);
+}
+
+/* Changed value blinks for 300 ms; the only motion in the tool. */
+@keyframes value-changed {
+  from {
+    background: color-mix(in srgb, var(--c-accent) 30%, transparent);
+  }
+  to {
+    background: transparent;
+  }
+}
+.value-changed {
+  animation: value-changed 300ms linear;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .value-changed {
+    animation: none;
+  }
+}
+
+/* Native selects match the panel instead of the OS default. */
+select {
+  background-color: var(--c-surface);
+  color: var(--c-fg);
+}
