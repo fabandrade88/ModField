@@ -4,8 +4,7 @@ import { openInPane, pane, watchErrors } from "./helpers";
 /** The site → agent flow a technician goes through: search, pair, connect TCP. */
 async function pairAndConnectTcp(page: Page) {
   await page.goto("/pt/");
-  await expect(page.getByRole("dialog", { name: "Como você vai conectar?" })).toBeVisible();
-  await page.keyboard.press("2");
+  await page.locator("[data-path=tcp]").getByRole("button", { name: "Configurar a conexão TCP" }).click();
   const conn = pane(page, 1);
   await conn.getByRole("button", { name: "Procurar agente" }).click();
   await expect(conn).toContainText(/Agente \d+\.\d+\.\d+ encontrado · chave [0-9A-F]{12}/);
@@ -57,8 +56,7 @@ test("pair with the agent, read and write over Modbus TCP", async ({ page }) => 
 
 test("a wrong pairing code is refused", async ({ page }) => {
   await page.goto("/pt/");
-  await page.getByRole("dialog", { name: "Como você vai conectar?" }).waitFor();
-  await page.keyboard.press("2");
+  await page.locator("[data-path=tcp]").getByRole("button", { name: "Configurar a conexão TCP" }).click();
   const conn = pane(page, 1);
   await conn.getByRole("button", { name: "Procurar agente" }).click();
   await conn.getByRole("button", { name: "Parear com o agente" }).click();

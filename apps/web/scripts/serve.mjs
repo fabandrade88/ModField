@@ -14,6 +14,9 @@ const TYPES = {
   ".txt": "text/plain; charset=utf-8",
   ".json": "application/json",
   ".png": "image/png",
+  ".zip": "application/zip",
+  ".exe": "application/octet-stream",
+  ".sh": "text/x-shellscript; charset=utf-8",
   ".ico": "image/x-icon",
 };
 

@@ -15,7 +15,8 @@ function* files(dir) {
   }
 }
 
-const skip = (path) => path.endsWith(".txt") || path === "sw.js" || path.endsWith(".map");
+// Agent downloads (~19 MB each) are not precached: they are fetched on demand.
+const skip = (path) => path.endsWith(".txt") || path === "sw.js" || path.endsWith(".map") || path.startsWith("downloads/");
 const entries = [];
 let version = createHash("sha256");
 for (const f of files(OUT)) {

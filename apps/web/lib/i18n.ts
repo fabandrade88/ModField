@@ -3,6 +3,7 @@ import { de3, en3, pt3 } from "./i18n-parts/phase3";
 import { de4, en4, pt4 } from "./i18n-parts/phase4";
 import { de5, en5, pt5 } from "./i18n-parts/phase5";
 import { de6, en6, pt6 } from "./i18n-parts/phase6";
+import { deHome, enHome, ptHome } from "./i18n-parts/home";
 
 export const LANGS = ["pt", "en", "de"] as const;
 export type Lang = (typeof LANGS)[number];
@@ -126,7 +127,7 @@ const pt = {
 
   "settings.theme": "Tema",
   "settings.language": "Idioma",
-  "settings.firstUse": "Mostrar de novo a tela de primeiro uso",
+  "settings.firstUse": "Abrir a tela inicial",
 
   "help.title": "Atalhos",
   "help.close": "Fechar (Esc)",
@@ -162,7 +163,7 @@ const pt = {
   "error.howto": "Como resolver",
 };
 
-export type Dict = typeof pt & typeof pt2 & typeof pt3 & typeof pt4 & typeof pt5 & typeof pt6;
+export type Dict = typeof pt & typeof pt2 & typeof pt3 & typeof pt4 & typeof pt5 & typeof pt6 & typeof ptHome;
 export type Key = keyof Dict;
 type BaseDict = typeof pt;
 
@@ -273,7 +274,7 @@ const en: BaseDict = {
   "traffic.count": "{shown} of {total} frames",
   "settings.theme": "Theme",
   "settings.language": "Language",
-  "settings.firstUse": "Show the first-use screen again",
+  "settings.firstUse": "Open the home screen",
   "help.title": "Shortcuts",
   "help.close": "Close (Esc)",
   "help.k.modules": "Open module in the focused pane",
@@ -414,7 +415,7 @@ const de: BaseDict = {
   "traffic.count": "{shown} von {total} Frames",
   "settings.theme": "Design",
   "settings.language": "Sprache",
-  "settings.firstUse": "Startbildschirm erneut anzeigen",
+  "settings.firstUse": "Startseite öffnen",
   "help.title": "Tastenkürzel",
   "help.close": "Schließen (Esc)",
   "help.k.modules": "Modul im fokussierten Bereich öffnen",
@@ -448,7 +449,7 @@ const de: BaseDict = {
   "error.howto": "Lösung",
 };
 
-export const DICTS: Record<Lang, Dict> = { pt: { ...pt, ...pt2, ...pt3, ...pt4, ...pt5, ...pt6 }, en: { ...en, ...en2, ...en3, ...en4, ...en5, ...en6 }, de: { ...de, ...de2, ...de3, ...de4, ...de5, ...de6 } };
+export const DICTS: Record<Lang, Dict> = { pt: { ...pt, ...pt2, ...pt3, ...pt4, ...pt5, ...pt6, ...ptHome }, en: { ...en, ...en2, ...en3, ...en4, ...en5, ...en6, ...enHome }, de: { ...de, ...de2, ...de3, ...de4, ...de5, ...de6, ...deHome } };
 
 export const LANG_NAMES: Record<Lang, string> = { pt: "Português", en: "English", de: "Deutsch" };
 

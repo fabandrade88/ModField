@@ -5,6 +5,7 @@ import { useT } from "./i18n";
 import type { Key } from "@/lib/i18n";
 
 const SHORTCUTS: [string, Key][] = [
+  ["H", "help.k.home"],
   ["1 – 8", "help.k.modules"],
   ["[  ]", "help.k.panes"],
   ["Ctrl+K  /", "help.k.palette"],

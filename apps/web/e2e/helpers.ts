@@ -15,9 +15,7 @@ export function watchErrors(page: Page): string[] {
 
 export async function startDemo(page: Page) {
   await page.goto("/pt/");
-  await expect(page.getByRole("dialog", { name: "Como você vai conectar?" })).toBeVisible();
-  await page.keyboard.press("3");
-  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await page.locator("[data-path=demo]").getByRole("button", { name: "Abrir a demonstração" }).click();
   await expect(page.locator("footer [data-state]")).toHaveText(/CONECTADO/);
 }
 

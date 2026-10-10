@@ -5,6 +5,7 @@ import {
   Cpu,
   FileText,
   HardDrive,
+  House,
   LineChart,
   PenLine,
   Plug,
@@ -17,6 +18,7 @@ import type { ReactNode } from "react";
 import { PLANNED_PHASE, type ModuleId } from "@/lib/modules";
 import { ConnectionModule } from "./ConnectionModule";
 import { DocsModule } from "./DocsModule";
+import { HomeModule } from "./HomeModule";
 import { PlannedModule } from "./PlannedModule";
 import { LoggerModule } from "./LoggerModule";
 import { ReadModule } from "./ReadModule";
@@ -29,6 +31,7 @@ import { TrafficModule } from "./TrafficModule";
 import { WriteModule } from "./WriteModule";
 
 export const MODULE_ICONS: Record<ModuleId, LucideIcon> = {
+  home: House,
   connection: Plug,
   read: Table2,
   write: PenLine,
@@ -44,6 +47,8 @@ export const MODULE_ICONS: Record<ModuleId, LucideIcon> = {
 
 export function renderModule(id: ModuleId, pane: number): ReactNode {
   switch (id) {
+    case "home":
+      return <HomeModule />;
     case "connection":
       return <ConnectionModule />;
     case "read":

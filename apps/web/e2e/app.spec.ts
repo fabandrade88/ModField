@@ -101,15 +101,16 @@ test("theme and preferences persist across reloads", async ({ page }) => {
   await expect(page.locator("html")).toHaveAttribute("data-theme", "alto-contraste");
   await page.reload();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "alto-contraste");
-  await expect(page.getByRole("dialog", { name: "Como você vai conectar?" })).toHaveCount(0);
+  // The first visit put Home in pane 1; later visits keep the layout the user chose.
+  await expect(pane(page, 1).getByLabel("Tema")).toBeVisible();
 });
 
 test("English and German routes", async ({ page }) => {
   await page.goto("/en/");
-  await expect(page.getByRole("dialog", { name: "How will you connect?" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "How will you connect?" })).toBeVisible();
   await expect(page.locator("html")).toHaveAttribute("lang", "en");
   await page.goto("/de/");
-  await expect(page.getByRole("dialog", { name: "Wie verbinden Sie sich?" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Wie verbinden Sie sich?" })).toBeVisible();
 });
 
 test("root redirects by browser language", async ({ browser }) => {
@@ -140,4 +141,25 @@ test("the saved theme is applied before the app's JavaScript loads (no flash)", 
   await page.route("**/_next/static/**/*.js", (r) => r.abort());
   await page.goto("/pt/");
   await expect(page.locator("html")).toHaveAttribute("data-theme", "gruvbox");
+});
+
+test("Home explains how to start and is reachable from anywhere", async ({ page }) => {
+  const errors = watchErrors(page);
+  await page.goto("/pt/");
+  const home = pane(page, 1);
+  await expect(home.getByRole("heading", { name: "ModField: diagnóstico Modbus no navegador" })).toBeVisible();
+  for (const path of ["usb", "tcp", "demo"]) await expect(home.locator(`[data-path=${path}]`)).toBeVisible();
+  await expect(home.getByRole("img", { name: /Sem agente/ })).toBeVisible();
+  await expect(home.getByRole("heading", { name: "Agente local" })).toBeVisible();
+  await expect(home.getByRole("link", { name: /Guia de instalação/ })).toHaveAttribute("href", /\/pt\/docs\/.*install-agent/);
+  await expect(home.getByRole("heading", { name: "Em 4 passos" })).toBeVisible();
+  // USB opens Connection beside the traffic monitor.
+  await home.locator("[data-path=usb]").getByRole("button", { name: "Conectar por USB" }).click();
+  await expect(home.getByRole("combobox", { name: "Módulo do painel" })).toHaveValue("connection");
+  await expect(pane(page, 2).getByRole("combobox", { name: "Módulo do painel" })).toHaveValue("traffic");
+  // H brings it back; the docs link is always in the sidebar.
+  await page.keyboard.press("h");
+  await expect(home.getByRole("heading", { name: "Como você vai conectar?" })).toBeVisible();
+  await expect(page.getByRole("navigation").getByRole("link", { name: /Documentação/ })).toHaveAttribute("href", "/pt/docs/");
+  expect(errors).toEqual([]);
 });

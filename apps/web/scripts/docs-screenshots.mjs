@@ -6,9 +6,9 @@ import { chromium } from "@playwright/test";
 
 const BASE = process.env.BASE ?? "http://127.0.0.1:3100";
 const UI = {
-  pt: { first: "Como você vai conectar?", logger: "Iniciar registro", interval: "Intervalo (ms)", duration: "Duração (min)", event: "Evento", marker: "válvula aberta 50%", start: "Iniciar varredura", go: "Varrer", to: "Até" },
-  en: { first: "How will you connect?", logger: "Start logging", interval: "Interval (ms)", duration: "Duration (min)", event: "Event", marker: "valve 50% open", start: "Start scan", go: "Scan", to: "To" },
-  de: { first: "Wie verbinden Sie sich?", logger: "Aufzeichnung starten", interval: "Intervall (ms)", duration: "Dauer (min)", event: "Ereignis", marker: "Ventil 50 % offen", start: "Scan starten", go: "Scannen", to: "Bis" },
+  pt: { demo: "Abrir a demonstração", logger: "Iniciar registro", interval: "Intervalo (ms)", duration: "Duração (min)", event: "Evento", marker: "válvula aberta 50%", start: "Iniciar varredura", go: "Varrer", to: "Até" },
+  en: { demo: "Open the demo", logger: "Start logging", interval: "Interval (ms)", duration: "Duration (min)", event: "Event", marker: "valve 50% open", start: "Start scan", go: "Scan", to: "To" },
+  de: { demo: "Demo öffnen", logger: "Aufzeichnung starten", interval: "Intervall (ms)", duration: "Dauer (min)", event: "Ereignis", marker: "Ventil 50 % offen", start: "Scan starten", go: "Scannen", to: "Bis" },
 };
 
 const browser = await chromium.launch({ executablePath: process.env.PLAYWRIGHT_CHROMIUM || undefined });
@@ -17,8 +17,7 @@ for (const [lang, ui] of Object.entries(UI)) {
   mkdirSync(dir, { recursive: true });
   const page = await browser.newPage({ viewport: { width: 1280, height: 720 }, deviceScaleFactor: 1 });
   await page.goto(`${BASE}/${lang}/`);
-  await page.getByRole("dialog", { name: ui.first }).waitFor();
-  await page.keyboard.press("3");
+  await page.locator("[data-path=demo]").getByRole("button", { name: ui.demo }).click();
   await page.locator("tbody tr").first().waitFor();
   await page.locator("main section header span").first().click();
   await page.keyboard.press("p");

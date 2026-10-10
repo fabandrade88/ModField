@@ -11,7 +11,6 @@ import { openWriteFromShortcut } from "@/modules/WriteModule";
 import { useConnection } from "@/store/connection";
 import { useUi } from "@/store/ui";
 import { CommandPalette } from "./CommandPalette";
-import { FirstUse } from "./FirstUse";
 import { HelpOverlay } from "./HelpOverlay";
 import { PropertiesPanel } from "./PropertiesPanel";
 import { Sidebar } from "./Sidebar";
@@ -35,14 +34,6 @@ function useShortcuts(): void {
       const ui = useUi.getState();
       // Open dialogs (help, palette, write confirmation) handle their own keys.
       if (document.querySelector("dialog[open]")) return;
-      if (!ui.firstUseDone) {
-        const n = Number(e.key);
-        if (n >= 1 && n <= 3 && !isTyping(e.target)) {
-          document.querySelectorAll<HTMLButtonElement>("[data-option]")[n - 1]?.click();
-          e.preventDefault();
-        }
-        return;
-      }
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
         ui.set({ paletteOpen: true });
@@ -69,6 +60,8 @@ function useShortcuts(): void {
         if (!runCommand("read.now", ui.focused)) return;
       } else if (e.key === "p" || e.key === "P") {
         if (!runCommand("read.cycle", ui.focused)) return;
+      } else if (e.key === "h" || e.key === "H") {
+        ui.openModule("home");
       } else if (e.key === "a" || e.key === "A") {
         if (!runCommand("tag.add", ui.focused)) {
           ui.set({ readTab: "tags" });
@@ -116,6 +109,15 @@ export function AppShell() {
     document.documentElement.dataset.theme = theme;
   }, [theme]);
 
+  // First visit: the Home screen alone, so the first thing seen is how to start.
+  useEffect(() => {
+    if (!hydrated || firstUseDone) return;
+    const ui = useUi.getState();
+    ui.setLayout(1);
+    ui.setPane(0, "home");
+    ui.set({ firstUseDone: true });
+  }, [hydrated, firstUseDone]);
+
   // First run: the demo profile. A profile deleted in another tab falls back to the first one.
   useEffect(() => {
     if (!hydrated) return;
@@ -150,7 +152,6 @@ export function AppShell() {
         <PropertiesPanel />
       </div>
       <StatusBar />
-      {hydrated && !firstUseDone && <FirstUse />}
       {helpOpen && <HelpOverlay />}
       <CommandPalette />
       <MarkerDialog />

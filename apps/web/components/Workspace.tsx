@@ -1,5 +1,5 @@
 "use client";
-import { FOOTER_MODULES, NUMBERED_MODULES } from "@/lib/modules";
+import { FOOTER_MODULES, HOME, NUMBERED_MODULES } from "@/lib/modules";
 import { renderModule } from "@/modules/registry";
 import { useUi } from "@/store/ui";
 import { cx } from "./controls";
@@ -25,7 +25,7 @@ function Pane({ index }: { index: number }) {
   const focused = useUi((s) => s.focused === index);
   const focus = useUi((s) => s.focusPane);
   const setPane = useUi((s) => s.setPane);
-  const all = [...NUMBERED_MODULES, ...FOOTER_MODULES];
+  const all = [HOME, ...NUMBERED_MODULES, ...FOOTER_MODULES];
 
   return (
     <section

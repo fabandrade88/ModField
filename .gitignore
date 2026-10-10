@@ -13,3 +13,5 @@ next-env.d.ts
 agent/web/dist/*
 !agent/web/dist/README.txt
 agent/dist/
+# Agent downloads copied in by scripts/dist-agent.sh (too big for git and for the offline cache).
+apps/web/public/downloads/

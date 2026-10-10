@@ -70,8 +70,8 @@ export const useUi = create<UiState>()(
   persist(
     (set, get) => ({
       theme: DEFAULT_THEME.id,
-      layout: 2,
-      panes: ["connection", "traffic", "read", "settings"],
+      layout: 1,
+      panes: ["home", "traffic", "read", "connection"],
       focused: 0,
       propsOpen: true,
       firstUseDone: false,

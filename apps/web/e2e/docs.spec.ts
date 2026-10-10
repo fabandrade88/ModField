@@ -59,7 +59,7 @@ test("works offline after the first visit (tool and docs)", async ({ page, conte
   await page.waitForTimeout(1500);
   await context.setOffline(true);
   await page.reload();
-  await expect(page.getByRole("dialog", { name: "Como você vai conectar?" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Como você vai conectar?" })).toBeVisible();
   await page.goto("/pt/docs/hardware/");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Hardware RS-485");
   await context.setOffline(false);
@@ -67,8 +67,7 @@ test("works offline after the first visit (tool and docs)", async ({ page, conte
 
 test("the demo bench speaks the UI language", async ({ page }) => {
   await page.goto("/de/");
-  await page.getByRole("dialog", { name: "Wie verbinden Sie sich?" }).waitFor();
-  await page.keyboard.press("3");
+  await page.locator("[data-path=demo]").getByRole("button", { name: "Demo öffnen" }).click();
   await expect(pane(page, 1).getByRole("row").filter({ hasText: "Ausgangsfrequenz" })).toBeVisible();
   await expect(page.locator("footer")).toContainText("Demo · 19200 8E1");
 });

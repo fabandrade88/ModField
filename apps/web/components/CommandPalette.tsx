@@ -3,7 +3,7 @@ import { parseClassic, type Table } from "@modfield/protocol";
 import { THEMES } from "@modfield/ui";
 import { useMemo, useState } from "react";
 import { runCommand } from "@/lib/commands";
-import { NUMBERED_MODULES, FOOTER_MODULES } from "@/lib/modules";
+import { FOOTER_MODULES, HOME, NUMBERED_MODULES } from "@/lib/modules";
 import { openWriteFromShortcut } from "@/modules/WriteModule";
 import { useBlock } from "@/store/block";
 import { useConnection } from "@/store/connection";
@@ -62,10 +62,10 @@ export function CommandPalette() {
     const ui = useUi.getState();
     const c = useConnection.getState();
     return [
-      ...[...NUMBERED_MODULES, ...FOOTER_MODULES].map((m, i) => ({
+      ...[HOME, ...NUMBERED_MODULES, ...FOOTER_MODULES].map((m, i) => ({
         id: `open:${m}`,
         label: t("palette.open", { module: t(`module.${m}`) }),
-        hint: i < NUMBERED_MODULES.length ? String(i + 1) : undefined,
+        hint: m === HOME ? "H" : i <= NUMBERED_MODULES.length ? String(i) : undefined,
         run: () => ui.openModule(m),
       })),
       { id: "connect", label: t("palette.toggle"), hint: "Ctrl+Enter", run: () => void c.toggle().then((ok) => ok || ui.openModule("connection")) },

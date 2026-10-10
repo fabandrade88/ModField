@@ -25,7 +25,7 @@ export function SettingsModule() {
         </Field>
       </div>
       <div>
-        <Button onClick={() => set({ firstUseDone: false })}>{t("settings.firstUse")}</Button>
+        <Button onClick={() => useUi.getState().openModule("home")}>{t("settings.firstUse")}</Button>
       </div>
       <CompanySection />
     </div>

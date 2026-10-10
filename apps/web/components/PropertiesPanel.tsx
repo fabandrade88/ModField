@@ -18,7 +18,7 @@ export function PropertiesPanel() {
   const Icon = open ? PanelRightClose : PanelRightOpen;
 
   return (
-    <aside aria-label={t("props.title")} className={`flex shrink-0 flex-col border-l border-border bg-surface ${open ? "w-72" : "w-9"}`}>
+    <aside aria-label={t("props.title")} className={`hidden shrink-0 flex-col border-l lg:flex border-border bg-surface ${open ? "w-72" : "w-9"}`}>
       <div className="flex h-8 items-center justify-between border-b border-border px-2">
         {open && <span className="text-[12px] tracking-wide text-muted uppercase">{t("props.title")}</span>}
         <button
