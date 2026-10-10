@@ -10,6 +10,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
+	"strings"
 	"sync"
 	"time"
 
@@ -19,7 +20,7 @@ import (
 )
 
 // Features advertised in agent.hello; the site hides what is missing.
-var Features = []string{"rtu", "tcp", "poll", "scan.ids", "scan.ip", "sim.tcp", "sim.rtu", "traffic", "log"}
+var Features = []string{"rtu", "tcp", "poll", "scan.ids", "scan.ip", "sim.tcp", "sim.rtu", "traffic", "log", "report.sign"}
 
 // leaseGrace keeps a connection open briefly after its last session leaves, so a page reload reuses it.
 const leaseGrace = 15 * time.Second
@@ -295,6 +296,8 @@ func (a *Agent) dispatch(s *Session, method string, raw json.RawMessage) (any, e
 		return a.simList(), nil
 	case "log.start", "log.stop", "log.list", "log.fetch", "log.ack", "log.subscribe", "log.delete":
 		return a.logMethod(s, method, raw)
+	case "report.sign":
+		return a.reportSign(raw)
 	}
 	return nil, &rpcErrorValue{&rpcError{Code: codeMethod, Message: "unknown method " + method}}
 }
@@ -638,4 +641,18 @@ func (a *Agent) Shutdown() {
 		}
 		c.mu.Unlock()
 	}
+}
+
+// reportSign signs the SHA-256 of a report's session data. Only the hash
+// travels; anyone with the CSV and the agent's public key can verify it.
+func (a *Agent) reportSign(raw json.RawMessage) (any, error) {
+	p, err := decode[struct{ Hash string `json:"hash"` }](raw)
+	if err != nil {
+		return nil, err
+	}
+	if b, err := hex.DecodeString(p.Hash); err != nil || len(b) != 32 || strings.ToLower(p.Hash) != p.Hash {
+		return nil, badParams("hash must be 64 lowercase hex characters (SHA-256)")
+	}
+	sig := a.ID.Sign([]byte("modfield-report:v1:" + p.Hash))
+	return map[string]string{"signature": base64.RawURLEncoding.EncodeToString(sig), "publicKey": a.ID.PublicKey(), "fingerprint": a.ID.Fingerprint()}, nil
 }

@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useId, useRef, type ComponentProps, type ReactNode, type SelectHTMLAttributes } from "react";
+import { useEffect, useId, useRef, useState, type ComponentProps, type ReactNode, type SelectHTMLAttributes } from "react";
 
 export const cx = (...c: (string | false | null | undefined)[]) => c.filter(Boolean).join(" ");
 
@@ -47,8 +47,66 @@ export function Field({ label, children, hint, className }: { label: string; chi
 
 export const inputClass = "min-h-8 rounded-sm border border-border bg-surface px-2 text-[13px] text-fg";
 
-export function Input({ className, ...rest }: ComponentProps<"input">) {
-  return <input {...rest} className={cx(inputClass, "tabular-nums", className)} />;
+/**
+ * Text input that keeps what is being typed while it has focus. Values that
+ * come back asynchronously (IndexedDB) would otherwise reset the field between
+ * keystrokes and drop characters. External changes apply when it is not focused.
+ */
+export function Input({ className, value, onChange, onFocus, onBlur, ...rest }: ComponentProps<"input">) {
+  const [local, setLocal] = useState(value);
+  const focused = useRef(false);
+  useEffect(() => {
+    if (!focused.current) setLocal(value);
+  }, [value]);
+  return (
+    <input
+      {...rest}
+      value={value === undefined ? undefined : (local ?? "")}
+      onFocus={(e) => {
+        focused.current = true;
+        onFocus?.(e);
+      }}
+      onBlur={(e) => {
+        focused.current = false;
+        setLocal(value);
+        onBlur?.(e);
+      }}
+      onChange={(e) => {
+        setLocal(e.target.value);
+        onChange?.(e);
+      }}
+      className={cx(inputClass, "tabular-nums", className)}
+    />
+  );
+}
+
+/** Textarea with the same focus-buffering as Input. */
+export function TextArea({ className, value, onChange, onFocus, onBlur, ...rest }: ComponentProps<"textarea">) {
+  const [local, setLocal] = useState(value);
+  const focused = useRef(false);
+  useEffect(() => {
+    if (!focused.current) setLocal(value);
+  }, [value]);
+  return (
+    <textarea
+      {...rest}
+      value={local ?? ""}
+      onFocus={(e) => {
+        focused.current = true;
+        onFocus?.(e);
+      }}
+      onBlur={(e) => {
+        focused.current = false;
+        setLocal(value);
+        onBlur?.(e);
+      }}
+      onChange={(e) => {
+        setLocal(e.target.value);
+        onChange?.(e);
+      }}
+      className={cx("border border-border bg-surface p-2 text-fg", className)}
+    />
+  );
 }
 
 export function Select<V extends string | number>({

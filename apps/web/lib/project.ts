@@ -30,7 +30,7 @@ interface ProjectFile {
 const bytesOf = (a: ArrayBufferView) => new Uint8Array(a.buffer, a.byteOffset, a.byteLength);
 
 /** Tables added by later phases join the file without changing this code. */
-export const EXTRA_TABLES: string[] = [];
+export const EXTRA_TABLES: string[] = ["company", "templates", "reports"];
 
 export async function exportProject(includeSessions: boolean): Promise<Blob> {
   const doc: ProjectFile = {

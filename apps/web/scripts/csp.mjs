@@ -13,14 +13,20 @@ const agent = AGENT_PORTS.flatMap((p) => [`ws://127.0.0.1:${p}`, `http://127.0.0
 export function policy(scriptHashes) {
   return [
     "default-src 'self'",
-    `script-src 'self' ${scriptHashes.map((h) => `'sha256-${h}'`).join(" ")}`.trim(),
+    // 'wasm-unsafe-eval' lets the PDF layout engine (yoga, WebAssembly) compile;
+    // it does not allow JavaScript eval, and injected scripts stay blocked.
+    `script-src 'self' 'wasm-unsafe-eval' ${scriptHashes.map((h) => `'sha256-${h}'`).join(" ")}`.trim(),
     // Style attributes (style={{...}}) are allowed; style elements and sheets must come from us.
     "style-src 'self'",
     "style-src-attr 'unsafe-inline'",
     "img-src 'self' data: blob:",
     "font-src 'self'",
-    `connect-src 'self' ${agent}`,
-    "worker-src 'self'",
+    // data: is the PDF engine fetching its own embedded WebAssembly (no network involved).
+    `connect-src 'self' data: ${agent}`,
+    // The PDF engine renders in a worker it creates from a blob.
+    "worker-src 'self' blob:",
+    // The report preview is the generated PDF, shown from a blob: URL.
+    "frame-src 'self' blob:",
     "manifest-src 'self'",
     "object-src 'none'",
     "base-uri 'self'",

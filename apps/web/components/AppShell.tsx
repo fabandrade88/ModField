@@ -82,6 +82,8 @@ function useShortcuts(): void {
       } else if (e.key === "m" || e.key === "M") {
         if (useLogger.getState().session) ui.set({ markerOpen: true });
         else ui.openModule("logger");
+      } else if (e.key === "g" || e.key === "G") {
+        if (!runCommand("report.generate", ui.focused)) ui.openModule("report");
       } else if (e.key === "/") {
         ui.set({ paletteOpen: true });
       } else if (e.key === "?") {

@@ -463,3 +463,26 @@ func TestLogSurvivesSessionsAndRestarts(t *testing.T) {
 		t.Fatal(e)
 	}
 }
+
+func TestReportSign(t *testing.T) {
+	h := start(t)
+	c, _ := h.dial(site)
+	tokenID, secret, pub := h.pair(c)
+	if _, e := c.call("report.sign", map[string]string{"hash": strings.Repeat("ab", 32)}); e["error"] != "NOT_PAIRED" {
+		t.Fatalf("unauthenticated sign: %v", e)
+	}
+	authenticate(t, c, site, tokenID, secret, pub)
+	hash := strings.Repeat("0f", 32)
+	r, e := c.call("report.sign", map[string]string{"hash": hash})
+	if e != nil {
+		t.Fatal(e)
+	}
+	pk, _ := b64.DecodeString(r["publicKey"].(string))
+	sig, _ := b64.DecodeString(r["signature"].(string))
+	if !ed25519.Verify(pk, []byte("modfield-report:v1:"+hash), sig) {
+		t.Fatal("report signature does not verify")
+	}
+	if _, e := c.call("report.sign", map[string]string{"hash": "not-a-hash"}); e == nil {
+		t.Fatal("bad hash accepted")
+	}
+}

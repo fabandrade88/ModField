@@ -15,6 +15,7 @@ const SHORTCUTS: [string, Key][] = [
   ["W", "help.k.write"],
   ["L", "help.k.logger"],
   ["M", "help.k.marker"],
+  ["G", "help.k.report"],
   ["?", "help.k.help"],
 ];
 

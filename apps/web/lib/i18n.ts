@@ -1,6 +1,7 @@
 import { de2, en2, pt2 } from "./i18n-parts/phase2";
 import { de3, en3, pt3 } from "./i18n-parts/phase3";
 import { de4, en4, pt4 } from "./i18n-parts/phase4";
+import { de5, en5, pt5 } from "./i18n-parts/phase5";
 
 export const LANGS = ["pt", "en", "de"] as const;
 export type Lang = (typeof LANGS)[number];
@@ -160,7 +161,7 @@ const pt = {
   "error.howto": "Como resolver",
 };
 
-export type Dict = typeof pt & typeof pt2 & typeof pt3 & typeof pt4;
+export type Dict = typeof pt & typeof pt2 & typeof pt3 & typeof pt4 & typeof pt5;
 export type Key = keyof Dict;
 type BaseDict = typeof pt;
 
@@ -446,7 +447,7 @@ const de: BaseDict = {
   "error.howto": "Lösung",
 };
 
-export const DICTS: Record<Lang, Dict> = { pt: { ...pt, ...pt2, ...pt3, ...pt4 }, en: { ...en, ...en2, ...en3, ...en4 }, de: { ...de, ...de2, ...de3, ...de4 } };
+export const DICTS: Record<Lang, Dict> = { pt: { ...pt, ...pt2, ...pt3, ...pt4, ...pt5 }, en: { ...en, ...en2, ...en3, ...en4, ...en5 }, de: { ...de, ...de2, ...de3, ...de4, ...de5 } };
 
 export const LANG_NAMES: Record<Lang, string> = { pt: "Português", en: "English", de: "Deutsch" };
 

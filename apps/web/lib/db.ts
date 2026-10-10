@@ -2,6 +2,7 @@
 import Dexie, { type EntityTable } from "dexie";
 import type { ReadBlock, TagDef } from "@modfield/protocol";
 import type { SampleBlock } from "@modfield/series";
+import type { AcceptanceTest, Company, ReportLang, SectionId, SignatureBlock } from "@modfield/report";
 import type { SerialSettings } from "@modfield/transport";
 
 export interface Profile {
@@ -111,6 +112,41 @@ export interface Marker {
   text: string;
 }
 
+export interface CompanyRow extends Company {
+  id: "company";
+}
+
+/** Per-client template: sections on or off and a default list of tests. */
+export interface ReportTemplate {
+  id: string;
+  name: string;
+  lang: ReportLang;
+  sections: Record<SectionId, boolean>;
+  /** Tests by tag name, so a template works across profiles with the same map. */
+  tests: { tagName: string; expected: number; tolerance: AcceptanceTest["tolerance"] }[];
+  signatures: SignatureBlock["role"][];
+}
+
+/** A report being prepared; saved as you type. */
+export interface ReportDraft {
+  id: string;
+  profileId: string;
+  number: string;
+  date: number;
+  lang: ReportLang;
+  templateId?: string;
+  sessionId?: string;
+  identification: { client: string; plant: string; area: string; project: string; responsible: string };
+  sections: Record<SectionId, boolean>;
+  tests: AcceptanceTest[];
+  observations: string;
+  pending: string;
+  signatures: SignatureBlock[];
+  attachCsv: boolean;
+  createdAt: number;
+  updatedAt: number;
+}
+
 /**
  * Everything stays in this browser's IndexedDB; nothing goes to a server.
  * Backups are the project file export (phase 4).
@@ -125,6 +161,9 @@ export const db = new Dexie("modfield") as Dexie & {
   sessions: EntityTable<LogSession, "id">;
   blocks: EntityTable<StoredBlock, "id">;
   markers: EntityTable<Marker, "id">;
+  company: EntityTable<CompanyRow, "id">;
+  templates: EntityTable<ReportTemplate, "id">;
+  reports: EntityTable<ReportDraft, "id">;
 };
 
 db.version(1).stores({
@@ -140,5 +179,6 @@ db.version(3).stores({
   blocks: "++id, sessionId, [sessionId+tagId]",
   markers: "++id, sessionId, t",
 });
+db.version(4).stores({ company: "id", templates: "id, name", reports: "id, profileId, createdAt" });
 
 export const newId = () => crypto.randomUUID();

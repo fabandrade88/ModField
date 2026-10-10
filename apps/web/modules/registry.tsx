@@ -19,6 +19,7 @@ import { ConnectionModule } from "./ConnectionModule";
 import { PlannedModule } from "./PlannedModule";
 import { LoggerModule } from "./LoggerModule";
 import { ReadModule } from "./ReadModule";
+import { ReportModule } from "./ReportModule";
 import { ScanModule } from "./ScanModule";
 import { SettingsModule } from "./SettingsModule";
 import { StorageModule } from "./StorageModule";
@@ -55,6 +56,8 @@ export function renderModule(id: ModuleId, pane: number): ReactNode {
       return <LoggerModule pane={pane} />;
     case "storage":
       return <StorageModule />;
+    case "report":
+      return <ReportModule pane={pane} />;
     case "settings":
       return <SettingsModule />;
     default:

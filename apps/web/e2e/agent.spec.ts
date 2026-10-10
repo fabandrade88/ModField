@@ -128,3 +128,36 @@ test("agent log keeps collecting with the page closed and syncs on return", asyn
   await expect(pane(again, 1).getByLabel("Sessão")).toHaveText(/concluída/);
   await expect(pane(again, 1).locator(".trend canvas")).toBeVisible();
 });
+
+test("a report made with the agent carries a valid agent signature", async ({ page }) => {
+  test.slow();
+  await pairAndConnectTcp(page);
+  await openInPane(page, 1, "logger");
+  const logger = pane(page, 1);
+  await logger.getByRole("textbox", { name: "Nome", exact: true }).fill("Assinado");
+  await logger.getByLabel("Intervalo (ms)").fill("200");
+  await logger.getByLabel("Duração (min)").fill("5");
+  await logger.getByRole("button", { name: /Iniciar registro/ }).click();
+  await expect(logger).toContainText(/[1-9]\d* amostras/);
+  await page.waitForTimeout(1500);
+  await logger.getByRole("button", { name: /Parar/ }).click();
+  await expect(logger.getByLabel("Sessão")).toHaveText(/concluída/);
+  const csvDl = page.waitForEvent("download");
+  await logger.getByRole("button", { name: "Exportar CSV" }).click();
+  const csv = await (await csvDl).path();
+
+  await openInPane(page, 1, "report");
+  const report = pane(page, 1);
+  await report.getByRole("button", { name: "Novo relatório" }).click();
+  await expect(report).toContainText("será assinado pelo agente pareado");
+  const pdfDl = page.waitForEvent("download", { timeout: 60_000 });
+  await report.getByRole("button", { name: /Gerar PDF/ }).click();
+  const pdf = await (await pdfDl).path();
+
+  await report.getByRole("tab", { name: "Verificar" }).click();
+  await report.getByLabel("Relatório (PDF)").setInputFiles(pdf);
+  await report.getByLabel("Dados da sessão (CSV)").setInputFiles(csv);
+  await report.getByRole("button", { name: "Verificar", exact: true }).click();
+  await expect(report.getByRole("status")).toContainText("O CSV confere");
+  await expect(report.getByRole("status")).toContainText(/Assinatura válida do agente de chave [0-9A-F]{12}/);
+});
