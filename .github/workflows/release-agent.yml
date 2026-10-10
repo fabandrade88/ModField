@@ -36,7 +36,7 @@ jobs:
       - uses: jdx/mise-action@v2
       - run: pnpm install --frozen-lockfile && pnpm build && sh scripts/embed-ui.sh
         shell: bash
-      - run: go build -trimpath -ldflags "-s -w -X main.version=${GITHUB_REF_NAME#agent-v}" -o modfield-agent.exe ./cmd/modfield-agent
+      - run: go build -trimpath -ldflags "-s -w -H windowsgui -X main.version=${GITHUB_REF_NAME#agent-v}" -o modfield-agent.exe ./cmd/modfield-agent
         working-directory: agent
         shell: bash
         env: { GOARCH: "${{ matrix.arch == 'x64' && 'amd64' || 'arm64' }}" }

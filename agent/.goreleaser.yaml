@@ -18,6 +18,8 @@ builds:
     ldflags:
       - -s -w -X main.version={{.Version}}
       - -X modfield.dev/agent/internal/update.Keyring={{.Env.MODFIELD_UPDATE_KEYRING}}
+      # Windows: tray app without a console window.
+      - '{{ if eq .Os "windows" }}-H windowsgui{{ end }}'
     flags: [-trimpath]
 
 archives:

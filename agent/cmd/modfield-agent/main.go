@@ -13,6 +13,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"syscall"
 	"time"
@@ -68,7 +69,7 @@ func main() {
 	flag.Var(&extra, "allow-origin", "additional allowed origin (with --dev, repeatable)")
 	flag.Parse()
 
-	log := slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: slog.LevelInfo}))
+	log := slog.New(slog.NewTextHandler(logOutput(*dataDir, *headless), &slog.HandlerOptions{Level: slog.LevelInfo}))
 	if err := update.ApplyPending(*dataDir, log); err != nil {
 		log.Warn("pending update not applied", "err", err)
 	}
@@ -140,6 +141,26 @@ func main() {
 		return
 	}
 	runTray(ctx, a, p, *dataDir, quit)
+}
+
+// logOutput is stderr, except for the Windows tray build: it has no console
+// (-H windowsgui), so it logs to <data>/agent.log, rotated at 5 MB.
+func logOutput(dataDir string, headless bool) io.Writer {
+	if runtime.GOOS != "windows" || headless {
+		return os.Stderr
+	}
+	if err := os.MkdirAll(dataDir, 0o700); err != nil {
+		return os.Stderr
+	}
+	path := filepath.Join(dataDir, "agent.log")
+	if st, err := os.Stat(path); err == nil && st.Size() > 5<<20 {
+		_ = os.Rename(path, path+".old")
+	}
+	f, err := os.OpenFile(path, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o600)
+	if err != nil {
+		return os.Stderr
+	}
+	return f
 }
 
 // pairCLI prints pending pairing codes, for agents without a screen.
