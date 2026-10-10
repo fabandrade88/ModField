@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import type { Node, Root } from "fumadocs-core/page-tree";
 import { DocsSearch } from "@/components/docs/Search";
+import { LangSwitch } from "@/components/LangSwitch";
 import { DICTS, isLang, type Lang } from "@/lib/i18n";
 import { source } from "@/lib/source";
 
@@ -35,9 +36,12 @@ export default async function DocsLayout({ children, params }: { children: React
   return (
     <div className="flex min-h-dvh">
       <nav aria-label={t["docs.title"]} className="sticky top-0 flex h-dvh w-64 shrink-0 flex-col gap-2 overflow-auto border-r border-border bg-surface p-2">
-        <a href={`/${l}/`} className="min-h-8 px-2 py-1 text-[12px] text-muted hover:text-fg">
-          ← {t["docs.backToApp"]}
-        </a>
+        <div className="flex items-center justify-between gap-2">
+          <a href={`/${l}/`} className="min-h-8 px-2 py-1 text-[12px] text-muted hover:text-fg">
+            ← {t["docs.backToApp"]}
+          </a>
+          <LangSwitch lang={l} label={t["settings.language"]} />
+        </div>
         <a href={`/${l}/docs/`} className="px-2 text-[12px] tracking-widest text-muted uppercase">
           ModField · {t["docs.title"]}
         </a>

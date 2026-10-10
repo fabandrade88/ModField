@@ -3,6 +3,7 @@ import { THEMES } from "@modfield/ui";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useState } from "react";
 import { Button, Field, Input, Section, Select } from "@/components/controls";
+import { useRouter } from "next/navigation";
 import { useLang, useT } from "@/components/i18n";
 import { db, type CompanyRow } from "@/lib/db";
 import { LANGS, LANG_NAMES, type Lang } from "@/lib/i18n";
@@ -12,6 +13,7 @@ import { useUi } from "@/store/ui";
 export function SettingsModule() {
   const t = useT();
   const lang = useLang();
+  const router = useRouter();
   const theme = useUi((s) => s.theme);
   const set = useUi((s) => s.set);
   return (
@@ -21,7 +23,7 @@ export function SettingsModule() {
           <Select value={theme} options={THEMES.map((th) => ({ value: th.id, label: th.name }))} onChange={(id) => set({ theme: id })} />
         </Field>
         <Field label={t("settings.language")}>
-          <Select<Lang> value={lang} options={LANGS.map((l) => ({ value: l, label: LANG_NAMES[l] }))} onChange={(l) => location.assign(`/${l}/`)} />
+          <Select<Lang> value={lang} options={LANGS.map((l) => ({ value: l, label: LANG_NAMES[l] }))} onChange={(l) => router.push(`/${l}/`)} />
         </Field>
       </div>
       <div>

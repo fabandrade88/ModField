@@ -5,6 +5,7 @@ import { MODULE_ICONS } from "@/modules/registry";
 import { useUi } from "@/store/ui";
 import { cx } from "./controls";
 import { useLang, useT } from "./i18n";
+import { LangSwitch } from "./LangSwitch";
 
 function Item({ id, n, hint }: { id: ModuleId; n?: number; hint?: string }) {
   const t = useT();
@@ -39,7 +40,10 @@ export function Sidebar() {
   return (
     <nav aria-label={t("nav.label")} className="flex w-11 shrink-0 flex-col md:w-44 justify-between border-r border-border bg-surface">
       <div>
-        <div className="hidden h-8 items-center px-3 text-[12px] md:flex tracking-widest text-muted uppercase">{t("app.name")}</div>
+        <div className="flex min-h-8 items-center justify-between gap-1 border-b border-border md:pl-2">
+          <span className="hidden text-[12px] tracking-wider text-muted uppercase md:inline">{t("app.name")}</span>
+          <LangSwitch lang={lang} label={t("settings.language")} vertical />
+        </div>
         <ul>
           <Item id={HOME} hint="H" />
           <li className="my-1 border-t border-border" aria-hidden />

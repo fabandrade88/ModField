@@ -163,3 +163,26 @@ test("Home explains how to start and is reachable from anywhere", async ({ page 
   await expect(page.getByRole("navigation").getByRole("link", { name: /Documentação/ })).toHaveAttribute("href", "/pt/docs/");
   expect(errors).toEqual([]);
 });
+
+test("the language switch is always visible and keeps the connection", async ({ page }) => {
+  const errors = watchErrors(page);
+  await startDemo(page);
+  const langs = page.getByRole("navigation").getByRole("list", { name: "Idioma" });
+  await expect(langs.getByRole("link", { name: "Português" })).toHaveAttribute("aria-current", "true");
+  await langs.getByRole("link", { name: "English" }).click();
+  await expect(page).toHaveURL(/\/en\/$/);
+  await expect(page.locator("html")).toHaveAttribute("lang", "en");
+  await expect(page.getByRole("navigation").getByRole("button", { name: "Home" })).toBeVisible();
+  // No reload: the session is still connected.
+  await expect(page.locator("footer [data-state]")).toHaveText(/CONNECTED/);
+  await page.getByRole("navigation").getByRole("list", { name: "Language" }).getByRole("link", { name: "Deutsch" }).click();
+  await expect(page.locator("footer [data-state]")).toHaveText(/VERBUNDEN/);
+  expect(errors).toEqual([]);
+});
+
+test("the docs switch language on the same page", async ({ page }) => {
+  await page.goto("/pt/docs/hardware/");
+  await page.getByRole("list", { name: "Idioma" }).getByRole("link", { name: "English" }).click();
+  await expect(page).toHaveURL(/\/en\/docs\/hardware\/$/);
+  await expect(page.locator("html")).toHaveAttribute("lang", "en");
+});
