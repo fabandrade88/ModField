@@ -1,0 +1,23 @@
+---
+title: Einen FLOAT32 lesen
+description: Zwei Register, vier mögliche Byte-Reihenfolgen.
+---
+
+Ein FLOAT32 belegt zwei 16-Bit-Register. Der Hersteller legt die Reihenfolge der 4 Bytes fest: ABCD (Modbus-Standard), CDAB (Wörter vertauscht, sehr häufig), BADC oder DCBA.
+
+<Steps>
+<li>
+In **Lesen** › **Block** die Adresse des ersten Registers, **Typ** FLOAT32 und **Anzahl** 1 eingeben.
+<Result>Die Spalte Roh zeigt beide Register hexadezimal.</Result>
+</li>
+<li>
+Mit <Kbd>R</Kbd> lesen. Wirkt der Wert unsinnig (1.4e-40, 6.2e+21), **Reihenfolge** auf CDAB stellen und erneut lesen.
+<Result>Ein plausibler Wert (6.21 bar, 12.4 m³/h) zeigt die richtige Reihenfolge.</Result>
+</li>
+<li>
+Die Zeile anklicken und im Eigenschaftsbereich **Als Tag speichern**.
+<Result>Der Tag erscheint im Reiter Tags, mit Typ und Reihenfolge gespeichert.</Result>
+</li>
+</Steps>
+
+Beispiel: 123,456 ist `42F6 E979` in ABCD und `E979 42F6` in CDAB. Siehe [Byte-Reihenfolge](/de/docs/modbus-reference#byte-order).

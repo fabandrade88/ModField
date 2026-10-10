@@ -22,7 +22,7 @@ import { Button, Dialog, ErrorBox, Field, Input, Notice, Progress, Section, Sele
 import { useT } from "@/components/i18n";
 import { db, newId, type ScanKind } from "@/lib/db";
 import { describeError } from "@/lib/errors";
-import { updateProfile, useEquipment, useProfile, useTags } from "@/lib/hooks";
+import { patchProfile, useEquipment, useProfile, useTags } from "@/lib/hooks";
 import { useAgent } from "@/store/agent";
 import { demoLine, useConnection } from "@/store/connection";
 import { useUi, type ScanTab } from "@/store/ui";
@@ -228,7 +228,7 @@ function ApplySettings({ settings }: { settings: LineSettings }) {
   const c = useConnection();
   if (!profile) return null;
   const apply = async () => {
-    updateProfile(profile.id, { serial: { ...profile.serial, ...settings } });
+    patchProfile(profile.id, (p) => Object.assign(p.serial, settings));
     if (c.last?.kind === "mock" || !c.port) await c.connectDemo(profile.timeoutMs);
     else await c.connectSerial({ ...profile.serial, ...settings }, profile.timeoutMs);
   };
@@ -550,7 +550,7 @@ function IpScan() {
 
   const use = (h: IpHit) => {
     if (!profile) return;
-    updateProfile(profile.id, { tcp: { host: h.ip, port } });
+    patchProfile(profile.id, (p) => void (p.tcp = { host: h.ip, port }));
     useUi.getState().set({ connTab: "tcp" });
     useUi.getState().openModule("connection");
   };

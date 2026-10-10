@@ -1,0 +1,37 @@
+---
+title: Registrar 24 horas
+description: Coleta longa que continua com a aba fechada.
+---
+
+<Callout type="warning">Para mais de 1 hora, use o agente. Sem ele, o navegador reduz os timers de abas em segundo plano e a coleta fica com lacunas.</Callout>
+
+<Steps>
+<li>
+Conecte pelo agente (RTU pelo agente ou TCP).
+<Result>O Logger mostra "Coleta no agente".</Result>
+</li>
+<li>
+Desative a suspensão do notebook.
+<Result>Suspenso, nada é coletado e o intervalo fica marcado como lacuna.</Result>
+</li>
+<li>
+Em **Logger** (<Kbd>7</Kbd>), dê um **Nome**, escolha **Intervalo** (1000 ms), **Duração** (1440 min) e as tags.
+<Result>Uma semana a 1 s com 50 tags ocupa menos de 200 MB no agente.</Result>
+</li>
+<li>
+Clique em **Iniciar registro** (<Kbd>L</Kbd>).
+<Result>A barra de status mostra "log ● nome · amostras · agente".</Result>
+</li>
+<li>
+Marque eventos com <Kbd>M</Kbd>: "válvula aberta 50%".
+<Result>O marcador aparece no gráfico e entra no relatório.</Result>
+</li>
+<li>
+Pode fechar a aba. Ao voltar, o ModField busca no agente tudo o que foi coletado.
+<Result>O contador de amostras pula para o total; nada se perde.</Result>
+</li>
+</Steps>
+
+<Shot src="/docs/pt/logger.png" alt="Logger com gráfico de tendência, marcador e estatísticas da janela." />
+
+No gráfico, arraste para dar zoom, use ← → para deslocar e **Ver tudo** para voltar. **Exportar CSV** gera timestamp ISO 8601, tag, valor e qualidade.

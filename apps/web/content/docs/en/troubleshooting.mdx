@@ -1,0 +1,89 @@
+---
+title: Troubleshooting
+description: Symptom, likely cause and what to do.
+---
+
+## TIMEOUT: the slave did not answer [#timeout]
+
+| Likely cause | Action |
+|---|---|
+| Wrong unit ID | Use the [ID scanner](/en/docs/guides/find-slave). |
+| Different baud rate or parity | [Find the settings](/en/docs/guides/baud-rate). |
+| A and B swapped | Swap the A and B wires at the converter; it does no harm. |
+| Timeout too short | At 1200–4800 baud or behind a gateway, use 2000 ms or more. |
+
+## CRC_ERROR: corrupted response [#crc]
+
+Line noise or different serial settings (data arrives, but scrambled). Check baud rate and parity, the 120 Ω termination at both ends of the bus and grounding/shielding. See [hardware](/en/docs/hardware).
+
+## INVALID_RESPONSE: unexpected response [#invalid-response]
+
+The answer came from another unit ID or with the wrong length. Common causes: another master on the same bus, two slaves with the same ID, or a late answer to an earlier request.
+
+## Exception 01: function not supported [#exception-01]
+
+The slave does not accept this function. Try another table (Input instead of Holding) or, for writes, function 16 instead of 06 (Connection › "Always write with function 16").
+
+## Exception 02: address does not exist [#exception-02]
+
+The address does not exist on the slave. Check the vendor map and the **address base**: the manual says 40001 and the protocol sends 0. A read that spans a hole in the map also gets 02; ModField splits the block by itself when reading tags.
+
+## Exception 03: value refused [#exception-03]
+
+Quantity or value outside what the slave accepts. Read fewer registers, or check the written value and its scale.
+
+## Other exceptions (04, 05, 06, 08, 0A, 0B) [#exceptions]
+
+04 internal slave failure; 05 and 06 slave busy (read again shortly); 08 memory parity error; 0A and 0B gateway problems (check the unit ID behind it).
+
+## Swapped or absurd values [#byte-order]
+
+A FLOAT32 showing 1.4e-40 or 6.2e+21 has the wrong byte order. Try CDAB. See [read a FLOAT32](/en/docs/guides/float32).
+
+## The port is in use [#port-busy]
+
+Another program (or another ModField tab) has the port open. Close it and try again.
+
+## The serial port is gone [#port-disconnected]
+
+The converter was unplugged or the USB cable failed. Plug it back and connect again; a log through the agent reopens the port by itself and marks the gap.
+
+## Permission denied on the port (Linux) [#permission-denied]
+
+The user must be in the group that owns the port, once: `sudo usermod -aG dialout $USER` (Debian, Ubuntu, Raspberry Pi OS) or `sudo usermod -aG uucp $USER` (Arch). Log out and in again. The agent shows the right group in its message.
+
+## Chrome as Flatpak or Snap does not see the port [#flatpak]
+
+The sandbox of those packages blocks the serial port. Install Chrome or Chromium from the distribution's native package, or use the agent.
+
+## The browser asked for local network access and I denied it [#lna-denied]
+
+In the site settings (padlock in the address bar), allow "Local network" and reload. Alternative: open the UI the agent serves itself at http://127.0.0.1:47807.
+
+## "Unknown agent on this port" [#agent-impostor]
+
+Something answers on the agent's port with a different key than the one paired; nothing was sent. Close the program holding the port, or, if you reinstalled the agent, click **Forget pairing** and pair again.
+
+## The browser is not paired [#not-paired]
+
+The pairing was revoked on the agent's page or the agent was reinstalled. Pair again in Connection.
+
+## Incompatible agent version [#protocol-mismatch]
+
+Update the agent, or use the UI it serves itself at http://127.0.0.1:47807, which always has the right version.
+
+## TCP connection refused [#conn-refused]
+
+IP, port (502 by default) or the device's firewall. Ping the IP and check that the device accepts Modbus TCP connections.
+
+## Write without confirmation [#confirm-required]
+
+The agent only accepts writes confirmed in the dialog. Use the Write button and confirm with Enter.
+
+## The agent rejected this origin [#origin-rejected]
+
+The site you opened is neither the official one nor the agent's UI. Open ModField at its official address or at http://127.0.0.1:47807.
+
+## Real cycle longer than the interval [#slow-cycle]
+
+Each RTU transaction takes time on the wire: 50 separate tags at 9600 baud take 2 to 3.5 s. Group tags at contiguous addresses, raise the baud rate or the interval. ModField reads as fast as it can without accumulating delay.

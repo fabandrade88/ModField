@@ -1,0 +1,24 @@
+---
+title: RS-485 hardware
+description: Converters, A/B wiring, termination and grounding.
+---
+
+## Recommended converter [#converter]
+
+Prefer converters with an FTDI chip: Windows installs the driver by itself, without administrator rights. CH340 and similar sometimes need a driver installed by hand. On Windows, the FTDI "latency timer" defaults to 16 ms, which limits the transaction rate; changing it needs administrator rights.
+
+## A/B wiring [#wiring]
+
+Wire A to A and B to B along the bus, in a line (no star). Naming varies between vendors (D+/D−, TX+/TX−); if nothing answers, swap A and B: it does no harm.
+
+## 120 Ω termination [#termination]
+
+Put a 120 Ω resistor between A and B at both ends of the bus, and only there. Short bench wiring may work without it; in the field, missing termination causes intermittent CRC_ERROR.
+
+## Grounding and shielding [#grounding]
+
+Use shielded twisted-pair cable. Ground the shield at one point only and, if the converter has one, connect the GND/common reference. Potential differences between panels cause errors and can burn non-isolated converters.
+
+## Testing RTU without equipment [#virtual-ports]
+
+Two converters wired together, or a pair of virtual ports: `socat` on Linux and macOS; on Windows, com0com needs administrator rights to install.

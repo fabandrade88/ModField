@@ -132,3 +132,33 @@ select {
 .pen-swatch-8 {
   background: var(--c-pen-8);
 }
+
+/* Documentation: numbered steps with the counter in the margin. */
+.docs-steps {
+  counter-reset: step;
+  max-width: 48rem;
+}
+.docs-steps > li {
+  counter-increment: step;
+  position: relative;
+  padding-left: 2.25rem;
+  list-style: none;
+}
+.docs-steps > li::before {
+  content: counter(step);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 1px solid var(--c-border);
+  text-align: center;
+  font-size: 12px;
+  line-height: 1.5rem;
+  color: var(--c-muted);
+}
+.docs-pre code {
+  border: 0;
+  background: transparent;
+  padding: 0;
+}

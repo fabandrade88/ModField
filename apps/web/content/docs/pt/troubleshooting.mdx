@@ -1,0 +1,89 @@
+---
+title: Solução de problemas
+description: Sintoma, causa provável e o que fazer.
+---
+
+## TIMEOUT: o escravo não respondeu [#timeout]
+
+| Causa provável | Ação |
+|---|---|
+| Unit ID errado | Use o [scanner de IDs](/pt/docs/guides/find-slave). |
+| Baud rate ou paridade diferentes | [Descubra os parâmetros](/pt/docs/guides/baud-rate). |
+| A e B invertidos | Troque os fios A e B no conversor; não danifica nada. |
+| Timeout curto demais | Em 1200–4800 baud ou atrás de gateway, use 2000 ms ou mais. |
+
+## CRC_ERROR: resposta corrompida [#crc]
+
+Ruído na linha ou parâmetros seriais diferentes (dados chegam, mas embaralhados). Confira baud rate e paridade, a terminação de 120 Ω nas duas pontas do barramento e o aterramento/blindagem. Veja [hardware](/pt/docs/hardware).
+
+## INVALID_RESPONSE: resposta inesperada [#invalid-response]
+
+A resposta veio de outro unit ID ou com tamanho errado. Causas comuns: outro mestre no mesmo barramento, dois escravos com o mesmo ID, ou uma resposta atrasada de um pedido anterior.
+
+## Exceção 01: função não suportada [#exception-01]
+
+O escravo não aceita esta função. Tente outra tabela (Input em vez de Holding) ou, para escrita, a função 16 em vez da 06 (Conexão › "Escrever sempre com função 16").
+
+## Exceção 02: endereço não existe [#exception-02]
+
+O endereço não existe no escravo. Confira o mapa do fabricante e a **base de endereço**: o manual diz 40001 e o protocolo envia 0. Uma leitura que atravessa um buraco no mapa também recebe 02; o ModField divide o bloco sozinho na leitura de tags.
+
+## Exceção 03: valor recusado [#exception-03]
+
+Quantidade ou valor fora do que o escravo aceita. Diminua a quantidade lida ou confira o valor e a escala da escrita.
+
+## Outras exceções (04, 05, 06, 08, 0A, 0B) [#exceptions]
+
+04 falha interna do escravo; 05 e 06 escravo ocupado (leia de novo em instantes); 08 erro de paridade de memória; 0A e 0B problemas no gateway (confira o unit ID atrás dele).
+
+## Valores trocados ou absurdos [#byte-order]
+
+Um FLOAT32 que mostra 1.4e-40 ou 6.2e+21 está com a ordem de bytes errada. Tente CDAB. Veja [ler um FLOAT32](/pt/docs/guides/float32).
+
+## A porta está em uso [#port-busy]
+
+Outro programa (ou outra aba do ModField) está com a porta aberta. Feche-o e tente de novo.
+
+## A porta serial sumiu [#port-disconnected]
+
+O conversor foi desconectado ou o cabo USB falhou. Reconecte e conecte de novo; um log pelo agente reabre a porta sozinho e marca a lacuna.
+
+## Permissão negada na porta (Linux) [#permission-denied]
+
+O usuário precisa estar no grupo dono da porta, uma vez só: `sudo usermod -aG dialout $USER` (Debian, Ubuntu, Raspberry Pi OS) ou `sudo usermod -aG uucp $USER` (Arch). Saia e entre de novo na sessão. O agente mostra o grupo certo na mensagem.
+
+## Chrome em Flatpak ou Snap não vê a porta [#flatpak]
+
+O isolamento desses pacotes bloqueia a porta serial. Instale o Chrome ou o Chromium pelo pacote nativo da distribuição, ou use o agente.
+
+## O navegador pediu acesso à rede local e eu neguei [#lna-denied]
+
+Nas configurações do site (cadeado na barra de endereço), permita "Rede local" e recarregue. Alternativa: abra a interface que o próprio agente serve em http://127.0.0.1:47807.
+
+## "Agente desconhecido nesta porta" [#agent-impostor]
+
+Algo responde na porta do agente com uma chave diferente da que foi pareada; nada foi enviado. Feche o programa que ocupa a porta, ou, se você reinstalou o agente, clique em **Esquecer pareamento** e pareie de novo.
+
+## O navegador não está pareado [#not-paired]
+
+O pareamento foi revogado na página do agente ou o agente foi reinstalado. Pareie de novo em Conexão.
+
+## Versão do agente incompatível [#protocol-mismatch]
+
+Atualize o agente, ou use a interface que ele mesmo serve em http://127.0.0.1:47807, que sempre tem a versão certa.
+
+## Conexão TCP recusada [#conn-refused]
+
+IP, porta (padrão 502) ou firewall do equipamento. Teste o IP com ping e confira se o equipamento aceita conexões Modbus TCP.
+
+## Escrita sem confirmação [#confirm-required]
+
+O agente só aceita escritas confirmadas no diálogo. Use o botão Escrever e confirme com Enter.
+
+## O agente recusou esta origem [#origin-rejected]
+
+O site aberto não é o oficial nem a interface do agente. Abra o ModField pelo endereço oficial ou por http://127.0.0.1:47807.
+
+## Ciclo real maior que o intervalo [#slow-cycle]
+
+Cada transação RTU leva tempo no fio: 50 tags separadas a 9600 baud levam 2 a 3,5 s. Agrupe as tags em endereços contíguos, aumente o baud rate ou o intervalo. O ModField lê o mais rápido possível sem acumular atraso.

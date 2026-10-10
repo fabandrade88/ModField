@@ -1,0 +1,19 @@
+---
+title: Verify a report
+description: Prove later that the numbers were not changed.
+---
+
+The report carries the SHA-256 of the session's canonical CSV. With the agent paired, that hash is signed with the agent's key, and the public key is printed in the PDF.
+
+<Steps>
+<li>
+Get the session's CSV: the PDF's attachment, or **Export CSV** in the Logger (the same bytes).
+<Result>A .csv file with timestamp, tag, value, quality.</Result>
+</li>
+<li>
+In **Report** › **Verify**, upload the PDF and the CSV and click **Verify**.
+<Result>"The CSV matches the report's hash" and, if signed, "Valid signature from the agent with key …".</Result>
+</li>
+</Steps>
+
+Any change to the CSV, even one digit, shows "The CSV does NOT match". Without a signature, only the hash can be checked: whoever changes the data could also recompute an unsigned hash.

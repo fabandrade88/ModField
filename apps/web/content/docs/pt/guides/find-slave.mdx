@@ -1,0 +1,27 @@
+---
+title: Encontrar um escravo desconhecido
+description: Varrer os IDs 1 a 247 e descobrir quem responde.
+---
+
+<Steps>
+<li>
+Conecte com os parâmetros seriais que você acredita serem os corretos.
+<Result>"CONECTADO" na barra de status.</Result>
+</li>
+<li>
+Abra **Scanner** (<Kbd>4</Kbd>), aba **IDs**.
+<Result>De 1 a 247, timeout curto conforme o baud rate (60 ms a 19200).</Result>
+</li>
+<li>
+Clique em **Iniciar varredura** e confirme o aviso.
+<Result>IDs 1, 2 e 247 vão primeiro; os encontrados aparecem na tabela durante a varredura.</Result>
+</li>
+<li>
+Clique em **Adicionar aos equipamentos** em cada ID encontrado.
+<Result>Em Conexão › Equipamentos, use **Ler identificação** (função 43/14) para preencher fabricante, modelo e firmware.</Result>
+</li>
+</Steps>
+
+Um escravo que responde "com exceção 02" existe: ele só não tem o holding 0. Se nenhum ID responder, os parâmetros seriais provavelmente estão errados: [descubra o baud rate](/pt/docs/guides/baud-rate).
+
+<Shot src="/docs/pt/scan.png" alt="Scanner de IDs com três escravos encontrados." />

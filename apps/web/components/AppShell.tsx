@@ -17,6 +17,7 @@ import { PropertiesPanel } from "./PropertiesPanel";
 import { Sidebar } from "./Sidebar";
 import { StatusBar } from "./StatusBar";
 import { Workspace } from "./Workspace";
+import { useLang } from "./i18n";
 
 function isTyping(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) return false;
@@ -99,6 +100,7 @@ function useShortcuts(): void {
 }
 
 export function AppShell() {
+  const lang = useLang();
   const theme = useUi((s) => s.theme);
   const firstUseDone = useUi((s) => s.firstUseDone);
   const helpOpen = useUi((s) => s.helpOpen);
@@ -117,7 +119,7 @@ export function AppShell() {
   // First run: the demo profile. A profile deleted in another tab falls back to the first one.
   useEffect(() => {
     if (!hydrated) return;
-    void ensureSeed().then(async () => {
+    void ensureSeed(lang).then(async () => {
       const id = useUi.getState().profileId;
       if (!(await db.profiles.get(id))) {
         const first = await db.profiles.orderBy("name").first();
@@ -126,7 +128,12 @@ export function AppShell() {
       await useLogger.getState().resume();
       await autoConnectAgent();
     });
-  }, [hydrated]);
+  }, [hydrated, lang]);
+
+  useEffect(() => {
+    // Offline after the first visit. Not in development: the dev server has no sw.js.
+    if (process.env.NODE_ENV === "production" && "serviceWorker" in navigator) void navigator.serviceWorker.register("/sw.js").catch(() => undefined);
+  }, []);
 
   useEffect(() => {
     // Ask the browser not to evict our data under storage pressure.

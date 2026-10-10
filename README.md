@@ -2,7 +2,11 @@
 
 Ferramenta web de diagnóstico, simulação e registro Modbus. A especificação fica no Outline, na coleção **Modbus Tool**.
 
-Estado atual: **fase 5 (relatório de comissionamento)**. PDF gerado no navegador com logo e dados da empresa, testes de aceitação (tolerância absoluta ou %, veredito manual só com justificativa), escritas e varreduras do período, tendências com estatísticas e marcadores, assinaturas desenhadas ou em branco, hash SHA-256 do CSV canônico assinado pelo agente, CSV anexado ao PDF e página de verificação. Fase 4: Coleta no agente com buffer em disco e sincronização por sequência, ou no navegador com a aba aberta; blocos binários no IndexedDB; gráfico uPlot com 8 penas, dois eixos, zoom e marcadores; estatísticas da janela; CSV; arquivo de projeto `.modfield`. Fase 3: Além do modo sem agente: agente em Go com pareamento e autenticação mútua, Modbus TCP, RTU pelo agente com os nomes reais das portas, varredura de IP e simulador TCP. Fase 2: RTU pela Web Serial e modo demonstração no navegador: perfis, tags com leitura agrupada, escrita com confirmação, scanner (IDs, parâmetros, escuta passiva, registradores), cadastro de equipamentos com 43/14, monitor de tráfego e paleta de comandos.
+Estado atual: **v1.0** (fases 1 a 6 da especificação).
+
+- **Sem agente**, pelo navegador: RTU por USB-RS485 (Web Serial), leitura com agrupamento em blocos, escrita com confirmação, scanner (IDs, parâmetros, escuta passiva, registradores), monitor de tráfego, data logger com a aba aberta, relatório PDF e modo demonstração.
+- **Com o agente local**, sem administrador: Modbus TCP, RTU com os nomes reais das portas, varredura de IP, coleta em disco que continua com a aba fechada, simulador de escravo TCP/RTU e assinatura do hash do relatório.
+- **Documentação** em `/pt/docs`, `/en/docs` e `/de/docs`, com busca local. Tudo funciona offline depois do primeiro acesso (service worker).
 
 ## Rodar
 
@@ -30,6 +34,15 @@ go run ./cmd/modfield-agent pair                         # mostra o código de p
 Escuta só em `127.0.0.1:47807` (ou 47808/47809). Dados (chave, navegadores pareados) em `%LOCALAPPDATA%\ModField`, `~/Library/Application Support/ModField` ou `~/.local/share/modfield`. Para o agente servir a própria interface: `pnpm build && sh scripts/embed-ui.sh` antes de compilar.
 
 Instaladores sem administrador em `agent/installer/` (Inno Setup, LaunchAgent, `systemd --user` e `install.sh`). O release está em `agent/.goreleaser.yaml` e `.github/workflows/release-agent.yml`. A assinatura de código depende dos certificados, que ainda são decisão em aberto.
+
+## Documentação
+
+O conteúdo fica em `apps/web/content/docs/{pt,en,de}` (MDX), e cada idioma usa os mesmos caminhos e âncoras. As capturas de tela são geradas a partir do build com a bancada de demonstração:
+
+```sh
+pnpm build && pnpm --filter @modfield/web serve &
+node apps/web/scripts/docs-screenshots.mjs
+```
 
 ## Testes
 

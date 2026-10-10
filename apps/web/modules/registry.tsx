@@ -16,12 +16,14 @@ import {
 import type { ReactNode } from "react";
 import { PLANNED_PHASE, type ModuleId } from "@/lib/modules";
 import { ConnectionModule } from "./ConnectionModule";
+import { DocsModule } from "./DocsModule";
 import { PlannedModule } from "./PlannedModule";
 import { LoggerModule } from "./LoggerModule";
 import { ReadModule } from "./ReadModule";
 import { ReportModule } from "./ReportModule";
 import { ScanModule } from "./ScanModule";
 import { SettingsModule } from "./SettingsModule";
+import { SimModule } from "./SimModule";
 import { StorageModule } from "./StorageModule";
 import { TrafficModule } from "./TrafficModule";
 import { WriteModule } from "./WriteModule";
@@ -58,6 +60,10 @@ export function renderModule(id: ModuleId, pane: number): ReactNode {
       return <StorageModule />;
     case "report":
       return <ReportModule pane={pane} />;
+    case "sim":
+      return <SimModule />;
+    case "docs":
+      return <DocsModule />;
     case "settings":
       return <SettingsModule />;
     default:

@@ -1,0 +1,37 @@
+---
+title: "Início rápido: USB-RS485"
+description: Ler o primeiro registrador em 5 minutos, sem instalar nada.
+---
+
+Precisa de: Chrome, Edge ou Firefox 151+ no computador; um conversor USB-RS485 (de preferência FTDI); o ID, o baud rate e a paridade do escravo (no manual ou na tela do equipamento).
+
+<Steps>
+<li>
+Ligue o conversor no USB e os fios A e B no equipamento.
+<Result>O Windows instala o driver FTDI sozinho; no Linux a porta aparece como /dev/ttyUSB0.</Result>
+</li>
+<li>
+Abra o ModField e, na tela inicial, escolha **USB-RS485 neste computador** (tecla <Kbd>1</Kbd>).
+<Result>O módulo Conexão abre na aba RTU.</Result>
+</li>
+<li>
+Ajuste **Baud rate**, **Paridade** e **Stop bits** iguais aos do equipamento.
+<Result>Os valores ficam salvos no perfil.</Result>
+</li>
+<li>
+Clique em **Escolher porta** e selecione o conversor na lista do navegador.
+<Result>Ao lado aparece o fabricante e o VID:PID, por exemplo "FTDI 0403:6001".</Result>
+</li>
+<li>
+Clique em **Conectar** (<Kbd>Ctrl+Enter</Kbd>).
+<Result>A barra de status mostra "● CONECTADO".</Result>
+</li>
+<li>
+Abra **Leitura** (<Kbd>2</Kbd>), aba **Bloco**: informe Unit ID, Tabela e Endereço e pressione <Kbd>R</Kbd>.
+<Result>A tabela mostra o valor bruto e o decodificado. Se aparecer TIMEOUT, veja [solução de problemas](/pt/docs/troubleshooting#timeout).</Result>
+</li>
+</Steps>
+
+<Shot src="/docs/pt/read.png" alt="Leitura de tags com valores escalados e monitor de tráfego ao lado." />
+
+Sem o equipamento à mão? Escolha **Só testar (modo demonstração)** na tela inicial: a bancada simulada usa o mesmo código RTU da conexão real.

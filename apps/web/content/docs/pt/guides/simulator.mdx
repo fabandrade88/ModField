@@ -1,0 +1,29 @@
+---
+title: Testar sem equipamento
+description: Simulador de escravo para SCADA, CLP ou o próprio ModField.
+---
+
+Sem agente, use **Só testar (modo demonstração)**: um inversor, um transmissor de pressão e um medidor de vazão simulados no navegador.
+
+Com o agente, o módulo **Simulador** (<Kbd>5</Kbd>) cria escravos de verdade:
+
+<Steps>
+<li>
+Clique em **Nova a partir da bancada de demonstração**.
+<Result>O mapa de registradores aparece, com um gerador por registrador.</Result>
+</li>
+<li>
+Edite escravos e registradores: tabela, endereço, tipo, ordem e gerador (fixo, rampa, senoide, aleatório, contador).
+<Result>As mudanças ficam salvas e entram no arquivo de projeto.</Result>
+</li>
+<li>
+Escolha TCP (127.0.0.1:5020) ou RTU numa porta serial e clique em **Iniciar simulador**.
+<Result>Aparece em "Simuladores rodando"; as requisições recebidas são listadas.</Result>
+</li>
+<li>
+Aponte o SCADA para 127.0.0.1:5020, ou clique em **Conectar o ModField a este simulador**.
+<Result>Leituras e escritas aparecem no registro do simulador.</Result>
+</li>
+</Steps>
+
+<Callout type="warning">Expor o simulador na rede local faz o firewall do Windows pedir administrador. Por padrão ele só escuta em 127.0.0.1.</Callout>

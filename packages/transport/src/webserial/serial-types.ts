@@ -45,7 +45,7 @@ export const USB_VENDORS: Record<number, string> = {
 };
 
 export function describePort(info: SerialPortInfo): string {
-  if (info.usbVendorId === undefined) return "Porta serial";
+  if (info.usbVendorId === undefined) return "Serial";
   const hex = (n: number) => n.toString(16).padStart(4, "0").toUpperCase();
   const vendor = USB_VENDORS[info.usbVendorId] ?? "USB";
   return `${vendor} ${hex(info.usbVendorId)}:${hex(info.usbProductId ?? 0)}`;

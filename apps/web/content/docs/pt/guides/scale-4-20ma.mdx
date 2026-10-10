@@ -1,0 +1,23 @@
+---
+title: Escalar um sinal 4–20 mA
+description: Valor bruto do transmissor em unidade de engenharia.
+---
+
+Muitos equipamentos entregam o loop em contagens (por exemplo 4000 a 20000 µA) e não na unidade do processo.
+
+<Steps>
+<li>
+Selecione a tag na aba **Tags** da Leitura.
+<Result>O painel de propriedades mostra tipo, ordem, unidade e escala.</Result>
+</li>
+<li>
+Marque **Escala linear** e preencha **Bruto mín.** 4000, **Bruto máx.** 20000, **Eng. mín.** 0 e **Eng. máx.** com o fundo de escala (por exemplo 10).
+<Result>O valor passa a aparecer na unidade de engenharia.</Result>
+</li>
+<li>
+Preencha **Unidade** (bar) e **Casas decimais** (2).
+<Result>A tabela mostra "6.25 bar".</Result>
+</li>
+</Steps>
+
+A escala também vale para escrita: ao escrever 50 Hz numa tag escalada 0–6000 → 0–60 Hz, o ModField envia 5000.

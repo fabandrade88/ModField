@@ -1,0 +1,27 @@
+---
+title: Find an unknown slave
+description: Scan IDs 1 to 247 and see who answers.
+---
+
+<Steps>
+<li>
+Connect with the serial settings you believe are right.
+<Result>"CONNECTED" in the status bar.</Result>
+</li>
+<li>
+Open **Scanner** (<Kbd>4</Kbd>), **IDs** tab.
+<Result>From 1 to 247, short timeout by baud rate (60 ms at 19200).</Result>
+</li>
+<li>
+Click **Start scan** and confirm the warning.
+<Result>IDs 1, 2 and 247 go first; the ones found appear in the table during the scan.</Result>
+</li>
+<li>
+Click **Add to equipment** on each ID found.
+<Result>In Connection › Equipment, use **Read identification** (function 43/14) to fill in manufacturer, model and firmware.</Result>
+</li>
+</Steps>
+
+A slave that "answered with exception 02" exists: it just has no holding register 0. If no ID answers, the serial settings are probably wrong: [find the baud rate](/en/docs/guides/baud-rate).
+
+<Shot src="/docs/en/scan.png" alt="ID scanner with three slaves found." />

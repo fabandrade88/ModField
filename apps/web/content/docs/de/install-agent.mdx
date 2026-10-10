@@ -1,0 +1,39 @@
+---
+title: Agent ohne Administratorrechte installieren
+description: Windows, macOS und Linux; und was tun, wenn die IT blockiert.
+---
+
+Der Agent ist eine einzelne ausführbare Datei, die nur auf 127.0.0.1 lauscht (Ports 47807 bis 47809) und nie Administratorrechte verlangt. Er ergänzt Modbus TCP, die Portnamen des Systems, Aufzeichnung bei geschlossenem Tab, den Slave-Simulator und die Signatur des Berichts-Hashes.
+
+## Windows 10 und 11
+
+<Steps>
+<li>
+Das Installationsprogramm `ModField-Agent-…-setup.exe` (oder das portable ZIP) ausführen.
+<Result>Installiert nach `%LOCALAPPDATA%\Programs\ModField`, ohne nach einem Administratorkennwort zu fragen.</Result>
+</li>
+<li>
+**Agent jetzt starten** angehakt lassen.
+<Result>Das Symbol erscheint im Infobereich; es startet bei der nächsten Anmeldung selbst (Schlüssel HKCU\…\Run).</Result>
+</li>
+</Steps>
+
+Deinstallation über „Installierte Apps“, wie bei jedem Programm des Benutzers.
+
+## macOS 12 oder neuer
+
+Die `.dmg` öffnen, die App nach `~/Applications` (oder einen eigenen Ordner) ziehen und einmal öffnen. Der LaunchAgent in `~/Library/LaunchAgents` startet ihn bei der Anmeldung.
+
+## Linux (inklusive Raspberry Pi)
+
+```sh
+curl -fsSL https://modfield.app/agent/install.sh | sh
+```
+
+Das Skript prüft die SHA-256 (und die minisign-Signatur, falls vorhanden), installiert nach `~/.local/bin` und aktiviert eine `systemd --user`-Unit. Ohne Bildschirm den Agenten mit `--headless` starten und den Kopplungscode mit `modfield-agent pair` anzeigen.
+
+Für den seriellen Port muss der Benutzer einmalig in der Gruppe sein, der der Port gehört: `dialout` unter Debian, Ubuntu und Raspberry Pi OS; `uucp` unter Arch. Siehe [Zugriff verweigert](/de/docs/troubleshooting#permission-denied).
+
+## Wenn die IT blockiert [#it-blocked]
+
+Richtlinien wie AppLocker, WDAC oder ein EDR können ausführbare Dateien im Benutzerordner blockieren. Es gibt keinen Umweg: Bei der IT die Freigabe mit SHA-256 der Datei und Herausgeberzertifikat beantragen. Bis dahin funktioniert der Modus ohne Agent weiter für RTU über USB.

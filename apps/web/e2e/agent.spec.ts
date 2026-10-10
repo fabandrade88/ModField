@@ -8,17 +8,21 @@ async function pairAndConnectTcp(page: Page) {
   await page.keyboard.press("2");
   const conn = pane(page, 1);
   await conn.getByRole("button", { name: "Procurar agente" }).click();
-  await expect(conn).toContainText(/Agente 0\.\d+\.\d+-dev encontrado · chave [0-9A-F]{12}/);
+  await expect(conn).toContainText(/Agente \d+\.\d+\.\d+ encontrado · chave [0-9A-F]{12}/);
   await conn.getByRole("button", { name: "Parear com o agente" }).click();
   await conn.getByLabel("Código de pareamento").fill("246810");
   await conn.getByRole("button", { name: "Parear", exact: true }).click();
   await expect(conn).toContainText("pareado");
-  await expect(page.locator("footer")).toContainText(/agente ● 0\.\d+/);
+  await expect(page.locator("footer")).toContainText(/agente ● \d+\.\d+/);
 
   await conn.getByLabel("IP ou nome").fill("127.0.0.1");
   await conn.getByLabel("Porta TCP").fill("5020");
   await conn.getByRole("button", { name: /Conectar/ }).click();
-  await expect(page.locator("footer [data-state]")).toHaveText(/CONECTADO/);
+  // On failure, say why (the alert in Connection has the cause).
+  await expect(page.locator("footer [data-state]")).toHaveText(/CONECTADO|ERRO/);
+  if ((await page.locator("footer [data-state]").innerText()).includes("ERRO")) {
+    throw new Error(`connect failed: ${await conn.getByRole("alert").innerText().catch(() => "(no alert)")}`);
+  }
   await expect(page.locator("footer")).toContainText("Agente · TCP 127.0.0.1:5020");
 }
 
@@ -67,7 +71,7 @@ test("a wrong pairing code is refused", async ({ page }) => {
 test("pairing survives a reload and reconnects silently", async ({ page }) => {
   await pairAndConnectTcp(page);
   await page.reload();
-  await expect(page.locator("footer")).toContainText(/agente ● 0\.\d+/);
+  await expect(page.locator("footer")).toContainText(/agente ● \d+\.\d+/);
   await expect(pane(page, 1)).toContainText("pareado");
 });
 
@@ -115,7 +119,7 @@ test("agent log keeps collecting with the page closed and syncs on return", asyn
   await new Promise((r) => setTimeout(r, 3000));
   const again = await context.newPage();
   await again.goto(url);
-  await expect(again.locator("footer")).toContainText(/agente ● 0\.\d+/);
+  await expect(again.locator("footer")).toContainText(/agente ● \d+\.\d+/);
   await expect(again.locator("footer")).toContainText("Agente 24h");
   const status = again.locator("footer");
   // 4.5 s at 200 ms is ~22 cycles of ~12 tags: well over what the first 1.5 s gave.
@@ -160,4 +164,26 @@ test("a report made with the agent carries a valid agent signature", async ({ pa
   await report.getByRole("button", { name: "Verificar", exact: true }).click();
   await expect(report.getByRole("status")).toContainText("O CSV confere");
   await expect(report.getByRole("status")).toContainText(/Assinatura válida do agente de chave [0-9A-F]{12}/);
+});
+
+test("simulator module: start a slave on the agent, connect ModField to it, see the requests", async ({ page, browserName }) => {
+  // The agent is shared by both browsers' runs: one port each.
+  const addr = `127.0.0.1:${browserName === "firefox" ? 5032 : 5031}`;
+  await pairAndConnectTcp(page);
+  await openInPane(page, 2, "sim");
+  const sim = pane(page, 2);
+  await sim.getByRole("button", { name: "Nova a partir da bancada de demonstração" }).click();
+  await sim.getByLabel("Endereço:porta").fill(addr);
+  await sim.getByRole("button", { name: "Iniciar simulador" }).click();
+  const row = sim.getByRole("listitem").filter({ hasText: `● TCP ${addr}` });
+  await expect(row).toBeVisible();
+  await row.getByRole("button", { name: "Conectar o ModField a este simulador" }).click();
+  await expect(page.locator("footer")).toContainText(`Agente · TCP ${addr}`);
+  await expect(page.locator("footer [data-state]")).toHaveText(/CONECTADO/);
+  await openInPane(page, 1, "read");
+  await pane(page, 1).getByRole("button", { name: /Ler agora/ }).click();
+  await expect(pane(page, 1).getByRole("row").filter({ hasText: "Frequência de saída" })).toContainText(/4[45]\.\d\d Hz/);
+  await expect(sim.getByText("Read Input @0 ×5").first()).toBeVisible();
+  await row.getByRole("button", { name: "Parar" }).click();
+  await expect(row).toHaveCount(0);
 });

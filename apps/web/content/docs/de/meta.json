@@ -1,0 +1,4 @@
+{
+  "title": "Dokumentation",
+  "pages": ["index", "quick-start-usb", "quick-start-tcp", "install-agent", "guides", "troubleshooting", "modbus-reference", "hardware", "shortcuts"]
+}

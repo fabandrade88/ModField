@@ -486,3 +486,49 @@ func TestReportSign(t *testing.T) {
 		t.Fatal("bad hash accepted")
 	}
 }
+
+func TestConnectionReopensAfterTheSlaveGoesAway(t *testing.T) {
+	h := start(t)
+	c, _ := h.dial(site)
+	tokenID, secret, pub := h.pair(c)
+	authenticate(t, c, site, tokenID, secret, pub)
+	sim, _ := c.call("sim.start", map[string]any{"transport": "tcp", "listen": "127.0.0.1:0"})
+	addr := sim["addr"].(string)
+	host, port, _ := strings.Cut(addr, ":")
+	var p int
+	fmt.Sscan(port, &p)
+	conn, _ := c.call("conn.open", map[string]any{"kind": "tcp", "host": host, "tcpPort": p})
+	id := conn["connId"].(string)
+	read := func() map[string]any {
+		_, e := c.call("modbus.read", map[string]any{"connId": id, "unitId": 1, "request": map[string]any{"fc": 3, "address": 0, "quantity": 1}, "timeoutMs": 300})
+		return e
+	}
+	if e := read(); e != nil {
+		t.Fatal(e)
+	}
+	// The slave restarts on the same address.
+	c.call("sim.stop", map[string]string{"simId": sim["simId"].(string)})
+	if e := read(); e["error"] != "PORT_DISCONNECTED" && e["error"] != "CONN_REFUSED" {
+		t.Fatalf("read while the slave is down: %v", e)
+	}
+	s2, e := c.call("sim.start", map[string]any{"transport": "tcp", "listen": addr})
+	if e != nil {
+		t.Fatal(e)
+	}
+	// The first read after the restart already works (reads reconnect once).
+	if e := read(); e != nil {
+		t.Fatalf("read after the slave came back: %v", e)
+	}
+	// A write on a dead link is never repeated.
+	c.call("sim.stop", map[string]string{"simId": s2["simId"].(string)})
+	c.call("sim.start", map[string]any{"transport": "tcp", "listen": addr})
+	_, e = c.call("modbus.write", map[string]any{"connId": id, "unitId": 1, "request": map[string]any{"fc": 6, "address": 1, "value": 7}, "timeoutMs": 300, "confirmToken": "token-after-restart-0001"})
+	if e == nil || e["error"] != "PORT_DISCONNECTED" {
+		t.Fatalf("write on a dead link must fail, not be retried: %v", e)
+	}
+	// A new conn.open for the same address shares the (now healthy) connection.
+	again, _ := c.call("conn.open", map[string]any{"kind": "tcp", "host": host, "tcpPort": p})
+	if again["connId"] != id {
+		t.Fatalf("expected the shared connection, got %v", again)
+	}
+}

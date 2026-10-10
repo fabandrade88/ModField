@@ -1,0 +1,19 @@
+---
+title: Verificar um relatório
+description: Provar que os números não foram alterados depois.
+---
+
+O relatório traz o SHA-256 do CSV canônico da sessão. Com o agente pareado, esse hash é assinado com a chave do agente, e a chave pública vai no PDF.
+
+<Steps>
+<li>
+Tenha o CSV da sessão: o anexo do PDF, ou **Exportar CSV** no Logger (os mesmos bytes).
+<Result>Um arquivo .csv com timestamp, tag, valor, qualidade.</Result>
+</li>
+<li>
+Em **Relatório** › **Verificar**, envie o PDF e o CSV e clique em **Verificar**.
+<Result>"O CSV confere com o hash do relatório" e, se assinado, "Assinatura válida do agente de chave …".</Result>
+</li>
+</Steps>
+
+Qualquer alteração no CSV, mesmo um dígito, faz aparecer "O CSV NÃO confere". Sem assinatura, só o hash pode ser conferido: quem altera os dados também poderia recalcular um hash sem assinatura.

@@ -1,0 +1,51 @@
+---
+title: Modbus-Referenz
+description: Funktionen, Ausnahmen, Adressierung und Byte-Reihenfolge.
+---
+
+## Funktionen [#functions]
+
+| Funktion | Name | Verwendung |
+|---|---|---|
+| 01 | Read Coils | Digitale Ausgänge (bis 2000 Bits) |
+| 02 | Read Discrete Inputs | Digitale Eingänge |
+| 03 | Read Holding Registers | Parameter und Werte (bis 125 Register) |
+| 04 | Read Input Registers | Nur lesbare Messwerte |
+| 05 | Write Single Coil | Einen Ausgang schalten |
+| 06 | Write Single Register | Ein 16-Bit-Register |
+| 15 | Write Multiple Coils | Mehrere Ausgänge |
+| 16 | Write Multiple Registers | 32/64-Bit-Werte und Blöcke (bis 123) |
+| 43/14 | Read Device Identification | Hersteller, Modell, Version |
+
+## Ausnahmen [#exceptions]
+
+| Code | Bedeutung |
+|---|---|
+| 01 | Funktion nicht unterstützt |
+| 02 | Adresse existiert nicht |
+| 03 | Ungültiger Wert oder Anzahl |
+| 04 | Fehler im Slave |
+| 05 | Angenommen, in Bearbeitung |
+| 06 | Slave beschäftigt |
+| 08 | Speicherparitätsfehler |
+| 0A | Gateway ohne Pfad |
+| 0B | Gerät hinter dem Gateway antwortet nicht |
+
+Die Codes 07 und 09 gibt es nicht.
+
+## Adressierung: Basis 0, Basis 1 und 4xxxx [#addressing]
+
+Das Protokoll sendet den Offset (0 bis 65535). Handbücher verwenden oft die klassische Schreibweise, die bei 1 beginnt und die Tabelle an der ersten Ziffer erkennen lässt: 0xxxx Coils, 1xxxx Discrete, 3xxxx Input, 4xxxx Holding. 40001 ist also das Holding-Register mit Offset 0, und 400101 (sechsstellig) ist Offset 100.
+
+## Byte-Reihenfolge [#byte-order]
+
+Die Bytes eines 32-Bit-Werts heißen A (höchstwertig), B, C und D. Beispiel mit 123,456 als FLOAT32 (0x42F6E979):
+
+| Reihenfolge | Register 1 | Register 2 |
+|---|---|---|
+| ABCD | 42F6 | E979 |
+| CDAB | E979 | 42F6 |
+| BADC | F642 | 79E9 |
+| DCBA | 79E9 | F642 |
+
+Für 64 Bit gilt dieselbe Regel für alle vier Register.

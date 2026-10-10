@@ -105,7 +105,7 @@ describe.skipIf(!hasGo())("agent integration", () => {
     const frames: string[] = [];
     t.on("traffic", (f) => frames.push(`${f.dir}:${f.framing}`));
     await t.open();
-    expect(t.label).toMatch(/^Agente · TCP 127\.0\.0\.1:\d+$/);
+    expect(t.label).toMatch(/^TCP 127\.0\.0\.1:\d+$/);
     const client = new ModbusClient(t, { timeoutMs: 500 });
 
     expect(await client.read(1, "holding", 1, "UINT16")).toBe(4500);

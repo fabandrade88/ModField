@@ -14,7 +14,7 @@ func Demo() []SlaveConfig {
 				{Table: "input", Address: 0, Type: "UINT16", Generator: Generator{Kind: "sine", Offset: 4500, Amplitude: 30, PeriodMs: 20000}, Name: "Frequência de saída"},
 				{Table: "input", Address: 1, Type: "UINT16", Generator: Generator{Kind: "sine", Offset: 112, Amplitude: 6, PeriodMs: 7000}, Name: "Corrente do motor"},
 				{Table: "input", Address: 2, Type: "INT16", Generator: Generator{Kind: "sine", Offset: 41, Amplitude: 2, PeriodMs: 60000}, Name: "Temperatura do dissipador"},
-				{Table: "input", Address: 3, Type: "UINT32", Generator: Generator{Kind: "counter", Step: 1, IntervalMs: 1000}, Name: "Horas de operação (s)"},
+				{Table: "input", Address: 3, Type: "UINT32", Generator: Generator{Kind: "counter", Step: 1, IntervalMs: 1000}, Name: "Horas de operação"},
 				{Table: "coil", Address: 0, Generator: Generator{Kind: "fixed", Value: 1}, Name: "Habilitado"},
 				{Table: "discrete", Address: 0, Generator: Generator{Kind: "fixed", Value: 0}, Name: "Falha"},
 			},

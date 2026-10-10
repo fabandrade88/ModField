@@ -1,0 +1,29 @@
+---
+title: Test without equipment
+description: Slave simulator for a SCADA, a PLC or ModField itself.
+---
+
+Without the agent, use **Just try it (demo mode)**: a drive, a pressure transmitter and a flow meter simulated in the browser.
+
+With the agent, the **Simulator** module (<Kbd>5</Kbd>) creates real slaves:
+
+<Steps>
+<li>
+Click **New from the demo bench**.
+<Result>The register map appears, with one generator per register.</Result>
+</li>
+<li>
+Edit slaves and registers: table, address, type, order and generator (fixed, ramp, sine, random, counter).
+<Result>Changes are saved and go into the project file.</Result>
+</li>
+<li>
+Choose TCP (127.0.0.1:5020) or RTU on a serial port and click **Start simulator**.
+<Result>It shows under "Running simulators"; the requests received are listed.</Result>
+</li>
+<li>
+Point the SCADA at 127.0.0.1:5020, or click **Connect ModField to this simulator**.
+<Result>Reads and writes show in the simulator's log.</Result>
+</li>
+</Steps>
+
+<Callout type="warning">Exposing the simulator on the local network makes the Windows firewall ask for administrator rights. By default it only listens on 127.0.0.1.</Callout>

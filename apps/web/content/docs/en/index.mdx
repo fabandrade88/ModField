@@ -1,0 +1,23 @@
+---
+title: ModField documentation
+description: Field guide for automation and instrumentation technicians and commissioning engineers.
+---
+
+ModField reads, writes, scans, simulates and logs Modbus RTU and TCP devices from the browser. Without the agent it works with a USB-RS485 converter through Web Serial. With the local agent (installed without administrator rights) it adds Modbus TCP, port names such as COM3 and logging with the tab closed.
+
+## Where to start
+
+- [Read the first register over USB-RS485](/en/docs/quick-start-usb) — 5 minutes, nothing to install.
+- [Read the first register over Modbus TCP](/en/docs/quick-start-tcp) — needs the agent.
+- [Install the agent without administrator rights](/en/docs/install-agent).
+
+## Common tasks
+
+- [Find an unknown slave](/en/docs/guides/find-slave)
+- [Find the baud rate and parity](/en/docs/guides/baud-rate)
+- [Read a FLOAT32](/en/docs/guides/float32) and [scale a 4–20 mA signal](/en/docs/guides/scale-4-20ma)
+- [Log for 24 hours](/en/docs/guides/log-24h) and [make the commissioning report](/en/docs/guides/report)
+
+Something went wrong? See [troubleshooting](/en/docs/troubleshooting): every error message in the tool has a "How to fix" link to the exact entry.
+
+<Callout>This documentation works offline after the first visit, like the tool.</Callout>

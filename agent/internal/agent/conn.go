@@ -67,6 +67,10 @@ type Conn struct {
 
 	mu      sync.Mutex
 	stats   Stats
+	// broken is set when the link drops (socket closed, USB unplugged); the
+	// next request reopens it first. The request that failed is never retried.
+	broken  bool
+	onFrame func(c *Conn, f modbus.Frame)
 	taps    map[*Session]bool
 	leases  map[*Session]bool
 	pinned  int // running logs keep the connection open with no session
@@ -74,7 +78,7 @@ type Conn struct {
 }
 
 func openConn(id string, p OpenParams, onFrame func(c *Conn, f modbus.Frame)) (*Conn, error) {
-	c := &Conn{ID: id, Params: p, Label: p.label(), taps: map[*Session]bool{}, leases: map[*Session]bool{}}
+	c := &Conn{ID: id, Params: p, Label: p.label(), taps: map[*Session]bool{}, leases: map[*Session]bool{}, onFrame: onFrame}
 	tap := func(f modbus.Frame) { onFrame(c, f) }
 	switch p.Kind {
 	case "tcp":
@@ -140,8 +144,30 @@ func serialError(name string, err error) error {
 	return &modbus.Error{Code: modbus.ErrPortDisconnected, Msg: err.Error()}
 }
 
-// Do runs one request and counts it, like WebSerialTransport.count.
+// Do runs one request and counts it, like WebSerialTransport.count. A read
+// that finds the link already dead (the slave restarted, the socket was
+// closed) reconnects and runs once more: reads are safe to repeat. Writes are
+// never repeated, whatever happened.
 func (c *Conn) Do(unit byte, req *modbus.Request, timeout time.Duration) (*modbus.Response, error) {
+	res, err := c.do(unit, req, timeout)
+	if me, ok := err.(*modbus.Error); ok && me.Code == modbus.ErrPortDisconnected && !req.IsWrite() && c.onFrame != nil {
+		if c.Reopen(c.onFrame) == nil {
+			return c.do(unit, req, timeout)
+		}
+	}
+	return res, err
+}
+
+func (c *Conn) do(unit byte, req *modbus.Request, timeout time.Duration) (*modbus.Response, error) {
+	c.mu.Lock()
+	broken := c.broken || c.client == nil
+	c.mu.Unlock()
+	if broken && c.onFrame != nil {
+		// Reconnect before a new request (automatic reconnection after a drop).
+		if err := c.Reopen(c.onFrame); err != nil {
+			return nil, err
+		}
+	}
 	start := time.Now()
 	c.mu.Lock()
 	client := c.client
@@ -156,6 +182,9 @@ func (c *Conn) Do(unit byte, req *modbus.Request, timeout time.Duration) (*modbu
 	rtt := float64(time.Since(start).Microseconds()) / 1000
 	c.stats.LastRTTMs = &rtt
 	if me, ok := err.(*modbus.Error); ok {
+		if me.Code == modbus.ErrPortDisconnected {
+			c.broken = true
+		}
 		switch me.Code {
 		case modbus.ErrTimeout:
 			c.stats.Timeouts++
@@ -187,6 +216,8 @@ func (c *Conn) Reopen(onFrame func(c *Conn, f modbus.Frame)) error {
 	}
 	c.mu.Lock()
 	c.client = fresh.client
+	c.broken = false
+	c.onFrame = onFrame
 	c.mu.Unlock()
 	return nil
 }

@@ -130,7 +130,6 @@ func (a *Agent) connFor(p OpenParams) (*Conn, error) {
 	a.mu.Lock()
 	for _, c := range a.conns {
 		if c.Params == p {
-			a.mu.Unlock()
 			c.mu.Lock()
 			c.pinned++
 			if c.closeAt != nil {
@@ -138,6 +137,7 @@ func (a *Agent) connFor(p OpenParams) (*Conn, error) {
 				c.closeAt = nil
 			}
 			c.mu.Unlock()
+			a.mu.Unlock()
 			return c, nil
 		}
 	}

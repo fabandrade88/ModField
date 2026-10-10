@@ -1,0 +1,39 @@
+---
+title: Instalar o agente sem administrador
+description: Windows, macOS e Linux; e o que fazer se a TI bloquear.
+---
+
+O agente é um único executável que só escuta em 127.0.0.1 (portas 47807 a 47809) e nunca pede administrador. Ele acrescenta Modbus TCP, os nomes de porta do sistema, a coleta com a aba fechada, o simulador de escravo e a assinatura do hash do relatório.
+
+## Windows 10 e 11
+
+<Steps>
+<li>
+Execute o instalador `ModField-Agent-…-setup.exe` (ou o ZIP portátil).
+<Result>Instala em `%LOCALAPPDATA%\Programs\ModField`, sem pedir senha de administrador.</Result>
+</li>
+<li>
+Deixe marcado **Iniciar o agente agora**.
+<Result>O ícone aparece na bandeja; ele inicia sozinho no próximo login (chave HKCU\…\Run).</Result>
+</li>
+</Steps>
+
+Desinstale por "Aplicativos instalados", como qualquer programa do usuário.
+
+## macOS 12 ou superior
+
+Abra o `.dmg`, arraste o app para `~/Applications` (ou qualquer pasta sua) e abra uma vez. O LaunchAgent em `~/Library/LaunchAgents` o inicia no login.
+
+## Linux (inclui Raspberry Pi)
+
+```sh
+curl -fsSL https://modfield.app/agent/install.sh | sh
+```
+
+O script confere o SHA-256 (e a assinatura minisign, se disponível), instala em `~/.local/bin` e ativa uma unidade `systemd --user`. Sem tela, rode o agente com `--headless` e veja o código de pareamento com `modfield-agent pair`.
+
+Para usar a porta serial, o usuário precisa estar no grupo dono da porta, uma vez só: `dialout` no Debian, Ubuntu e Raspberry Pi OS; `uucp` no Arch. Veja [permissão negada](/pt/docs/troubleshooting#permission-denied).
+
+## Se a TI bloquear [#it-blocked]
+
+Políticas como AppLocker, WDAC ou um EDR podem impedir executáveis na pasta do usuário. Não há como contornar: peça a liberação à TI informando o SHA-256 do arquivo e o certificado do editor. Enquanto isso, o modo sem agente continua funcionando para RTU por USB.

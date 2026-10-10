@@ -1,0 +1,33 @@
+---
+title: Make the commissioning report
+description: A PDF ready to print and sign, in a few minutes.
+---
+
+<Steps>
+<li>
+Once only: in **Settings** › **Company**, fill in the data and upload the logo (PNG or SVG).
+<Result>They appear in the header of every report.</Result>
+</li>
+<li>
+In **Report** (<Kbd>8</Kbd>), click **New report** and fill in client, plant, area and work order.
+<Result>The number follows the MF-year-sequence pattern.</Result>
+</li>
+<li>
+Choose the test's **Log session**.
+<Result>Trends, statistics, markers and the writes of that period go into the PDF.</Result>
+</li>
+<li>
+Add the **acceptance tests**: tag, expected, tolerance (absolute or %) and measured (**Read now**, or **Mean**/**Min**/**Max** of a stretch between markers).
+<Result>The result is computed. A manual verdict needs a justification, which is printed.</Result>
+</li>
+<li>
+In **Signatures**, leave blank to sign on paper, or use **Sign on screen**.
+<Result>A drawn signature is a picture, not a certified digital signature.</Result>
+</li>
+<li>
+Click **Refresh preview**, check it and **Generate PDF** (<Kbd>G</Kbd>).
+<Result>The PDF carries page X of Y, the SHA-256 hash of the data and, with the agent paired, its signature.</Result>
+</li>
+</Steps>
+
+**Save as this client's template** keeps sections, tests and signatures for the next job.

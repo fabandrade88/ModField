@@ -17,10 +17,13 @@ export function blankProfile(name: string): Profile {
 }
 
 /** First run: a demo profile with the bench's tags and equipment, so every module has something to show. */
-export async function ensureSeed(): Promise<void> {
+const DEMO_NAME: Record<"pt" | "en" | "de", string> = { pt: "Demonstração", en: "Demo", de: "Demo" };
+
+export async function ensureSeed(lang: "pt" | "en" | "de" = "pt"): Promise<void> {
   if ((await db.profiles.count()) > 0) return;
+  const pick = (o: { name?: string; names?: { en: string; de: string } }) => (lang === "pt" ? o.name : (o.names?.[lang] ?? o.name));
   const profile: Profile = {
-    ...blankProfile("Demonstração"),
+    ...blankProfile(DEMO_NAME[lang]),
     id: DEMO_PROFILE_ID,
     serial: { ...DEMO_LINE, interRequestDelayMs: 2 },
   };
@@ -34,7 +37,7 @@ export async function ensureSeed(): Promise<void> {
       manufacturer: "",
       model: "",
       serialNumber: "",
-      tag: s.name,
+      tag: pick(s) ?? s.name,
       firmware: "",
     });
     for (const p of s.points) {
@@ -42,7 +45,7 @@ export async function ensureSeed(): Promise<void> {
         id: newId(),
         profileId: profile.id,
         sort: tags.length,
-        name: p.name ?? `${s.unitId}:${p.table}:${p.address}`,
+        name: pick(p) ?? `${s.unitId}:${p.table}:${p.address}`,
         unitId: s.unitId,
         table: p.table,
         offset: p.address,

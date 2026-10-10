@@ -1,0 +1,25 @@
+---
+title: Find the baud rate and parity
+description: Try the common combinations, or just listen to a master that is already there.
+---
+
+## Trying (bus without another master)
+
+<Steps>
+<li>
+Choose the port in Connection (no need to connect).
+<Result>The port shows with manufacturer and VID:PID.</Result>
+</li>
+<li>
+In **Scanner** › **Serial settings**, enter the likely IDs (1, 2, 247 by default) and click **Start scan**.
+<Result>ModField reopens the port with each combination, from the common ones (9600 8N1, 19200 8E1…) to the rare ones.</Result>
+</li>
+<li>
+When "Found: …" appears, click **Apply to profile and connect**.
+<Result>The profile gets the right settings and the connection opens.</Result>
+</li>
+</Steps>
+
+## Just listening (a PLC or SCADA is already on the bus)
+
+In **Passive listening**, ModField transmits nothing: it looks for CRC-valid frames under each combination. Use it when you must not disturb the master that is already there.

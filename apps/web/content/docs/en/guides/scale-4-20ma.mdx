@@ -1,0 +1,23 @@
+---
+title: Scale a 4–20 mA signal
+description: The transmitter's raw value in engineering units.
+---
+
+Many devices deliver the loop in counts (e.g. 4000 to 20000 µA) rather than in the process unit.
+
+<Steps>
+<li>
+Select the tag in the **Tags** tab of Read.
+<Result>The properties panel shows type, order, unit and scale.</Result>
+</li>
+<li>
+Tick **Linear scale** and fill in **Raw min** 4000, **Raw max** 20000, **Eng. min** 0 and **Eng. max** with the full scale (e.g. 10).
+<Result>The value now shows in engineering units.</Result>
+</li>
+<li>
+Fill in **Unit** (bar) and **Decimals** (2).
+<Result>The table shows "6.25 bar".</Result>
+</li>
+</Steps>
+
+The scale applies to writes too: writing 50 Hz to a tag scaled 0–6000 → 0–60 Hz sends 5000.

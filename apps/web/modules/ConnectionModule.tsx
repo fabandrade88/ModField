@@ -1,11 +1,11 @@
 "use client";
 import { DEMO_SLAVES, getSerial } from "@modfield/transport";
 import { useEffect, useState } from "react";
-import { Button, Dialog, ErrorBox, Field, Input, Notice, Section, Select, StateTag, Tabs, cx } from "@/components/controls";
+import { Button, Dialog, ErrorBox, Field, HelpTip, Input, Notice, Section, Select, StateTag, Tabs, cx, useTransportLabel } from "@/components/controls";
 import { useT } from "@/components/i18n";
 import { db, newId, type Equipment, type Profile } from "@/lib/db";
 import { describeError } from "@/lib/errors";
-import { updateProfile, useEquipment, useProfile, useProfiles } from "@/lib/hooks";
+import { patchProfile, updateProfile, useEquipment, useProfile, useProfiles } from "@/lib/hooks";
 import { blankProfile } from "@/lib/seed";
 import { useAgent } from "@/store/agent";
 import { useConnection } from "@/store/connection";
@@ -20,6 +20,7 @@ export function ConnectionModule() {
   const setUi = useUi((s) => s.set);
   const profile = useProfile();
   const c = useConnection();
+  const label = useTransportLabel(c.transport, c.label);
   const connected = c.state === "connected" || c.state === "connecting";
   const err = c.error ? describeError(t, c.error, { timeout: c.timeoutMs }) : undefined;
 
@@ -39,7 +40,7 @@ export function ConnectionModule() {
 
       <div className="flex items-center gap-3">
         <StateTag state={c.state} />
-        {c.label && <span className="text-muted">{c.label}</span>}
+        {label && <span className="text-muted">{label}</span>}
       </div>
       {err && <ErrorBox {...err} />}
       {c.portBusy && <Notice tone="warning">{t("conn.portBusy")}</Notice>}
@@ -148,7 +149,7 @@ function RtuTab({ profile, connected }: { profile: Profile; connected: boolean }
   if (hasSerial === false && !paired) return <Notice>{t("conn.noWebSerial")}</Notice>;
 
   const s = profile.serial;
-  const setSerial = (patch: Partial<Profile["serial"]>) => updateProfile(profile.id, { serial: { ...s, ...patch } });
+  const setSerial = (patch: Partial<Profile["serial"]>) => patchProfile(profile.id, (p) => Object.assign(p.serial, patch));
   const connect = () =>
     via === "agent"
       ? profile.agentPort && void c.connectAgent({ kind: "rtu", port: profile.agentPort, ...s }, profile.timeoutMs)
@@ -211,7 +212,7 @@ function RtuTab({ profile, connected }: { profile: Profile; connected: boolean }
         <Field label={t("conn.dataBits")}>
           <Select value={s.dataBits} options={[8, 7] as const} onChange={(dataBits) => setSerial({ dataBits })} disabled={connected} />
         </Field>
-        <Field label={t("conn.parity")}>
+        <Field label={t("conn.parity")} help={<HelpTip tip="tip.parity" doc="guides/baud-rate" />}>
           <Select
             value={s.parity}
             options={[
@@ -226,7 +227,7 @@ function RtuTab({ profile, connected }: { profile: Profile; connected: boolean }
         <Field label={t("conn.stopBits")}>
           <Select value={s.stopBits} options={[1, 2] as const} onChange={(stopBits) => setSerial({ stopBits })} disabled={connected} />
         </Field>
-        <Field label={t("conn.delay")}>
+        <Field label={t("conn.delay")} help={<HelpTip tip="tip.delay" doc="troubleshooting#timeout" />}>
           <Input
             type="number"
             min={0}
@@ -269,7 +270,7 @@ function TcpTab({ profile, connected }: { profile: Profile; connected: boolean }
     >
       <div className="flex flex-wrap items-end gap-3">
         <Field label={t("conn.tcp.host")}>
-          <Input value={tcp.host} onChange={(e) => updateProfile(profile.id, { tcp: { ...tcp, host: e.target.value } })} disabled={connected} className="w-48" />
+          <Input value={tcp.host} onChange={(e) => patchProfile(profile.id, (p) => void (p.tcp.host = e.target.value))} disabled={connected} className="w-48" />
         </Field>
         <Field label={t("conn.tcp.port")}>
           <Input
@@ -277,7 +278,10 @@ function TcpTab({ profile, connected }: { profile: Profile; connected: boolean }
             min={1}
             max={65535}
             value={tcp.port}
-            onChange={(e) => updateProfile(profile.id, { tcp: { ...tcp, port: clamp(e.target.valueAsNumber, 1, 65535, 502) } })}
+            onChange={(e) => {
+              const port = clamp(e.target.valueAsNumber, 1, 65535, 502);
+              patchProfile(profile.id, (p) => void (p.tcp.port = port));
+            }}
             disabled={connected}
             className="w-24"
           />
@@ -344,7 +348,7 @@ function CommonSettings({ profile }: { profile: Profile }) {
   const setTimeoutMs = useConnection((s) => s.setTimeoutMs);
   return (
     <div className="flex flex-wrap items-end gap-3">
-      <Field label={t("conn.timeout")}>
+      <Field label={t("conn.timeout")} help={<HelpTip tip="tip.timeout" doc="troubleshooting#timeout" />}>
         <Input
           type="number"
           min={20}

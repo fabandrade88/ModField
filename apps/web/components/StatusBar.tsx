@@ -5,7 +5,7 @@ import { usePolling } from "@/store/polling";
 import { useAgent } from "@/store/agent";
 import { useLogger } from "@/store/logger";
 import { useUi, type Layout } from "@/store/ui";
-import { StateTag, cx } from "./controls";
+import { StateTag, cx, useTransportLabel } from "./controls";
 import { useLang, useT } from "./i18n";
 
 const LOCALES = { pt: "pt-BR", en: "en-GB", de: "de-DE" } as const;
@@ -18,7 +18,8 @@ function Seg({ children, className }: { children: React.ReactNode; className?: s
 export function StatusBar() {
   const t = useT();
   const lang = useLang();
-  const { state, label, stats, transport } = useConnection();
+  const { state, label: rawLabel, stats, transport } = useConnection();
+  const label = useTransportLabel(transport, rawLabel);
   const layout = useUi((s) => s.layout);
   const agentStatus = useAgent((s) => s.status);
   const agentVersion = useAgent((s) => s.endpoint?.hello.agentVersion);

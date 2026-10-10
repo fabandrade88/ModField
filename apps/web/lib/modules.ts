@@ -3,7 +3,4 @@ export const FOOTER_MODULES = ["settings", "storage", "docs"] as const;
 export type ModuleId = (typeof NUMBERED_MODULES)[number] | (typeof FOOTER_MODULES)[number];
 
 /** Roadmap phase in which a module that is still a placeholder arrives. */
-export const PLANNED_PHASE: Partial<Record<ModuleId, number>> = {
-  sim: 6,
-  docs: 6,
-};
+export const PLANNED_PHASE: Partial<Record<ModuleId, number>> = {};

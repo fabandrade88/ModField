@@ -35,13 +35,29 @@ export function Kbd({ children }: { children: ReactNode }) {
   return <kbd className="rounded-xs border border-border px-1 text-[11px] text-muted">{children}</kbd>;
 }
 
-export function Field({ label, children, hint, className }: { label: string; children: ReactNode; hint?: string; className?: string }) {
+export function Field({ label, children, hint, className, help }: { label: string; children: ReactNode; hint?: string; className?: string; help?: ReactNode }) {
+  if (!help) {
+    return (
+      <label className={cx("flex flex-col gap-1", className)}>
+        <span className="text-[12px] text-muted">{label}</span>
+        {children}
+        {hint && <span className="text-[12px] text-muted">{hint}</span>}
+      </label>
+    );
+  }
+  // The help button stays outside the <label>: inside, it would join the field's name.
   return (
-    <label className={cx("flex flex-col gap-1", className)}>
-      <span className="text-[12px] text-muted">{label}</span>
-      {children}
+    <div className={cx("flex flex-col gap-1", className)}>
+      <div className="flex items-center gap-1 text-[12px] text-muted">
+        <span aria-hidden="true">{label}</span>
+        {help}
+      </div>
+      <label className="flex flex-col">
+        <span className="sr-only">{label}</span>
+        {children}
+      </label>
       {hint && <span className="text-[12px] text-muted">{hint}</span>}
-    </label>
+    </div>
   );
 }
 

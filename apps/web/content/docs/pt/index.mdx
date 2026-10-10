@@ -1,0 +1,23 @@
+---
+title: Documentação do ModField
+description: Guia de campo para técnicos de automação e instrumentação e engenheiros de comissionamento.
+---
+
+O ModField lê, escreve, varre, simula e registra equipamentos Modbus RTU e TCP pelo navegador. Sem agente, funciona com um conversor USB-RS485 pela Web Serial. Com o agente local (instalado sem administrador), ganha Modbus TCP, nomes de porta como COM3 e coleta com a aba fechada.
+
+## Por onde começar
+
+- [Ler o primeiro registrador por USB-RS485](/pt/docs/quick-start-usb) — 5 minutos, nada para instalar.
+- [Ler o primeiro registrador por Modbus TCP](/pt/docs/quick-start-tcp) — precisa do agente.
+- [Instalar o agente sem administrador](/pt/docs/install-agent).
+
+## Tarefas comuns
+
+- [Encontrar um escravo desconhecido](/pt/docs/guides/find-slave)
+- [Descobrir baud rate e paridade](/pt/docs/guides/baud-rate)
+- [Ler um FLOAT32](/pt/docs/guides/float32) e [escalar um sinal 4–20 mA](/pt/docs/guides/scale-4-20ma)
+- [Registrar 24 horas](/pt/docs/guides/log-24h) e [gerar o relatório de comissionamento](/pt/docs/guides/report)
+
+Algo deu errado? Veja a [solução de problemas](/pt/docs/troubleshooting): toda mensagem de erro da ferramenta tem um link "Como resolver" para a entrada exata.
+
+<Callout>Esta documentação funciona sem internet depois do primeiro acesso, como a ferramenta.</Callout>

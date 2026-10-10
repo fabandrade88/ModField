@@ -1,0 +1,37 @@
+---
+title: Log for 24 hours
+description: A long log that keeps going with the tab closed.
+---
+
+<Callout type="warning">For more than 1 hour, use the agent. Without it, the browser slows down timers in background tabs and the log ends up with gaps.</Callout>
+
+<Steps>
+<li>
+Connect through the agent (RTU through the agent, or TCP).
+<Result>The Logger shows "Collected by the agent".</Result>
+</li>
+<li>
+Disable notebook sleep.
+<Result>Asleep, nothing is collected and the interval shows as a gap.</Result>
+</li>
+<li>
+In **Logger** (<Kbd>7</Kbd>), give a **Name**, choose **Interval** (1000 ms), **Duration** (1440 min) and the tags.
+<Result>A week at 1 s with 50 tags takes less than 200 MB on the agent.</Result>
+</li>
+<li>
+Click **Start logging** (<Kbd>L</Kbd>).
+<Result>The status bar shows "log ● name · samples · agent".</Result>
+</li>
+<li>
+Mark events with <Kbd>M</Kbd>: "valve 50% open".
+<Result>The marker shows in the chart and goes into the report.</Result>
+</li>
+<li>
+You may close the tab. When you come back, ModField fetches everything the agent collected.
+<Result>The sample counter jumps to the total; nothing is lost.</Result>
+</li>
+</Steps>
+
+<Shot src="/docs/en/logger.png" alt="Logger with trend chart, marker and window statistics." />
+
+In the chart, drag to zoom, use ← → to pan and **Show all** to go back. **Export CSV** writes ISO 8601 timestamp, tag, value and quality.

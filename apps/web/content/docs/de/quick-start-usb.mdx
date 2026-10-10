@@ -1,0 +1,37 @@
+---
+title: "Schnellstart: USB-RS485"
+description: Das erste Register in 5 Minuten lesen, ohne Installation.
+---
+
+Sie brauchen: Chrome, Edge oder Firefox 151+ am Desktop; einen USB-RS485-Wandler (am besten FTDI); ID, Baudrate und Parität des Slaves (aus dem Handbuch oder vom Display des Geräts).
+
+<Steps>
+<li>
+Wandler per USB anschließen und A und B am Gerät verdrahten.
+<Result>Windows installiert den FTDI-Treiber selbst; unter Linux erscheint der Port als /dev/ttyUSB0.</Result>
+</li>
+<li>
+ModField öffnen und im Startbildschirm **USB-RS485 an diesem Computer** wählen (Taste <Kbd>1</Kbd>).
+<Result>Das Modul Verbindung öffnet sich auf dem Reiter RTU.</Result>
+</li>
+<li>
+**Baudrate**, **Parität** und **Stoppbits** wie am Gerät einstellen.
+<Result>Die Werte werden im Profil gespeichert.</Result>
+</li>
+<li>
+**Port wählen** klicken und den Wandler in der Liste des Browsers auswählen.
+<Result>Daneben erscheinen Hersteller und VID:PID, z. B. „FTDI 0403:6001“.</Result>
+</li>
+<li>
+**Verbinden** klicken (<Kbd>Ctrl+Enter</Kbd>).
+<Result>Die Statusleiste zeigt „● VERBUNDEN“.</Result>
+</li>
+<li>
+**Lesen** öffnen (<Kbd>2</Kbd>), Reiter **Block**: Unit-ID, Tabelle und Adresse eingeben und <Kbd>R</Kbd> drücken.
+<Result>Die Tabelle zeigt Roh- und dekodierten Wert. Bei TIMEOUT siehe [Fehlerbehebung](/de/docs/troubleshooting#timeout).</Result>
+</li>
+</Steps>
+
+<Shot src="/docs/de/read.png" alt="Lesen von Tags mit skalierten Werten und Verkehrsmonitor daneben." />
+
+Kein Gerät zur Hand? Im Startbildschirm **Nur ausprobieren (Demo-Modus)** wählen: Der simulierte Prüfstand verwendet denselben RTU-Code wie eine echte Verbindung.

@@ -101,6 +101,8 @@ export function TrendChart({
         {
           stroke: muted,
           font,
+          // Room for one "HH:MM:SS" label per ~90 px.
+          space: 90,
           grid: { stroke: grid, width: 1 },
           ticks: { stroke: grid, width: 1 },
           values: (u, splits) => {

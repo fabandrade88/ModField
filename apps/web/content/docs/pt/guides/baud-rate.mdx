@@ -1,0 +1,25 @@
+---
+title: Descobrir baud rate e paridade
+description: Testar as combinações comuns, ou só escutar um mestre que já existe.
+---
+
+## Testando (barramento sem outro mestre)
+
+<Steps>
+<li>
+Escolha a porta em Conexão (não precisa conectar).
+<Result>A porta aparece com fabricante e VID:PID.</Result>
+</li>
+<li>
+Em **Scanner** › **Parâmetros seriais**, informe os IDs prováveis (padrão 1, 2, 247) e clique em **Iniciar varredura**.
+<Result>O ModField reabre a porta em cada combinação, das comuns (9600 8N1, 19200 8E1…) para as raras.</Result>
+</li>
+<li>
+Quando aparecer "Encontrado: …", clique em **Aplicar ao perfil e conectar**.
+<Result>O perfil fica com os parâmetros certos e a conexão abre.</Result>
+</li>
+</Steps>
+
+## Só escutando (já existe um CLP ou SCADA no barramento)
+
+Em **Escuta passiva**, o ModField não transmite nada: procura quadros com CRC válido em cada combinação. Use isso quando não pode interferir no mestre que já está lá.

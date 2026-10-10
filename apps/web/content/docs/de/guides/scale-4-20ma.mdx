@@ -1,0 +1,23 @@
+---
+title: Ein 4–20-mA-Signal skalieren
+description: Den Rohwert des Transmitters in physikalischer Einheit.
+---
+
+Viele Geräte liefern die Schleife in Zählwerten (z. B. 4000 bis 20000 µA) statt in der Prozesseinheit.
+
+<Steps>
+<li>
+Den Tag im Reiter **Tags** von Lesen auswählen.
+<Result>Der Eigenschaftsbereich zeigt Typ, Reihenfolge, Einheit und Skalierung.</Result>
+</li>
+<li>
+**Lineare Skalierung** anhaken und **Roh min.** 4000, **Roh max.** 20000, **Phys. min.** 0 und **Phys. max.** mit dem Messbereichsende (z. B. 10) ausfüllen.
+<Result>Der Wert erscheint jetzt in physikalischer Einheit.</Result>
+</li>
+<li>
+**Einheit** (bar) und **Nachkommastellen** (2) ausfüllen.
+<Result>Die Tabelle zeigt „6.25 bar“.</Result>
+</li>
+</Steps>
+
+Die Skalierung gilt auch beim Schreiben: 50 Hz auf einen Tag mit 0–6000 → 0–60 Hz sendet 5000.

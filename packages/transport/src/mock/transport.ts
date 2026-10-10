@@ -1,4 +1,4 @@
-import { WebSerialTransport, type SerialSettings } from "../webserial/transport";
+import { WebSerialTransport, formatSerial, type SerialSettings } from "../webserial/transport";
 import type { TransportKind } from "../types";
 import { demoSlaves } from "./demo";
 import { DEMO_LINE, SimulatedSerialPort, type SimulatedLineOptions } from "./serial-port";
@@ -18,7 +18,8 @@ export class MockTransport extends WebSerialTransport {
     this.line = line;
   }
 
+  /** Technical part only; the UI adds the translated "Demo" prefix by kind. */
   override get label(): string {
-    return "Demonstração · 19200 8E1";
+    return formatSerial(this.settings);
   }
 }

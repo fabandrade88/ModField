@@ -28,7 +28,7 @@ import (
 
 // Set by the release build (-ldflags "-X main.version=...").
 var (
-	version        = "0.3.0-dev"
+	version        = "1.0.0"
 	officialOrigin = "https://modfield.app"
 )
 

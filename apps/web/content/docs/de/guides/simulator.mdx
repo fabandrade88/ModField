@@ -1,0 +1,29 @@
+---
+title: Ohne Geräte testen
+description: Slave-Simulator für SCADA, SPS oder ModField selbst.
+---
+
+Ohne Agent **Nur ausprobieren (Demo-Modus)** verwenden: Umrichter, Drucktransmitter und Durchflussmesser im Browser simuliert.
+
+Mit Agent erzeugt das Modul **Simulator** (<Kbd>5</Kbd>) echte Slaves:
+
+<Steps>
+<li>
+**Neu aus dem Demo-Prüfstand** klicken.
+<Result>Die Registertabelle erscheint, mit einem Generator je Register.</Result>
+</li>
+<li>
+Slaves und Register bearbeiten: Tabelle, Adresse, Typ, Reihenfolge und Generator (fest, Rampe, Sinus, Zufall, Zähler).
+<Result>Änderungen werden gespeichert und kommen in die Projektdatei.</Result>
+</li>
+<li>
+TCP (127.0.0.1:5020) oder RTU an einem seriellen Port wählen und **Simulator starten** klicken.
+<Result>Er erscheint unter „Laufende Simulatoren“; empfangene Anfragen werden aufgelistet.</Result>
+</li>
+<li>
+SCADA auf 127.0.0.1:5020 richten oder **ModField mit diesem Simulator verbinden** klicken.
+<Result>Lese- und Schreibvorgänge erscheinen im Protokoll des Simulators.</Result>
+</li>
+</Steps>
+
+<Callout type="warning">Den Simulator im lokalen Netz freizugeben lässt die Windows-Firewall nach Administratorrechten fragen. Standardmäßig lauscht er nur auf 127.0.0.1.</Callout>

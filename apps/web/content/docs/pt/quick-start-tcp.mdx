@@ -1,0 +1,31 @@
+---
+title: "Início rápido: Modbus TCP"
+description: Ler o primeiro registrador de um equipamento na rede.
+---
+
+O navegador não abre conexões TCP; o Modbus TCP passa pelo [agente local](/pt/docs/install-agent).
+
+<Steps>
+<li>
+Com o agente instalado e rodando, abra **Conexão** (<Kbd>1</Kbd>) e clique em **Procurar agente**.
+<Result>Aparece "Agente … encontrado · chave …". Na primeira vez, o navegador pode pedir acesso à rede local: clique em Permitir.</Result>
+</li>
+<li>
+Clique em **Parear com o agente**.
+<Result>O agente abre uma página com um código de 6 dígitos (sem tela: rode `modfield-agent pair`).</Result>
+</li>
+<li>
+Digite o código e clique em **Parear**.
+<Result>A barra de status mostra "agente ● versão".</Result>
+</li>
+<li>
+Na aba **TCP**, informe **IP ou nome** e **Porta TCP** (padrão 502) e clique em **Conectar**.
+<Result>A barra de status mostra "Agente · TCP ip:porta" e "CONECTADO".</Result>
+</li>
+<li>
+Em **Leitura** (<Kbd>2</Kbd>), informe o **Unit ID** e leia com <Kbd>R</Kbd>.
+<Result>Atrás de um gateway, o unit ID é o endereço RTU do equipamento.</Result>
+</li>
+</Steps>
+
+O monitor de tráfego mostra os quadros com o cabeçalho MBAP e o número de transação (#n).

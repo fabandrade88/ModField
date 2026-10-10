@@ -1,0 +1,4 @@
+{
+  "title": "Task guides",
+  "pages": ["find-slave", "baud-rate", "float32", "scale-4-20ma", "log-24h", "report", "verify-report", "simulator"]
+}

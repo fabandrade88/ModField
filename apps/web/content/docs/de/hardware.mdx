@@ -1,0 +1,24 @@
+---
+title: RS-485-Hardware
+description: Wandler, A/B-Verdrahtung, Abschluss und Erdung.
+---
+
+## Empfohlener Wandler [#converter]
+
+Wandler mit FTDI-Chip bevorzugen: Windows installiert den Treiber selbst, ohne Administratorrechte. CH340 und ähnliche brauchen manchmal eine manuelle Treiberinstallation. Unter Windows steht der „Latency Timer“ von FTDI auf 16 ms, was die Transaktionsrate begrenzt; ändern erfordert Administratorrechte.
+
+## A/B-Verdrahtung [#wiring]
+
+A mit A und B mit B entlang des Busses verbinden, in Linie (kein Stern). Die Bezeichnung variiert je Hersteller (D+/D−, TX+/TX−); antwortet nichts, A und B tauschen: das schadet nichts.
+
+## 120-Ω-Abschluss [#termination]
+
+Einen 120-Ω-Widerstand zwischen A und B an beiden Busenden setzen, und nur dort. Kurze Verdrahtung am Prüfstand kann ohne funktionieren; im Feld verursacht ein fehlender Abschluss sporadische CRC_ERROR.
+
+## Erdung und Schirmung [#grounding]
+
+Geschirmtes, verdrilltes Kabel verwenden. Den Schirm an nur einem Punkt erden und, falls vorhanden, GND/Bezug des Wandlers anschließen. Potentialunterschiede zwischen Schaltschränken verursachen Fehler und können nicht isolierte Wandler zerstören.
+
+## RTU ohne Geräte testen [#virtual-ports]
+
+Zwei miteinander verbundene Wandler oder ein Paar virtueller Ports: `socat` unter Linux und macOS; unter Windows benötigt com0com Administratorrechte zur Installation.

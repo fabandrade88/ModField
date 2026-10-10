@@ -423,11 +423,12 @@ func (a *Agent) connOpen(s *Session, raw json.RawMessage) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	// The same port or host opened again (page reload, second tab) shares the connection.
+	// The same port or host opened again (page reload, second tab) shares the
+	// connection. The lease is taken under a.mu, so closeNow cannot remove the
+	// connection between finding it and leasing it (lock order: a.mu, then c.mu).
 	a.mu.Lock()
 	for _, c := range a.conns {
 		if c.Params == p {
-			a.mu.Unlock()
 			c.mu.Lock()
 			c.leases[s] = true
 			if c.closeAt != nil {
@@ -435,12 +436,14 @@ func (a *Agent) connOpen(s *Session, raw json.RawMessage) (any, error) {
 				c.closeAt = nil
 			}
 			c.mu.Unlock()
+			a.mu.Unlock()
 			return map[string]string{"connId": c.ID, "label": c.Label}, nil
 		}
 	}
 	a.mu.Unlock()
 	c, err := openConn(newID(), p, a.onFrame)
 	if err != nil {
+		a.Log.Warn("connection failed", "label", p.label(), "err", err)
 		return nil, err
 	}
 	c.leases[s] = true
@@ -489,20 +492,19 @@ func (a *Agent) maybeClose(c *Conn) {
 }
 
 func (a *Agent) closeNow(c *Conn) {
+	a.mu.Lock()
 	c.mu.Lock()
 	if len(c.leases) > 0 || c.pinned > 0 {
 		c.closeAt = nil
 		c.mu.Unlock()
+		a.mu.Unlock()
 		return
 	}
-	c.mu.Unlock()
-	a.mu.Lock()
 	delete(a.conns, c.ID)
-	a.mu.Unlock()
-	c.mu.Lock()
 	client := c.client
 	c.client = nil
 	c.mu.Unlock()
+	a.mu.Unlock()
 	if client != nil {
 		_ = client.Close()
 	}

@@ -92,8 +92,9 @@ export class AgentTransport implements Transport {
     readonly params: AgentConnParams,
   ) {}
 
+  /** Technical part only; the UI adds the translated "Agent" prefix by kind. */
   get label(): string {
-    return `Agente · ${this.agentLabel || (this.params.kind === "tcp" ? `TCP ${this.params.host}:${this.params.tcpPort}` : this.params.port)}`;
+    return this.agentLabel || (this.params.kind === "tcp" ? `TCP ${this.params.host}:${this.params.tcpPort}` : this.params.port);
   }
 
   get framing(): "rtu" | "tcp" {

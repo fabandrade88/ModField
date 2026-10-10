@@ -1,0 +1,37 @@
+---
+title: "Quick start: USB-RS485"
+description: Read the first register in 5 minutes, nothing to install.
+---
+
+You need: desktop Chrome, Edge or Firefox 151+; a USB-RS485 converter (FTDI preferred); the slave's ID, baud rate and parity (from the manual or the device's display).
+
+<Steps>
+<li>
+Plug the converter into USB and wire A and B to the device.
+<Result>Windows installs the FTDI driver by itself; on Linux the port shows up as /dev/ttyUSB0.</Result>
+</li>
+<li>
+Open ModField and, on the first screen, choose **USB-RS485 on this computer** (key <Kbd>1</Kbd>).
+<Result>The Connection module opens on the RTU tab.</Result>
+</li>
+<li>
+Set **Baud rate**, **Parity** and **Stop bits** to match the device.
+<Result>The values are saved in the profile.</Result>
+</li>
+<li>
+Click **Choose port** and pick the converter in the browser's list.
+<Result>The manufacturer and VID:PID appear next to it, e.g. "FTDI 0403:6001".</Result>
+</li>
+<li>
+Click **Connect** (<Kbd>Ctrl+Enter</Kbd>).
+<Result>The status bar shows "● CONNECTED".</Result>
+</li>
+<li>
+Open **Read** (<Kbd>2</Kbd>), **Block** tab: enter Unit ID, Table and Address and press <Kbd>R</Kbd>.
+<Result>The table shows the raw and the decoded value. If TIMEOUT shows up, see [troubleshooting](/en/docs/troubleshooting#timeout).</Result>
+</li>
+</Steps>
+
+<Shot src="/docs/en/read.png" alt="Tag reading with scaled values and the traffic monitor beside it." />
+
+No device at hand? Choose **Just try it (demo mode)** on the first screen: the simulated bench runs the same RTU code as a real connection.

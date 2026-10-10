@@ -1,0 +1,23 @@
+---
+title: Ler um FLOAT32
+description: Dois registradores, quatro ordens de bytes possíveis.
+---
+
+Um FLOAT32 ocupa dois registradores de 16 bits. O fabricante escolhe em que ordem os 4 bytes vêm: ABCD (padrão Modbus), CDAB (palavras trocadas, muito comum), BADC ou DCBA.
+
+<Steps>
+<li>
+Em **Leitura** › **Bloco**, informe o endereço do primeiro registrador, **Tipo** FLOAT32 e **Quantidade** 1.
+<Result>A coluna Bruto mostra os dois registradores em hexadecimal.</Result>
+</li>
+<li>
+Leia com <Kbd>R</Kbd>. Se o valor parecer absurdo (1.4e-40, 6.2e+21), troque **Ordem** para CDAB e leia de novo.
+<Result>Um valor plausível (6.21 bar, 12.4 m³/h) indica a ordem certa.</Result>
+</li>
+<li>
+Clique na linha e em **Salvar como tag** no painel de propriedades.
+<Result>A tag aparece na aba Tags, com tipo e ordem gravados.</Result>
+</li>
+</Steps>
+
+Exemplo: 123,456 é `42F6 E979` em ABCD e `E979 42F6` em CDAB. Veja a [referência de ordem de bytes](/pt/docs/modbus-reference#byte-order).

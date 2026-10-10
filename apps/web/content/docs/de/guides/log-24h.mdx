@@ -1,0 +1,37 @@
+---
+title: 24 Stunden aufzeichnen
+description: Lange Aufzeichnung, die bei geschlossenem Tab weiterläuft.
+---
+
+<Callout type="warning">Für mehr als 1 Stunde den Agenten verwenden. Ohne ihn drosselt der Browser Timer in Hintergrund-Tabs und die Aufzeichnung bekommt Lücken.</Callout>
+
+<Steps>
+<li>
+Über den Agenten verbinden (RTU über den Agenten oder TCP).
+<Result>Der Logger zeigt „Erfassung im Agenten“.</Result>
+</li>
+<li>
+Ruhezustand des Notebooks deaktivieren.
+<Result>Im Ruhezustand wird nichts erfasst und der Zeitraum erscheint als Lücke.</Result>
+</li>
+<li>
+Im **Logger** (<Kbd>7</Kbd>) **Name**, **Intervall** (1000 ms), **Dauer** (1440 min) und die Tags wählen.
+<Result>Eine Woche bei 1 s mit 50 Tags belegt im Agenten weniger als 200 MB.</Result>
+</li>
+<li>
+**Aufzeichnung starten** klicken (<Kbd>L</Kbd>).
+<Result>Die Statusleiste zeigt „Log ● Name · Werte · Agent“.</Result>
+</li>
+<li>
+Ereignisse mit <Kbd>M</Kbd> markieren: „Ventil 50 % offen“.
+<Result>Die Markierung erscheint im Diagramm und im Bericht.</Result>
+</li>
+<li>
+Der Tab darf geschlossen werden. Beim Zurückkommen holt ModField alles, was der Agent erfasst hat.
+<Result>Der Wertezähler springt auf die Gesamtzahl; nichts geht verloren.</Result>
+</li>
+</Steps>
+
+<Shot src="/docs/de/logger.png" alt="Logger mit Trenddiagramm, Markierung und Statistik des Zeitfensters." />
+
+Im Diagramm ziehen zum Zoomen, ← → zum Verschieben und **Alles anzeigen** zum Zurücksetzen. **CSV exportieren** schreibt ISO-8601-Zeitstempel, Tag, Wert und Qualität.

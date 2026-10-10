@@ -1,0 +1,51 @@
+---
+title: Referência Modbus
+description: Funções, exceções, endereçamento e ordem de bytes.
+---
+
+## Funções [#functions]
+
+| Função | Nome | Uso |
+|---|---|---|
+| 01 | Read Coils | Saídas digitais (até 2000 bits) |
+| 02 | Read Discrete Inputs | Entradas digitais |
+| 03 | Read Holding Registers | Parâmetros e valores (até 125 registradores) |
+| 04 | Read Input Registers | Medições somente leitura |
+| 05 | Write Single Coil | Liga/desliga uma saída |
+| 06 | Write Single Register | Um registrador de 16 bits |
+| 15 | Write Multiple Coils | Várias saídas |
+| 16 | Write Multiple Registers | 32/64 bits e blocos (até 123) |
+| 43/14 | Read Device Identification | Fabricante, modelo, versão |
+
+## Exceções [#exceptions]
+
+| Código | Significado |
+|---|---|
+| 01 | Função não suportada |
+| 02 | Endereço inexistente |
+| 03 | Valor ou quantidade inválidos |
+| 04 | Falha no escravo |
+| 05 | Aceito, processando |
+| 06 | Escravo ocupado |
+| 08 | Erro de paridade de memória |
+| 0A | Gateway sem caminho |
+| 0B | Equipamento atrás do gateway não respondeu |
+
+Não existem os códigos 07 e 09.
+
+## Endereçamento: base 0, base 1 e 4xxxx [#addressing]
+
+O protocolo envia o deslocamento (0 a 65535). Manuais costumam usar a notação clássica, que começa em 1 e indica a tabela pelo primeiro dígito: 0xxxx coils, 1xxxx discrete, 3xxxx input, 4xxxx holding. Assim, 40001 é o holding de deslocamento 0, e 400101 (seis dígitos) é o deslocamento 100.
+
+## Ordem de bytes [#byte-order]
+
+Os bytes de um valor de 32 bits são A (mais significativo), B, C e D. Exemplo com 123,456 em FLOAT32 (0x42F6E979):
+
+| Ordem | Registrador 1 | Registrador 2 |
+|---|---|---|
+| ABCD | 42F6 | E979 |
+| CDAB | E979 | 42F6 |
+| BADC | F642 | 79E9 |
+| DCBA | 79E9 | F642 |
+
+Para 64 bits, a mesma regra vale para os quatro registradores.

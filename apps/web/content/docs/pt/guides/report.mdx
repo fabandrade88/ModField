@@ -1,0 +1,33 @@
+---
+title: Gerar o relatório de comissionamento
+description: PDF pronto para imprimir e assinar, em poucos minutos.
+---
+
+<Steps>
+<li>
+Uma vez só: em **Configurações** › **Empresa**, preencha os dados e envie o logo (PNG ou SVG).
+<Result>Eles saem no cabeçalho de todos os relatórios.</Result>
+</li>
+<li>
+Em **Relatório** (<Kbd>8</Kbd>), clique em **Novo relatório** e preencha cliente, planta, área e OS.
+<Result>O número segue o padrão MF-ano-sequência.</Result>
+</li>
+<li>
+Escolha a **Sessão de log** do teste.
+<Result>Tendências, estatísticas, marcadores e escritas do período entram no PDF.</Result>
+</li>
+<li>
+Adicione os **testes de aceitação**: tag, esperado, tolerância (absoluta ou %) e medido (**Ler agora**, ou **Média**/**Mín.**/**Máx.** de um trecho entre marcadores).
+<Result>O resultado é calculado. Um resultado manual exige justificativa, que sai impressa.</Result>
+</li>
+<li>
+Em **Assinaturas**, deixe em branco para assinar no papel ou use **Assinar na tela**.
+<Result>A assinatura desenhada é uma imagem, não assinatura digital certificada.</Result>
+</li>
+<li>
+Clique em **Atualizar pré-visualização**, confira e **Gerar PDF** (<Kbd>G</Kbd>).
+<Result>O PDF traz página X de Y, o hash SHA-256 dos dados e, com o agente pareado, a assinatura desse hash.</Result>
+</li>
+</Steps>
+
+**Salvar como modelo deste cliente** guarda seções, testes e assinaturas para o próximo trabalho.

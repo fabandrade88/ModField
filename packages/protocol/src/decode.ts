@@ -79,6 +79,14 @@ export function describeTcpFrame(frame: Uint8Array, dir: Direction): FrameSummar
   return { ...d, text: `#${tid} ${d.text}`, crcOk: undefined };
 }
 
+/** Describes a bare PDU (the simulator's request log has no framing). */
+export function describePdu(unitId: number, pdu: Uint8Array, dir: Direction): FrameSummary {
+  const rtuLike = new Uint8Array(pdu.length + 3);
+  rtuLike[0] = unitId;
+  rtuLike.set(pdu, 1);
+  return { ...describeRtuFrame(rtuLike, dir), crcOk: undefined };
+}
+
 export function describeFrame(frame: Uint8Array, dir: Direction, framing: Framing = "rtu"): FrameSummary {
   return framing === "tcp" ? describeTcpFrame(frame, dir) : describeRtuFrame(frame, dir);
 }

@@ -21,7 +21,9 @@ export async function startDemo(page: Page) {
   await expect(page.locator("footer [data-state]")).toHaveText(/CONECTADO/);
 }
 
-export const pane = (page: Page, n: number) => page.getByRole("region", { name: `Painel ${n}` });
+const PANE: Record<string, string> = { pt: "Painel", en: "Pane", de: "Bereich" };
+
+export const pane = (page: Page, n: number) => page.getByRole("region", { name: new RegExp(`^(${Object.values(PANE).join("|")}) ${n}$`) });
 
 /** Focuses a pane by clicking its number in the header (clicks elsewhere may hit controls). */
 export async function focusPane(page: Page, n: number) {

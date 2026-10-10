@@ -134,7 +134,14 @@ export const useAgent = create<AgentState>()((set, get) => {
   };
 });
 
-/** Reconnect silently on load when already paired (the browser granted local network access before). */
+/**
+ * Reconnect silently on load when already paired (the browser granted local
+ * network access before). Never while a client exists or a search runs: the
+ * user may have paired in the meantime, and discover() would close that client.
+ */
 export async function autoConnectAgent(): Promise<void> {
-  if (await db.agent.get("pairing")) await useAgent.getState().discover();
+  const busy = () => useAgent.getState().client !== undefined || useAgent.getState().status !== "idle";
+  if (busy()) return;
+  const paired = await db.agent.get("pairing");
+  if (paired && !busy()) await useAgent.getState().discover();
 }

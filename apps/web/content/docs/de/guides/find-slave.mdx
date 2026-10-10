@@ -1,0 +1,27 @@
+---
+title: Einen unbekannten Slave finden
+description: IDs 1 bis 247 scannen und sehen, wer antwortet.
+---
+
+<Steps>
+<li>
+Mit den Schnittstellenparametern verbinden, die Sie für richtig halten.
+<Result>„VERBUNDEN“ in der Statusleiste.</Result>
+</li>
+<li>
+**Scanner** öffnen (<Kbd>4</Kbd>), Reiter **IDs**.
+<Result>Von 1 bis 247, kurzer Timeout je nach Baudrate (60 ms bei 19200).</Result>
+</li>
+<li>
+**Scan starten** klicken und den Hinweis bestätigen.
+<Result>IDs 1, 2 und 247 zuerst; gefundene erscheinen während des Scans in der Tabelle.</Result>
+</li>
+<li>
+Bei jeder gefundenen ID **Zu Geräten hinzufügen** klicken.
+<Result>In Verbindung › Geräte mit **Kennung lesen** (Funktion 43/14) Hersteller, Modell und Firmware ausfüllen.</Result>
+</li>
+</Steps>
+
+Ein Slave, der „mit Ausnahme 02 geantwortet“ hat, existiert: Er hat nur kein Holding-Register 0. Antwortet keine ID, stimmen wahrscheinlich die Schnittstellenparameter nicht: [Baudrate ermitteln](/de/docs/guides/baud-rate).
+
+<Shot src="/docs/de/scan.png" alt="ID-Scanner mit drei gefundenen Slaves." />

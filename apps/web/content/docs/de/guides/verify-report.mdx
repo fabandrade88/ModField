@@ -1,0 +1,19 @@
+---
+title: Einen Bericht prüfen
+description: Später belegen, dass die Werte nicht verändert wurden.
+---
+
+Der Bericht enthält die SHA-256 des kanonischen CSV der Sitzung. Mit gekoppeltem Agenten ist dieser Hash mit dem Schlüssel des Agenten signiert, und der öffentliche Schlüssel steht im PDF.
+
+<Steps>
+<li>
+Das CSV der Sitzung bereithalten: den Anhang des PDF oder **CSV exportieren** im Logger (dieselben Bytes).
+<Result>Eine .csv-Datei mit Zeitstempel, Tag, Wert, Qualität.</Result>
+</li>
+<li>
+In **Bericht** › **Prüfen** PDF und CSV hochladen und **Prüfen** klicken.
+<Result>„Das CSV passt zum Hash des Berichts“ und, falls signiert, „Gültige Signatur des Agenten mit Schlüssel …“.</Result>
+</li>
+</Steps>
+
+Jede Änderung am CSV, auch eine einzige Ziffer, zeigt „Das CSV passt NICHT“. Ohne Signatur lässt sich nur der Hash prüfen: Wer die Daten ändert, könnte auch einen unsignierten Hash neu berechnen.

@@ -1,0 +1,31 @@
+---
+title: "Schnellstart: Modbus TCP"
+description: Das erste Register eines Geräts im Netzwerk lesen.
+---
+
+Der Browser kann keine TCP-Verbindungen öffnen; Modbus TCP läuft über den [lokalen Agenten](/de/docs/install-agent).
+
+<Steps>
+<li>
+Bei installiertem und laufendem Agenten **Verbindung** öffnen (<Kbd>1</Kbd>) und **Agenten suchen** klicken.
+<Result>„Agent … gefunden · Schlüssel …“ erscheint. Beim ersten Mal fragt der Browser eventuell nach Zugriff auf das lokale Netzwerk: Zulassen klicken.</Result>
+</li>
+<li>
+**Mit dem Agenten koppeln** klicken.
+<Result>Der Agent öffnet eine Seite mit einem 6-stelligen Code (ohne Bildschirm: `modfield-agent pair` ausführen).</Result>
+</li>
+<li>
+Code eingeben und **Koppeln** klicken.
+<Result>Die Statusleiste zeigt „Agent ● Version“.</Result>
+</li>
+<li>
+Im Reiter **TCP** **IP oder Hostname** und **TCP-Port** (Standard 502) eingeben und **Verbinden** klicken.
+<Result>Die Statusleiste zeigt „TCP IP:Port“ und „VERBUNDEN“.</Result>
+</li>
+<li>
+In **Lesen** (<Kbd>2</Kbd>) die **Unit-ID** eingeben und mit <Kbd>R</Kbd> lesen.
+<Result>Hinter einem Gateway ist die Unit-ID die RTU-Adresse des Geräts.</Result>
+</li>
+</Steps>
+
+Der Verkehrsmonitor zeigt die Frames mit MBAP-Kopf und Transaktionsnummer (#n).

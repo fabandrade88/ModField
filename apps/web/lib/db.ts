@@ -3,7 +3,7 @@ import Dexie, { type EntityTable } from "dexie";
 import type { ReadBlock, TagDef } from "@modfield/protocol";
 import type { SampleBlock } from "@modfield/series";
 import type { AcceptanceTest, Company, ReportLang, SectionId, SignatureBlock } from "@modfield/report";
-import type { SerialSettings } from "@modfield/transport";
+import type { SerialSettings, SimSlaveConfig } from "@modfield/transport";
 
 export interface Profile {
   id: string;
@@ -147,6 +147,20 @@ export interface ReportDraft {
   updatedAt: number;
 }
 
+/** A saved simulator setup (runs on the agent). */
+export interface SimSetup {
+  id: string;
+  name: string;
+  transport: "tcp" | "rtu";
+  listen: string;
+  allowLan: boolean;
+  port?: string;
+  baudRate: number;
+  parity: "none" | "even" | "odd";
+  stopBits: 1 | 2;
+  slaves: SimSlaveConfig[];
+}
+
 /**
  * Everything stays in this browser's IndexedDB; nothing goes to a server.
  * Backups are the project file export (phase 4).
@@ -164,6 +178,7 @@ export const db = new Dexie("modfield") as Dexie & {
   company: EntityTable<CompanyRow, "id">;
   templates: EntityTable<ReportTemplate, "id">;
   reports: EntityTable<ReportDraft, "id">;
+  sims: EntityTable<SimSetup, "id">;
 };
 
 db.version(1).stores({
@@ -180,5 +195,6 @@ db.version(3).stores({
   markers: "++id, sessionId, t",
 });
 db.version(4).stores({ company: "id", templates: "id, name", reports: "id, profileId, createdAt" });
+db.version(5).stores({ sims: "id, name" });
 
 export const newId = () => crypto.randomUUID();

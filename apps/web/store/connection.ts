@@ -80,9 +80,11 @@ export const useConnection = create<ConnectionState>()((set, get) => {
       }),
     ];
     const client = new ModbusClient(transport, { timeoutMs });
+    // The client is published only once the connection is open: before that,
+    // Read/Write would be enabled and fail while still "connecting".
     set({
       transport,
-      client,
+      client: undefined,
       timeoutMs,
       label: transport.label,
       error: undefined,
@@ -92,7 +94,7 @@ export const useConnection = create<ConnectionState>()((set, get) => {
     });
     try {
       await transport.open();
-      set({ state: transport.state, stats: { ...transport.stats } });
+      if (get().transport === transport) set({ client, state: transport.state, stats: { ...transport.stats } });
     } catch (e) {
       set({ error: e, state: "error" });
     }

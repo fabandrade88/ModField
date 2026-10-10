@@ -7,7 +7,7 @@ import { useTags } from "@/lib/hooks";
 import { usePolling } from "@/store/polling";
 import { useSelection, type BlockSelection } from "@/store/selection";
 import { useUi } from "@/store/ui";
-import { Button, Field, Input, Select } from "./controls";
+import { Button, Field, HelpTip, Input, Select } from "./controls";
 import { useT } from "./i18n";
 
 export function PropertiesPanel() {
@@ -86,7 +86,7 @@ function TagEditor({ tagId }: { tagId: string }) {
           </Field>
         )}
         {!bits && tag.type !== "STRING" && (
-          <Field label={t("read.order")}>
+          <Field label={t("read.order")} help={<HelpTip tip="tip.order" doc="modbus-reference#byte-order" />}>
             <Select value={tag.order} options={BYTE_ORDERS} onChange={(order) => up({ order })} />
           </Field>
         )}
@@ -138,10 +138,17 @@ function TagEditor({ tagId }: { tagId: string }) {
 function ScaleEditor({ tag, onChange }: { tag: TagDef; onChange: (s: TagDef["scale"]) => void }) {
   const t = useT();
   const s = tag.scale;
+  // Against the stored tag, so quick edits of two limits do not undo each other.
   const set = (k: keyof NonNullable<TagDef["scale"]>, v: number) => {
     if (!s || !Number.isFinite(v)) return;
-    const next = { ...s, [k]: v };
-    if (next.rawMin !== next.rawMax && next.engMin !== next.engMax) onChange(next);
+    void db.tags
+      .where("id")
+      .equals(tag.id)
+      .modify((row) => {
+        if (!row.scale) return;
+        const next = { ...row.scale, [k]: v };
+        if (next.rawMin !== next.rawMax && next.engMin !== next.engMax) row.scale = next;
+      });
   };
   return (
     <fieldset className="flex flex-col gap-2 border border-border p-2">
@@ -154,6 +161,9 @@ function ScaleEditor({ tag, onChange }: { tag: TagDef; onChange: (s: TagDef["sca
         />
         {t("tag.scale")}
       </label>
+      <div className="-mt-1">
+        <HelpTip tip="tip.scale" doc="guides/scale-4-20ma" />
+      </div>
       {s && (
         <div className="grid grid-cols-2 gap-2">
           <Field label={t("tag.rawMin")}>

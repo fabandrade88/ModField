@@ -1,0 +1,24 @@
+---
+title: Hardware RS-485
+description: Conversores, ligação A/B, terminação e aterramento.
+---
+
+## Conversor recomendado [#converter]
+
+Prefira conversores com chip FTDI: o Windows instala o driver sozinho, sem administrador. CH340 e similares às vezes exigem instalar driver à mão. No Windows, o "latency timer" do FTDI vem em 16 ms, o que limita a taxa de transações; mudar exige administrador.
+
+## Ligação A/B [#wiring]
+
+Ligue A com A e B com B ao longo do barramento, em linha (sem estrela). A nomenclatura varia entre fabricantes (D+/D−, TX+/TX−); se nada responder, inverta A e B: não danifica nada.
+
+## Terminação de 120 Ω [#termination]
+
+Coloque um resistor de 120 Ω entre A e B nas duas pontas do barramento, e só nelas. Em trechos curtos de bancada pode funcionar sem; em campo, a falta de terminação causa CRC_ERROR intermitente.
+
+## Aterramento e blindagem [#grounding]
+
+Use cabo par trançado blindado. Aterre a blindagem em um ponto só e, se o conversor tiver, ligue o GND/comum de referência. Diferenças de potencial entre painéis causam erros e podem queimar conversores sem isolação.
+
+## Testar RTU sem equipamento [#virtual-ports]
+
+Dois conversores ligados entre si, ou um par de portas virtuais: `socat` no Linux e macOS; no Windows, o com0com pede administrador para instalar.

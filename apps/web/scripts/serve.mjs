@@ -13,6 +13,7 @@ const TYPES = {
   ".svg": "image/svg+xml",
   ".txt": "text/plain; charset=utf-8",
   ".json": "application/json",
+  ".png": "image/png",
   ".ico": "image/x-icon",
 };
 
@@ -25,6 +26,8 @@ createServer((req, res) => {
     res.writeHead(404, { "content-type": TYPES[".html"] });
     return createReadStream(join(ROOT, "404.html")).pipe(res);
   }
-  res.writeHead(200, { "content-type": TYPES[extname(path)] ?? "application/octet-stream" });
+  // The search index is a route handler exported as a file without extension.
+  const type = url.pathname === "/api/search" ? "application/json" : (TYPES[extname(path)] ?? "application/octet-stream");
+  res.writeHead(200, { "content-type": type });
   createReadStream(path).pipe(res);
 }).listen(PORT, "127.0.0.1", () => console.log(`serving out/ on http://127.0.0.1:${PORT}`));

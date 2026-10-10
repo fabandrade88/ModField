@@ -1,0 +1,25 @@
+---
+title: Baudrate und Parität ermitteln
+description: Die üblichen Kombinationen probieren oder einem vorhandenen Master zuhören.
+---
+
+## Probieren (Bus ohne anderen Master)
+
+<Steps>
+<li>
+Port in Verbindung wählen (verbinden nicht nötig).
+<Result>Der Port erscheint mit Hersteller und VID:PID.</Result>
+</li>
+<li>
+In **Scanner** › **Schnittstellenparameter** die wahrscheinlichen IDs eingeben (Standard 1, 2, 247) und **Scan starten** klicken.
+<Result>ModField öffnet den Port mit jeder Kombination neu, von häufig (9600 8N1, 19200 8E1…) bis selten.</Result>
+</li>
+<li>
+Bei „Gefunden: …“ **Ins Profil übernehmen und verbinden** klicken.
+<Result>Das Profil erhält die richtigen Parameter und die Verbindung öffnet sich.</Result>
+</li>
+</Steps>
+
+## Nur mithören (SPS oder SCADA bereits am Bus)
+
+Bei **Passiv mithören** sendet ModField nichts: Es sucht in jeder Kombination nach Frames mit gültigem CRC. Verwenden, wenn der vorhandene Master nicht gestört werden darf.

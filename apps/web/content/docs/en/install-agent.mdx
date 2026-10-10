@@ -1,0 +1,39 @@
+---
+title: Install the agent without administrator rights
+description: Windows, macOS and Linux; and what to do if IT blocks it.
+---
+
+The agent is a single executable that only listens on 127.0.0.1 (ports 47807 to 47809) and never asks for administrator rights. It adds Modbus TCP, the system's port names, logging with the tab closed, the slave simulator and the signature of the report hash.
+
+## Windows 10 and 11
+
+<Steps>
+<li>
+Run the `ModField-Agent-…-setup.exe` installer (or the portable ZIP).
+<Result>It installs into `%LOCALAPPDATA%\Programs\ModField` without asking for an administrator password.</Result>
+</li>
+<li>
+Leave **Start the agent now** checked.
+<Result>The icon appears in the tray; it starts by itself at the next login (HKCU\…\Run key).</Result>
+</li>
+</Steps>
+
+Uninstall through "Installed apps", like any per-user program.
+
+## macOS 12 or later
+
+Open the `.dmg`, drag the app into `~/Applications` (or any folder of yours) and open it once. The LaunchAgent in `~/Library/LaunchAgents` starts it at login.
+
+## Linux (including Raspberry Pi)
+
+```sh
+curl -fsSL https://modfield.app/agent/install.sh | sh
+```
+
+The script checks the SHA-256 (and the minisign signature, when available), installs into `~/.local/bin` and enables a `systemd --user` unit. Without a screen, run the agent with `--headless` and see the pairing code with `modfield-agent pair`.
+
+To use the serial port, the user must be in the group that owns it, once: `dialout` on Debian, Ubuntu and Raspberry Pi OS; `uucp` on Arch. See [permission denied](/en/docs/troubleshooting#permission-denied).
+
+## If IT blocks it [#it-blocked]
+
+Policies such as AppLocker, WDAC or an EDR can block executables in the user's folder. There is no way around it: ask IT to allow it, giving the file's SHA-256 and the publisher certificate. Meanwhile, the agentless mode keeps working for RTU over USB.

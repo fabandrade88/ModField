@@ -10,7 +10,7 @@ import {
   type Table,
 } from "@modfield/protocol";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Button, ErrorBox, Field, Input, Notice, Select, cx } from "@/components/controls";
+import { Button, ErrorBox, Field, HelpTip, Input, Notice, Select, cx } from "@/components/controls";
 import { useT } from "@/components/i18n";
 import { registerCommand } from "@/lib/commands";
 import { describeError } from "@/lib/errors";
@@ -130,7 +130,7 @@ export function BlockRead({ pane }: { pane: number }) {
           void readOnce();
         }}
       >
-        <Field label={t("read.unit")}>
+        <Field label={t("read.unit")} help={<HelpTip tip="tip.unit" doc="guides/find-slave" />}>
           <Input type="number" min={1} max={247} value={b.unitId} onChange={(e) => b.setBlock({ unitId: int(e.target.valueAsNumber, 1, 247, 1) })} />
         </Field>
         <Field label={t("read.table")}>
@@ -145,7 +145,7 @@ export function BlockRead({ pane }: { pane: number }) {
             onChange={(table) => b.setBlock({ table })}
           />
         </Field>
-        <Field label={t("read.base")}>
+        <Field label={t("read.base")} help={<HelpTip tip="tip.base" doc="modbus-reference#addressing" />}>
           <Select
             value={b.base}
             options={[
@@ -184,7 +184,7 @@ export function BlockRead({ pane }: { pane: number }) {
                 />
               </Field>
             ) : (
-              <Field label={t("read.order")}>
+              <Field label={t("read.order")} help={<HelpTip tip="tip.order" doc="modbus-reference#byte-order" />}>
                 <Select value={b.order} options={BYTE_ORDERS} onChange={(order) => b.setBlock({ order })} />
               </Field>
             )}

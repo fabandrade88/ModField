@@ -1,0 +1,89 @@
+---
+title: Fehlerbehebung
+description: Symptom, wahrscheinliche Ursache und was zu tun ist.
+---
+
+## TIMEOUT: Der Slave hat nicht geantwortet [#timeout]
+
+| Wahrscheinliche Ursache | Maßnahme |
+|---|---|
+| Falsche Unit-ID | Den [ID-Scanner](/de/docs/guides/find-slave) verwenden. |
+| Andere Baudrate oder Parität | [Parameter ermitteln](/de/docs/guides/baud-rate). |
+| A und B vertauscht | A und B am Wandler tauschen; das schadet nichts. |
+| Timeout zu kurz | Bei 1200–4800 Baud oder hinter einem Gateway 2000 ms oder mehr. |
+
+## CRC_ERROR: beschädigte Antwort [#crc]
+
+Störungen auf der Leitung oder abweichende Schnittstellenparameter (Daten kommen an, aber verfälscht). Baudrate und Parität, den 120-Ω-Abschluss an beiden Busenden sowie Erdung/Schirmung prüfen. Siehe [Hardware](/de/docs/hardware).
+
+## INVALID_RESPONSE: unerwartete Antwort [#invalid-response]
+
+Die Antwort kam von einer anderen Unit-ID oder mit falscher Länge. Häufige Ursachen: ein weiterer Master am selben Bus, zwei Slaves mit derselben ID oder eine verspätete Antwort auf eine frühere Anfrage.
+
+## Ausnahme 01: Funktion nicht unterstützt [#exception-01]
+
+Der Slave akzeptiert diese Funktion nicht. Andere Tabelle versuchen (Input statt Holding) oder beim Schreiben Funktion 16 statt 06 (Verbindung › „Immer mit Funktion 16 schreiben“).
+
+## Ausnahme 02: Adresse existiert nicht [#exception-02]
+
+Die Adresse gibt es im Slave nicht. Herstellertabelle und **Adressbasis** prüfen: Das Handbuch nennt 40001, das Protokoll sendet 0. Eine Abfrage über eine Lücke in der Tabelle erhält ebenfalls 02; beim Lesen von Tags teilt ModField den Block selbst auf.
+
+## Ausnahme 03: Wert abgelehnt [#exception-03]
+
+Anzahl oder Wert außerhalb dessen, was der Slave akzeptiert. Weniger Register lesen oder geschriebenen Wert und Skalierung prüfen.
+
+## Weitere Ausnahmen (04, 05, 06, 08, 0A, 0B) [#exceptions]
+
+04 interner Fehler des Slaves; 05 und 06 Slave beschäftigt (gleich erneut lesen); 08 Speicherparitätsfehler; 0A und 0B Gateway-Probleme (Unit-ID dahinter prüfen).
+
+## Vertauschte oder unsinnige Werte [#byte-order]
+
+Ein FLOAT32 mit 1.4e-40 oder 6.2e+21 hat die falsche Byte-Reihenfolge. CDAB versuchen. Siehe [FLOAT32 lesen](/de/docs/guides/float32).
+
+## Der Port ist belegt [#port-busy]
+
+Ein anderes Programm (oder ein anderer ModField-Tab) hält den Port offen. Schließen und erneut versuchen.
+
+## Der serielle Port ist weg [#port-disconnected]
+
+Der Wandler wurde abgezogen oder das USB-Kabel ist defekt. Wieder anstecken und erneut verbinden; eine Aufzeichnung über den Agenten öffnet den Port selbst wieder und markiert die Lücke.
+
+## Zugriff auf den Port verweigert (Linux) [#permission-denied]
+
+Der Benutzer muss einmalig in der Gruppe des Ports sein: `sudo usermod -aG dialout $USER` (Debian, Ubuntu, Raspberry Pi OS) oder `sudo usermod -aG uucp $USER` (Arch). Ab- und wieder anmelden. Der Agent nennt die richtige Gruppe in der Meldung.
+
+## Chrome als Flatpak oder Snap sieht den Port nicht [#flatpak]
+
+Die Isolation dieser Pakete sperrt den seriellen Port. Chrome oder Chromium aus dem nativen Paket der Distribution installieren oder den Agenten verwenden.
+
+## Der Browser hat nach Zugriff auf das lokale Netzwerk gefragt und ich habe abgelehnt [#lna-denied]
+
+In den Website-Einstellungen (Schloss in der Adressleiste) „Lokales Netzwerk“ zulassen und neu laden. Alternative: die Oberfläche öffnen, die der Agent selbst unter http://127.0.0.1:47807 bereitstellt.
+
+## „Unbekannter Agent auf diesem Port“ [#agent-impostor]
+
+Auf dem Port des Agenten antwortet etwas mit einem anderen Schlüssel als dem gekoppelten; nichts wurde gesendet. Das Programm auf dem Port schließen oder, falls der Agent neu installiert wurde, **Kopplung vergessen** und neu koppeln.
+
+## Der Browser ist nicht gekoppelt [#not-paired]
+
+Die Kopplung wurde auf der Seite des Agenten widerrufen oder der Agent neu installiert. In Verbindung erneut koppeln.
+
+## Inkompatible Agentenversion [#protocol-mismatch]
+
+Den Agenten aktualisieren oder die Oberfläche verwenden, die er selbst unter http://127.0.0.1:47807 bereitstellt – sie hat immer die passende Version.
+
+## TCP-Verbindung abgelehnt [#conn-refused]
+
+IP, Port (Standard 502) oder Firewall des Geräts. IP anpingen und prüfen, ob das Gerät Modbus-TCP-Verbindungen annimmt.
+
+## Schreiben ohne Bestätigung [#confirm-required]
+
+Der Agent akzeptiert nur im Dialog bestätigte Schreibvorgänge. Schaltfläche Schreiben verwenden und mit Enter bestätigen.
+
+## Der Agent hat diesen Ursprung abgelehnt [#origin-rejected]
+
+Die geöffnete Seite ist weder die offizielle noch die Oberfläche des Agenten. ModField über die offizielle Adresse oder http://127.0.0.1:47807 öffnen.
+
+## Realer Zyklus länger als das Intervall [#slow-cycle]
+
+Jede RTU-Transaktion braucht Zeit auf der Leitung: 50 einzelne Tags bei 9600 Baud dauern 2 bis 3,5 s. Tags auf zusammenhängende Adressen legen, Baudrate oder Intervall erhöhen. ModField liest so schnell wie möglich, ohne Verzögerung anzusammeln.

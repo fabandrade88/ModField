@@ -5,7 +5,7 @@ import { toSeries, windowStats, type Series } from "@modfield/series";
 import { useAgent } from "@/store/agent";
 import { db, newId, type ReportDraft, type TagRow } from "./db";
 
-export const APP_VERSION = "0.5.0";
+export const APP_VERSION = "1.0.0";
 
 export const ALL_SECTIONS: Record<SectionId, boolean> = {
   identification: true,

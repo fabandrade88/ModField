@@ -25,3 +25,17 @@ export function useEquipment(): Equipment[] {
 export function updateProfile(id: string, patch: Partial<Profile>): void {
   void db.profiles.update(id, { ...patch, updatedAt: Date.now() });
 }
+
+/**
+ * Read-modify-write against the stored profile, not the one on screen: two
+ * quick edits (IP, then port) must not overwrite each other.
+ */
+export function patchProfile(id: string, mutate: (p: Profile) => void): void {
+  void db.profiles
+    .where("id")
+    .equals(id)
+    .modify((p) => {
+      mutate(p);
+      p.updatedAt = Date.now();
+    });
+}

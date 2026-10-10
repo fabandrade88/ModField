@@ -30,8 +30,9 @@ export interface SimPoint {
   generator: Generator;
   /** Fixed text for STRING points; the generator is ignored. */
   text?: string;
-  /** Display name, used by the demo UI. */
+  /** Display name, used by the demo UI (Portuguese; `names` has the others). */
   name?: string;
+  names?: { en: string; de: string };
   unit?: string;
   /** How the demo profile scales the raw value (what a vendor manual would say). */
   scale?: { rawMin: number; rawMax: number; engMin: number; engMax: number };
@@ -41,6 +42,7 @@ export interface SimPoint {
 export interface SimSlaveConfig {
   unitId: number;
   name: string;
+  names?: { en: string; de: string };
   points: SimPoint[];
   /** Read Device Identification objects (43/14). Omit to answer ILLEGAL FUNCTION. */
   deviceId?: Record<number, string>;
