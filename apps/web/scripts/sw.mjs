@@ -4,8 +4,9 @@
 import { createHash } from "node:crypto";
 import { readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { join, relative, sep } from "node:path";
+import { fileURLToPath } from "node:url";
 
-const OUT = new URL("../out/", import.meta.url).pathname;
+const OUT = fileURLToPath(new URL("../out/", import.meta.url));
 
 function* files(dir) {
   for (const name of readdirSync(dir)) {

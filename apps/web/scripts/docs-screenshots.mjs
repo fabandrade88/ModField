@@ -2,6 +2,7 @@
 // bench (MockTransport): public/docs/<lang>/{read,scan,logger}.png.
 // Run: pnpm build && node scripts/serve.mjs & node scripts/docs-screenshots.mjs
 import { mkdirSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { chromium } from "@playwright/test";
 
 const BASE = process.env.BASE ?? "http://127.0.0.1:3100";
@@ -13,7 +14,7 @@ const UI = {
 
 const browser = await chromium.launch({ executablePath: process.env.PLAYWRIGHT_CHROMIUM || undefined });
 for (const [lang, ui] of Object.entries(UI)) {
-  const dir = new URL(`../public/docs/${lang}/`, import.meta.url).pathname;
+  const dir = fileURLToPath(new URL(`../public/docs/${lang}/`, import.meta.url));
   mkdirSync(dir, { recursive: true });
   const page = await browser.newPage({ viewport: { width: 1280, height: 720 }, deviceScaleFactor: 1 });
   await page.goto(`${BASE}/${lang}/`);

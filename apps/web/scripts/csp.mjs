@@ -4,8 +4,9 @@
 import { createHash } from "node:crypto";
 import { readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 
-const OUT = new URL("../out/", import.meta.url).pathname;
+const OUT = fileURLToPath(new URL("../out/", import.meta.url));
 const AGENT_PORTS = [47807, 47808, 47809];
 
 const agent = AGENT_PORTS.flatMap((p) => [`ws://127.0.0.1:${p}`, `http://127.0.0.1:${p}`]).join(" ");

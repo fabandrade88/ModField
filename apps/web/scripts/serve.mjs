@@ -2,12 +2,13 @@
 import { createReadStream, existsSync, statSync } from "node:fs";
 import { createServer } from "node:http";
 import { extname, join, normalize } from "node:path";
+import { fileURLToPath } from "node:url";
 import { SECURITY_HEADERS } from "../lib/security-headers.mjs";
 
 // Mirror the production (Vercel) response headers so the preview and e2e see the same policy.
 const SECURITY = Object.fromEntries(SECURITY_HEADERS.map((h) => [h.key, h.value]));
 
-const ROOT = new URL("../out/", import.meta.url).pathname;
+const ROOT = fileURLToPath(new URL("../out/", import.meta.url));
 const PORT = Number(process.env.PORT ?? 3100);
 const TYPES = {
   ".html": "text/html; charset=utf-8",

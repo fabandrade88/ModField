@@ -4,13 +4,14 @@ import { execFileSync, spawn } from "node:child_process";
 import { mkdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 
 const dir = join(tmpdir(), "modfield-e2e-agent");
 const bin = join(dir, process.platform === "win32" ? "modfield-agent.exe" : "modfield-agent");
 rmSync(dir, { recursive: true, force: true });
 mkdirSync(dir, { recursive: true });
 execFileSync("go", ["build", "-tags", "notray", "-o", bin, "./cmd/modfield-agent"], {
-  cwd: new URL("../../../agent", import.meta.url).pathname,
+  cwd: fileURLToPath(new URL("../../../agent", import.meta.url)),
   stdio: "inherit",
 });
 const agent = spawn(
