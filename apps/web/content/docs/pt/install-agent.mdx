@@ -34,6 +34,15 @@ O script confere o SHA-256 (e a assinatura minisign, se disponível), instala em
 
 Para usar a porta serial, o usuário precisa estar no grupo dono da porta, uma vez só: `dialout` no Debian, Ubuntu e Raspberry Pi OS; `uucp` no Arch. Veja [permissão negada](/pt/docs/troubleshooting#permission-denied).
 
+## Aviso de "editor desconhecido" [#unsigned]
+
+Os binários não têm assinatura de código do sistema operacional, então o Windows (SmartScreen) e o macOS (Gatekeeper) avisam que o editor é desconhecido na primeira execução. É esperado.
+
+- **Windows:** clique em **Mais informações › Executar assim mesmo**.
+- **macOS:** clique com o botão direito no app › **Abrir** › **Abrir**.
+
+A integridade não depende dessa assinatura: cada arquivo tem o SHA-256 em `checksums.txt`, e o `checksums.txt` é assinado com minisign (o instalador do Linux verifica sozinho).
+
 ## Se a TI bloquear [#it-blocked]
 
-Políticas como AppLocker, WDAC ou um EDR podem impedir executáveis na pasta do usuário. Não há como contornar: peça a liberação à TI informando o SHA-256 do arquivo e o certificado do editor. Enquanto isso, o modo sem agente continua funcionando para RTU por USB.
+Políticas como AppLocker, WDAC ou um EDR podem impedir executáveis na pasta do usuário. Não há como contornar: peça a liberação à TI informando o SHA-256 do arquivo. Enquanto isso, o modo sem agente continua funcionando para RTU por USB.

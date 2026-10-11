@@ -34,6 +34,15 @@ The script checks the SHA-256 (and the minisign signature, when available), inst
 
 To use the serial port, the user must be in the group that owns it, once: `dialout` on Debian, Ubuntu and Raspberry Pi OS; `uucp` on Arch. See [permission denied](/en/docs/troubleshooting#permission-denied).
 
+## "Unknown publisher" warning [#unsigned]
+
+The binaries are not OS code-signed, so Windows (SmartScreen) and macOS (Gatekeeper) warn that the publisher is unknown on first run. This is expected.
+
+- **Windows:** click **More info › Run anyway**.
+- **macOS:** right-click the app › **Open** › **Open**.
+
+Integrity does not rely on that signature: every file's SHA-256 is in `checksums.txt`, and `checksums.txt` is signed with minisign (the Linux installer verifies it automatically).
+
 ## If IT blocks it [#it-blocked]
 
-Policies such as AppLocker, WDAC or an EDR can block executables in the user's folder. There is no way around it: ask IT to allow it, giving the file's SHA-256 and the publisher certificate. Meanwhile, the agentless mode keeps working for RTU over USB.
+Policies such as AppLocker, WDAC or an EDR can block executables in the user's folder. There is no way around it: ask IT to allow it, giving the file's SHA-256. Meanwhile, the agentless mode keeps working for RTU over USB.

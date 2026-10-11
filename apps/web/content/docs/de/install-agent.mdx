@@ -34,6 +34,15 @@ Das Skript prüft die SHA-256 (und die minisign-Signatur, falls vorhanden), inst
 
 Für den seriellen Port muss der Benutzer einmalig in der Gruppe sein, der der Port gehört: `dialout` unter Debian, Ubuntu und Raspberry Pi OS; `uucp` unter Arch. Siehe [Zugriff verweigert](/de/docs/troubleshooting#permission-denied).
 
+## Warnung "Unbekannter Herausgeber" [#unsigned]
+
+Die Binärdateien sind nicht per OS-Code-Signatur signiert, daher warnen Windows (SmartScreen) und macOS (Gatekeeper) beim ersten Start vor einem unbekannten Herausgeber. Das ist zu erwarten.
+
+- **Windows:** auf **Weitere Informationen › Trotzdem ausführen** klicken.
+- **macOS:** Rechtsklick auf die App › **Öffnen** › **Öffnen**.
+
+Die Integrität hängt nicht von dieser Signatur ab: Jede Datei hat ihre SHA-256 in `checksums.txt`, und `checksums.txt` ist mit minisign signiert (das Linux-Installationsskript prüft es automatisch).
+
 ## Wenn die IT blockiert [#it-blocked]
 
-Richtlinien wie AppLocker, WDAC oder ein EDR können ausführbare Dateien im Benutzerordner blockieren. Es gibt keinen Umweg: Bei der IT die Freigabe mit SHA-256 der Datei und Herausgeberzertifikat beantragen. Bis dahin funktioniert der Modus ohne Agent weiter für RTU über USB.
+Richtlinien wie AppLocker, WDAC oder ein EDR können ausführbare Dateien im Benutzerordner blockieren. Es gibt keinen Umweg: Bei der IT die Freigabe mit SHA-256 der Datei beantragen. Bis dahin funktioniert der Modus ohne Agent weiter für RTU über USB.

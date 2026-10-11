@@ -32,8 +32,10 @@ var (
 	// ManifestURL is where the signed manifest lives.
 	// Beside the downloads; not manifest.json, which is the site list of files.
 	ManifestURL = "https://modfield.app/downloads/update.json"
-	// Keyring is "id:base64url-pubkey,id:base64url-pubkey": the current key and the next one.
-	Keyring = ""
+	// Keyring is "id:base64url-pubkey,id:base64url-pubkey": the current key and the
+	// next one. The default is the shipped public key (safe to embed); the release
+	// build overrides it via -ldflags to rotate without a code change.
+	Keyring = "k1:NSsNzCQVp3Z4vVYHtNvvIC6mZTxXVqCg8GBl2qgBCz0"
 )
 
 // Asset is one binary of a release.
