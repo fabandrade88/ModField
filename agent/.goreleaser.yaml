@@ -46,6 +46,9 @@ winget:
     license: MIT
     # Per-user scope: no administrator.
     package_identifier: ModField.Agent
+    # Generate the manifest but don't open a PR: winget submission is a separate,
+    # manual process (a fork of microsoft/winget-pkgs) that isn't set up yet.
+    skip_upload: "true"
     repository:
       owner: modfield
       name: winget-pkgs
