@@ -43,7 +43,7 @@ winget:
   - name: ModField Agent
     publisher: ModField
     short_description: Agente local do ModField (Modbus RTU/TCP para o navegador)
-    license: Proprietary # open decision: license
+    license: MIT
     # Per-user scope: no administrator.
     package_identifier: ModField.Agent
     repository:
@@ -53,3 +53,11 @@ winget:
 
 release:
   draft: true
+  # Served through modfield.app/downloads/* (vercel.json redirects to the latest
+  # release). install.sh fetches the Linux binary, checksums and this unit from here.
+  extra_files:
+    - glob: ./installer/linux/install.sh
+    - glob: ./installer/linux/modfield-agent.service
+  # TODO: also upload manifest.json (Home download list) and the signed
+  # update.json (cmd/gen-manifest) once a job gathers all six platform binaries
+  # — the darwin build comes from the separate macOS runner.

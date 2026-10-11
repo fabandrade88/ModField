@@ -1,5 +1,15 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "redirects": [
+    {
+      "source": "/downloads/latest/:file",
+      "destination": "https://github.com/fabandrade88/ModField/releases/latest/download/:file"
+    },
+    {
+      "source": "/downloads/:file",
+      "destination": "https://github.com/fabandrade88/ModField/releases/latest/download/:file"
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",

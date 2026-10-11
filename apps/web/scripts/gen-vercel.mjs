@@ -9,9 +9,19 @@ import { SECURITY_HEADERS } from "../lib/security-headers.mjs";
 
 const headers = [{ source: "/(.*)", headers: SECURITY_HEADERS }];
 
+// The agent binaries, checksums, install.sh and the signed update.json are too
+// big and too frequently updated to live in the site deploy, so /downloads/*
+// redirects to the latest GitHub Release (its CDN serves the bytes). install.sh
+// (curl -fsSL) and the agent updater both follow redirects.
+const RELEASE = "https://github.com/fabandrade88/ModField/releases/latest/download";
+const redirects = [
+  { source: "/downloads/latest/:file", destination: `${RELEASE}/:file` },
+  { source: "/downloads/:file", destination: `${RELEASE}/:file` },
+];
+
 // Deployed with the Vercel "Root Directory" set to apps/web: build and output
 // are the defaults, so this file only carries the headers.
-export const webConfig = { $schema: "https://openapi.vercel.sh/vercel.json", headers };
+export const webConfig = { $schema: "https://openapi.vercel.sh/vercel.json", redirects, headers };
 
 // Deployed from the repo root (default Root Directory): also tell Vercel how to
 // build the monorepo and where the static export lands.
@@ -19,6 +29,7 @@ export const rootConfig = {
   $schema: "https://openapi.vercel.sh/vercel.json",
   buildCommand: "pnpm build",
   outputDirectory: "apps/web/out",
+  redirects,
   headers,
 };
 

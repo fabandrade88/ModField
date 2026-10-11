@@ -2,6 +2,16 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": "pnpm build",
   "outputDirectory": "apps/web/out",
+  "redirects": [
+    {
+      "source": "/downloads/latest/:file",
+      "destination": "https://github.com/fabandrade88/ModField/releases/latest/download/:file"
+    },
+    {
+      "source": "/downloads/:file",
+      "destination": "https://github.com/fabandrade88/ModField/releases/latest/download/:file"
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",
