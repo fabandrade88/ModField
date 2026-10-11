@@ -58,8 +58,10 @@ test("works offline after the first visit (tool and docs)", async ({ page, conte
   });
   await page.waitForTimeout(1500);
   await context.setOffline(true);
-  await page.reload();
+  const offline = await page.reload();
   await expect(page.getByRole("heading", { name: "Como você vai conectar?" })).toBeVisible();
+  // The service worker re-attaches the framing defence that the host would have sent.
+  expect(offline?.headers()["x-frame-options"]).toBe("DENY");
   await page.goto("/pt/docs/hardware/");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Hardware RS-485");
   await context.setOffline(false);

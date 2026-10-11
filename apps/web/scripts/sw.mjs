@@ -54,6 +54,17 @@ self.addEventListener("activate", (event) => {
   );
 });
 
+// Offline, a cached page is served without the host's security headers, so a
+// framing defence must be re-attached here: frame-ancestors (ignored in <meta>)
+// and X-Frame-Options. Only for documents, and only when a body exists.
+function harden(res) {
+  if (!res || !res.headers.get("content-type")?.includes("text/html")) return res;
+  const headers = new Headers(res.headers);
+  headers.set("X-Frame-Options", "DENY");
+  headers.set("Content-Security-Policy", "frame-ancestors 'none'");
+  return new Response(res.body, { status: res.status, statusText: res.statusText, headers });
+}
+
 self.addEventListener("fetch", (event) => {
   const req = event.request;
   const url = new URL(req.url);
@@ -74,7 +85,9 @@ self.addEventListener("fetch", (event) => {
         }
         return res;
       })
-      .catch(async () => (await caches.match(req)) || (await caches.match(url.pathname.endsWith("/") ? url.pathname : url.pathname + "/")) || caches.match("/404.html")),
+      .catch(async () =>
+        harden((await caches.match(req)) || (await caches.match(url.pathname.endsWith("/") ? url.pathname : url.pathname + "/")) || (await caches.match("/404.html"))),
+      ),
   );
 });
 `;
