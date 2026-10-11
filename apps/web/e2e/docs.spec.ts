@@ -21,7 +21,7 @@ test("documentation in three languages, with navigation", async ({ page }) => {
 test("local search finds a page", async ({ page }) => {
   await page.goto("/pt/docs/");
   await page.getByRole("searchbox", { name: "Buscar na documentação" }).fill("terminação");
-  await page.getByRole("option").first().getByRole("link").click();
+  await page.getByRole("listbox").getByRole("option").first().getByRole("link").click();
   await expect(page).toHaveURL(/\/pt\/docs\/hardware/);
 });
 

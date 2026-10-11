@@ -42,7 +42,7 @@ export function Sidebar() {
       <div>
         <div className="flex min-h-8 items-center justify-between gap-1 border-b border-border md:pl-2">
           <span className="hidden text-[12px] tracking-wider text-muted uppercase md:inline">{t("app.name")}</span>
-          <LangSwitch lang={lang} label={t("settings.language")} vertical />
+          <LangSwitch lang={lang} label={t("settings.language")} />
         </div>
         <ul>
           <Item id={HOME} hint="H" />

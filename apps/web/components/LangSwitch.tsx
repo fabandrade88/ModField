@@ -1,8 +1,7 @@
 "use client";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { Globe } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
 import { LANGS, LANG_NAMES, type Lang } from "@/lib/i18n";
-import { cx } from "./controls";
 
 /** Same page in another language: the route prefix is the only difference (the docs share their slugs). */
 export function langPath(pathname: string, l: Lang) {
@@ -10,31 +9,32 @@ export function langPath(pathname: string, l: Lang) {
 }
 
 /**
- * Always-visible language switch. A client navigation, not a reload: the
- * serial port, the polling and a running log stay open while the text changes.
+ * Always-visible language menu: shows the code, lists the names. A native
+ * select under the label keeps the keyboard and the phone picker. Changing it
+ * is a client navigation, not a reload: the serial port, the polling and a
+ * running log stay open while the text changes.
  */
-export function LangSwitch({ lang, label, vertical = false }: { lang: Lang; label: string; vertical?: boolean }) {
+export function LangSwitch({ lang, label }: { lang: Lang; label: string }) {
   const pathname = usePathname();
+  const router = useRouter();
   return (
-    <ul aria-label={label} className={cx("flex", vertical && "flex-col md:flex-row")}>
-      {LANGS.map((l) => (
-        <li key={l}>
-          <Link
-            href={langPath(pathname, l)}
-            hrefLang={l}
-            lang={l}
-            title={LANG_NAMES[l]}
-            aria-label={LANG_NAMES[l]}
-            aria-current={l === lang ? "true" : undefined}
-            className={cx(
-              "flex min-h-7 min-w-7 items-center justify-center px-1 text-[11px] tracking-wide uppercase",
-              l === lang ? "bg-surface-2 text-fg outline outline-1 -outline-offset-1 outline-accent" : "text-muted hover:bg-surface-2 hover:text-fg",
-            )}
-          >
-            {l}
-          </Link>
-        </li>
-      ))}
-    </ul>
+    <div className="relative flex min-h-7 items-center gap-1 px-1.5 text-[11px] tracking-wide text-muted uppercase focus-within:outline focus-within:outline-1 focus-within:outline-accent hover:bg-surface-2 hover:text-fg">
+      <Globe size={13} strokeWidth={1.5} aria-hidden className="hidden md:block" />
+      <span aria-hidden>{lang}</span>
+      <span aria-hidden className="text-[9px]">▾</span>
+      <select
+        aria-label={label}
+        title={label}
+        value={lang}
+        onChange={(e) => router.push(langPath(pathname, e.target.value as Lang))}
+        className="absolute inset-0 cursor-pointer appearance-none opacity-0"
+      >
+        {LANGS.map((l) => (
+          <option key={l} value={l} lang={l}>
+            {LANG_NAMES[l]}
+          </option>
+        ))}
+      </select>
+    </div>
   );
 }
