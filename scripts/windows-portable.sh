@@ -5,7 +5,8 @@
 # Shared by scripts/dist-agent.sh and the release workflow so both produce the
 # identical "portable" artifacts the Home download list offers for Windows.
 set -eu
-DIST="$1"
+# Absolute, so the zip output path still resolves after we cd into the temp dir.
+DIST="$(cd "$1" && pwd)"
 VERSION="$2"
 for arch in amd64 arm64; do
   src="$DIST/modfield-agent_windows_${arch}.exe"

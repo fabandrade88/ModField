@@ -37,8 +37,8 @@ const str = (o) => `${JSON.stringify(o, null, 2)}\n`;
 
 // path relative to this script -> [object, label]
 const targets = [
-  [new URL("../vercel.json", import.meta.url).pathname, str(webConfig), "apps/web/vercel.json"],
-  [new URL("../../../vercel.json", import.meta.url).pathname, str(rootConfig), "vercel.json (repo root)"],
+  [fileURLToPath(new URL("../vercel.json", import.meta.url)), str(webConfig), "apps/web/vercel.json"],
+  [fileURLToPath(new URL("../../../vercel.json", import.meta.url)), str(rootConfig), "vercel.json (repo root)"],
 ];
 
 // Kept for the e2e header assertion.
