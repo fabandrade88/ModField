@@ -35,7 +35,7 @@ var (
 	// Keyring is "id:base64url-pubkey,id:base64url-pubkey": the current key and the
 	// next one. The default is the shipped public key (safe to embed); the release
 	// build overrides it via -ldflags to rotate without a code change.
-	Keyring = "k1:NSsNzCQVp3Z4vVYHtNvvIC6mZTxXVqCg8GBl2qgBCz0"
+	Keyring = "k2:S3ZC_kHhYgPO03K3qHhZc5FHx-gOs5pqwM77ZKL5Ozo"
 )
 
 // Asset is one binary of a release.

@@ -7,7 +7,7 @@ set -eu
 
 BASE="${MODFIELD_BASE:-https://modfield.app/downloads}"
 # Public minisign key of the release process (safe to publish). Override to rotate.
-MINISIGN_KEY="${MODFIELD_MINISIGN_KEY:-RWTAAaRpSIOVUS9BNohClcjIxnJn7d2grA8fQ9tzQG/vmov7er4dxE2a}"
+MINISIGN_KEY="${MODFIELD_MINISIGN_KEY:-RWSkUdVjB3+FPtH+5FU/V56IYePxZvH2q3N651z47sTcFvWRoMl2O90B}"
 
 case "$(uname -m)" in
   x86_64|amd64) ARCH=amd64 ;;

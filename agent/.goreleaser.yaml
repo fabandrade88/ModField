@@ -18,7 +18,7 @@ builds:
     ldflags:
       - -s -w -X main.version={{.Version}}
       # Keep the public key embedded in source unless a secret overrides it (rotation).
-      - -X modfield.dev/agent/internal/update.Keyring={{ envOrDefault "MODFIELD_UPDATE_KEYRING" "k1:NSsNzCQVp3Z4vVYHtNvvIC6mZTxXVqCg8GBl2qgBCz0" }}
+      - -X modfield.dev/agent/internal/update.Keyring={{ envOrDefault "MODFIELD_UPDATE_KEYRING" "k2:S3ZC_kHhYgPO03K3qHhZc5FHx-gOs5pqwM77ZKL5Ozo" }}
       # Windows: tray app without a console window.
       - '{{ if eq .Os "windows" }}-H windowsgui{{ end }}'
     flags: [-trimpath]
