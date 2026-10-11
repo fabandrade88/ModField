@@ -17,7 +17,7 @@ export interface DownloadFile {
   name: string;
   os: OsId;
   arch: ArchId;
-  kind: "binary" | "portable";
+  kind: "binary" | "portable" | "installer";
   bytes: number;
   sha256: string;
 }

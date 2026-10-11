@@ -259,12 +259,21 @@ function AgentDownload() {
       ? `curl -fsSL ${SITE_URL}${DOWNLOADS_PATH}/latest/install.sh | sh`
       : `curl -fsSL ${origin}${DOWNLOADS_PATH}/latest/install.sh | MODFIELD_BASE=${origin}${DOWNLOADS_PATH} sh`;
   const files = manifest?.files ?? [];
-  // Windows: the portable ZIP; elsewhere the plain binary.
-  const pick = (os: OsId, arch: string): DownloadFile | undefined =>
-    files.find((f) => f.os === os && f.arch === arch && f.kind === (os === "windows" ? "portable" : "binary"));
+  // Windows: the installer first, else the portable ZIP; elsewhere the plain binary.
+  const pick = (os: OsId, arch: string): DownloadFile | undefined => {
+    const wanted = os === "windows" ? (["installer", "portable"] as const) : (["binary"] as const);
+    for (const kind of wanted) {
+      const f = files.find((x) => x.os === os && x.arch === arch && x.kind === kind);
+      if (f) return f;
+    }
+    return undefined;
+  };
   const recommended = platform?.os ? pick(platform.os, platform.arch) : undefined;
-  const others = files.filter((f) => f !== recommended && (f.os !== "windows" || f.kind === "portable"));
-  const label = (f: DownloadFile) => `${OS_LABEL[f.os]} ${f.arch === "arm64" ? "ARM64" : "x64"}${f.kind === "portable" ? ` · ${t("home.dl.portable")}` : ""} · ${mb(f.bytes)}`;
+  // Offer every option except the raw Windows binary (that one only feeds auto-update).
+  const others = files.filter((f) => f !== recommended && (f.os !== "windows" || f.kind !== "binary"));
+  const kindLabel = (f: DownloadFile) =>
+    f.kind === "portable" ? ` · ${t("home.dl.portable")}` : f.kind === "installer" ? ` · ${t("home.dl.installer")}` : "";
+  const label = (f: DownloadFile) => `${OS_LABEL[f.os]} ${f.arch === "arm64" ? "ARM64" : "x64"}${kindLabel(f)} · ${mb(f.bytes)}`;
 
   return (
     <Section title={t("home.dl.title")}>

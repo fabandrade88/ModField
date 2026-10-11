@@ -20,8 +20,10 @@
 ; ARM under emulation); arm64 is just "arm64" — there is no "arm64compatible".
 #if Arch == "arm64"
   #define ArchId "arm64"
+  #define DlArch "arm64"
 #else
   #define ArchId "x64compatible"
+  #define DlArch "amd64"
 #endif
 
 [Setup]
@@ -36,7 +38,7 @@ PrivilegesRequired=lowest
 PrivilegesRequiredOverridesAllowed=
 ArchitecturesAllowed={#ArchId}
 ArchitecturesInstallIn64BitMode={#ArchId}
-OutputBaseFilename=ModField-Agent-{#Version}-{#Arch}-setup
+OutputBaseFilename=ModField-Agent-{#Version}-windows-{#DlArch}-setup
 Compression=lzma2
 SolidCompression=yes
 WizardStyle=modern

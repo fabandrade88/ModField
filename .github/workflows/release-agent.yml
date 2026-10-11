@@ -67,7 +67,7 @@ jobs:
       - name: Upload the installer to the release
         shell: bash
         run: |
-          f=$(find agent/installer/windows -name "ModField-Agent-*-${{ matrix.arch }}-setup.exe" | head -1)
+          f=$(find agent/installer/windows -name "ModField-Agent-*-setup.exe" | head -1)
           test -n "$f" || { echo "installer not found under agent/installer/windows"; exit 1; }
           gh release upload "$GITHUB_REF_NAME" "$f" --clobber
         env:

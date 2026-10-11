@@ -19,11 +19,12 @@ const files = readdirSync(dir)
   .map((name) => {
     const m = name.match(/(linux|windows|darwin)[_-](amd64|arm64)/);
     const buf = readFileSync(join(dir, name));
+    const kind = name.endsWith(".zip") ? "portable" : name.endsWith("-setup.exe") ? "installer" : "binary";
     return {
       name,
       os: m[1],
       arch: m[2],
-      kind: name.endsWith(".zip") ? "portable" : "binary",
+      kind,
       bytes: buf.length,
       sha256: createHash("sha256").update(buf).digest("hex"),
     };
