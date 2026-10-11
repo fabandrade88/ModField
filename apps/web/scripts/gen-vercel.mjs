@@ -1,31 +1,50 @@
-// Writes vercel.json from the shared security-headers list, so the deployed
-// headers stay in sync with the preview. Run after editing security-headers.mjs:
+// Writes the Vercel config from the shared security-headers list, so the
+// deployed headers stay in sync with the preview. Two files, one per deploy
+// layout; run after editing security-headers.mjs:
 //   node scripts/gen-vercel.mjs
-import { writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import { argv } from "node:process";
 import { fileURLToPath } from "node:url";
 import { SECURITY_HEADERS } from "../lib/security-headers.mjs";
 
-export const vercelConfig = {
+const headers = [{ source: "/(.*)", headers: SECURITY_HEADERS }];
+
+// Deployed with the Vercel "Root Directory" set to apps/web: build and output
+// are the defaults, so this file only carries the headers.
+export const webConfig = { $schema: "https://openapi.vercel.sh/vercel.json", headers };
+
+// Deployed from the repo root (default Root Directory): also tell Vercel how to
+// build the monorepo and where the static export lands.
+export const rootConfig = {
   $schema: "https://openapi.vercel.sh/vercel.json",
-  headers: [{ source: "/(.*)", headers: SECURITY_HEADERS }],
+  buildCommand: "pnpm build",
+  outputDirectory: "apps/web/out",
+  headers,
 };
 
-export const vercelJson = `${JSON.stringify(vercelConfig, null, 2)}\n`;
+const str = (o) => `${JSON.stringify(o, null, 2)}\n`;
 
-// Run directly: write vercel.json, or `--check` to fail if it has drifted.
+// path relative to this script -> [object, label]
+const targets = [
+  [new URL("../vercel.json", import.meta.url).pathname, str(webConfig), "apps/web/vercel.json"],
+  [new URL("../../../vercel.json", import.meta.url).pathname, str(rootConfig), "vercel.json (repo root)"],
+];
+
+// Kept for the e2e header assertion.
+export const vercelJson = str(webConfig);
+
 if (argv[1] && fileURLToPath(import.meta.url) === argv[1]) {
-  const path = new URL("../vercel.json", import.meta.url).pathname;
-  if (argv.includes("--check")) {
-    const { readFileSync } = await import("node:fs");
-    const onDisk = readFileSync(path, "utf8");
-    if (onDisk !== vercelJson) {
-      console.error("vercel.json is out of date; run: node scripts/gen-vercel.mjs");
-      process.exit(1);
+  const check = argv.includes("--check");
+  for (const [path, want, label] of targets) {
+    if (check) {
+      if (readFileSync(path, "utf8") !== want) {
+        console.error(`${label} is out of date; run: node scripts/gen-vercel.mjs`);
+        process.exit(1);
+      }
+    } else {
+      writeFileSync(path, want);
+      console.log(`wrote ${label}`);
     }
-    console.log("vercel.json is in sync");
-  } else {
-    writeFileSync(path, vercelJson);
-    console.log(`wrote ${path}`);
   }
+  if (check) console.log("vercel configs are in sync");
 }
