@@ -24,11 +24,13 @@ curl -fsSL "$BASE/latest/checksums.txt" -o "$TMP/checksums.txt"
 (cd "$TMP" && grep " $FILE\$" checksums.txt | sed "s| $FILE\$| modfield-agent|" | sha256sum -c -)
 
 if [ -n "$MINISIGN_KEY" ]; then
-  if command -v minisign >/dev/null 2>&1; then
-    curl -fsSL "$BASE/latest/checksums.txt.minisig" -o "$TMP/checksums.txt.minisig"
+  if ! command -v minisign >/dev/null 2>&1; then
+    echo "minisign not found: only the SHA-256 was checked." >&2
+  elif curl -fsSL "$BASE/latest/checksums.txt.minisig" -o "$TMP/checksums.txt.minisig"; then
+    # SHA-256 (above) always runs; the signature is the extra guarantee when published.
     minisign -Vm "$TMP/checksums.txt" -P "$MINISIGN_KEY"
   else
-    echo "minisign not found: only the SHA-256 was checked." >&2
+    echo "no minisign signature published at this source: only the SHA-256 was checked." >&2
   fi
 fi
 

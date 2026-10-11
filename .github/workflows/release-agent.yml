@@ -4,9 +4,11 @@ on:
   push:
     tags: ["agent-v*"]
 
-# Signing needs certificates that are still an open decision (see the spec:
-# Authenticode vendor or Azure Trusted Signing, Apple Developer ID). Steps that
-# need them are skipped while the secrets are missing.
+# Releases are signed with minisign over checksums.txt (free) and carry the
+# ed25519-signed auto-update manifest. OS code signing (Windows Authenticode,
+# Apple Developer ID) is intentionally not done — it needs paid certificates —
+# so those steps stay gated on secrets and are skipped; the binaries ship
+# unsigned and are verified by SHA-256 + minisign (see docs/install-agent).
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -16,6 +18,11 @@ jobs:
       - uses: jdx/mise-action@v2
       - run: pnpm install --frozen-lockfile && pnpm build
       - run: sudo apt-get install -y minisign
+      # minisign -s takes a file path, so materialise the secret key into one.
+      - name: Write minisign key
+        run: |
+          printf '%s' "${{ secrets.MINISIGN_SECRET_KEY }}" > "$RUNNER_TEMP/minisign.key"
+          echo "MINISIGN_KEY_FILE=$RUNNER_TEMP/minisign.key" >> "$GITHUB_ENV"
       - uses: goreleaser/goreleaser-action@v6
         with:
           workdir: agent
@@ -23,7 +30,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           MODFIELD_UPDATE_KEYRING: ${{ secrets.MODFIELD_UPDATE_KEYRING }}
-          MINISIGN_KEY_FILE: ${{ secrets.MINISIGN_KEY_FILE }}
           MINISIGN_PASSWORD: ${{ secrets.MINISIGN_PASSWORD }}
 
   windows-installer:
