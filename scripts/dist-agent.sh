@@ -76,5 +76,16 @@ fs.writeFileSync(path.join(dir, "manifest.json"), JSON.stringify({ version, file
 ' "$PUB" "$VERSION"
 echo "published to apps/web/public/downloads (served at /downloads)"
 
+# Signed auto-update manifest (update.json), when the release signing key is set.
+# The agent verifies it against the embedded ed25519 keyring (internal/update).
+if [ -n "${MODFIELD_UPDATE_KEY:-}" ]; then
+  DL_URL="${MODFIELD_DOWNLOADS_URL:-https://modfield.app/downloads/}"
+  (cd "$ROOT/agent" && go run ./cmd/gen-manifest -dist "$DIST" -base "$DL_URL" -version "$VERSION" -key-id "${MODFIELD_UPDATE_KEY_ID:-k2}")
+  cp "$DIST/update.json" "$PUB/update.json"
+  echo "signed update.json written (auto-update manifest, served at ${DL_URL}update.json)"
+else
+  echo "MODFIELD_UPDATE_KEY not set: skipping update.json (auto-update stays off until published)"
+fi
+
 echo
 ls -la "$DIST" | awk 'NR>1 {printf "%10s  %s\n", $5, $9}'

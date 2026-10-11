@@ -3,15 +3,36 @@ package update
 import (
 	"crypto/ed25519"
 	"crypto/rand"
-	"encoding/json"
 	"testing"
 	"time"
 )
 
 func sign(t *testing.T, priv ed25519.PrivateKey, id string, p Payload) Manifest {
 	t.Helper()
-	raw, _ := json.Marshal(p)
-	return Manifest{Payload: b64.EncodeToString(raw), Signature: b64.EncodeToString(ed25519.Sign(priv, raw)), KeyID: id}
+	m, err := Sign(p, id, priv)
+	if err != nil {
+		t.Fatalf("sign: %v", err)
+	}
+	return m
+}
+
+// Sign (release side) and Verify (agent side) must agree.
+func TestSignRoundTrip(t *testing.T) {
+	pub, priv, _ := ed25519.GenerateKey(rand.Reader)
+	p := Payload{Version: "1.2.0", Date: time.Now().UTC(), Assets: map[string]Asset{
+		"linux-amd64": {URL: "https://x/modfield-agent_linux_amd64", SHA256: "ab"},
+	}}
+	m, err := Sign(p, "k9", priv)
+	if err != nil {
+		t.Fatal(err)
+	}
+	got, err := Verify(m, map[string]ed25519.PublicKey{"k9": pub}, State{}, "1.1.0")
+	if err != nil {
+		t.Fatalf("verify: %v", err)
+	}
+	if got.Version != "1.2.0" || got.Assets["linux-amd64"].URL == "" {
+		t.Fatalf("payload round-trip wrong: %+v", got)
+	}
 }
 
 func TestVerify(t *testing.T) {

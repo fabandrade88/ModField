@@ -15,3 +15,7 @@ agent/web/dist/*
 agent/dist/
 # Agent downloads copied in by scripts/dist-agent.sh (too big for git and for the offline cache).
 apps/web/public/downloads/
+
+# Compiled agent binaries from `go build` in agent/ (dist/ already ignored)
+/agent/modfield-agent
+/agent/gen-manifest

@@ -85,6 +85,21 @@ func ParseKeyring(s string) (map[string]ed25519.PublicKey, error) {
 	return out, nil
 }
 
+// Sign builds a signed Manifest for a payload. The signature covers the raw
+// payload JSON bytes — the same bytes base64url-encoded into Manifest.Payload —
+// so Verify needs no JSON canonicalization. Used by cmd/gen-manifest at release.
+func Sign(p Payload, keyID string, key ed25519.PrivateKey) (Manifest, error) {
+	raw, err := json.Marshal(p)
+	if err != nil {
+		return Manifest{}, err
+	}
+	return Manifest{
+		Payload:   b64.EncodeToString(raw),
+		Signature: b64.EncodeToString(ed25519.Sign(key, raw)),
+		KeyID:     keyID,
+	}, nil
+}
+
 // Errors returned by Verify.
 var (
 	ErrSignature = errors.New("manifest signature invalid")

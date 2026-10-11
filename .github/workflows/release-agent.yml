@@ -31,6 +31,14 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           MODFIELD_UPDATE_KEYRING: ${{ secrets.MODFIELD_UPDATE_KEYRING }}
           MINISIGN_PASSWORD: ${{ secrets.MINISIGN_PASSWORD }}
+      # Signed auto-update manifest. The binaries the agent downloads for updates
+      # are the ones published at /downloads (scripts/dist-agent.sh assembles that
+      # directory with the matching names). Generate update.json once all six
+      # platform binaries are gathered there and sign with the update key:
+      #   MODFIELD_UPDATE_KEY=${{ secrets.MODFIELD_UPDATE_KEY }} \
+      #     go run ./cmd/gen-manifest -dist <downloads> -version ${GITHUB_REF_NAME#agent-v}
+      # Wire this once the /downloads publish step exists (the darwin binary comes
+      # from the macos job below, so collect the artifacts first).
 
   windows-installer:
     needs: build
