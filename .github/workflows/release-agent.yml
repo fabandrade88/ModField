@@ -2,7 +2,11 @@ name: Release agent
 
 on:
   push:
-    tags: ["agent-v*"]
+    tags: ["v*"]
+
+# goreleaser creates the release and gh uploads the extra manifests to it.
+permissions:
+  contents: write
 
 # Releases are signed with minisign over checksums.txt (free) and carry the
 # ed25519-signed auto-update manifest. OS code signing (Windows Authenticode,
@@ -31,14 +35,15 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           MODFIELD_UPDATE_KEYRING: ${{ secrets.MODFIELD_UPDATE_KEYRING }}
           MINISIGN_PASSWORD: ${{ secrets.MINISIGN_PASSWORD }}
-      # Signed auto-update manifest. The binaries the agent downloads for updates
-      # are the ones published at /downloads (scripts/dist-agent.sh assembles that
-      # directory with the matching names). Generate update.json once all six
-      # platform binaries are gathered there and sign with the update key:
-      #   MODFIELD_UPDATE_KEY=${{ secrets.MODFIELD_UPDATE_KEY }} \
-      #     go run ./cmd/gen-manifest -dist <downloads> -version ${GITHUB_REF_NAME#agent-v}
-      # Wire this once the /downloads publish step exists (the darwin binary comes
-      # from the macos job below, so collect the artifacts first).
+      # Hand the four linux/windows binaries to the manifest job (goreleaser has
+      # already uploaded them to the release itself).
+      - name: Stage binaries for the manifest job
+        run: |
+          mkdir -p staging
+          cp agent/dist/modfield-agent_linux_amd64 agent/dist/modfield-agent_linux_arm64 \
+             agent/dist/modfield-agent_windows_amd64.exe agent/dist/modfield-agent_windows_arm64.exe staging/
+      - uses: actions/upload-artifact@v4
+        with: { name: bin-linux-windows, path: staging/ }
 
   windows-installer:
     needs: build
@@ -50,14 +55,15 @@ jobs:
       - uses: jdx/mise-action@v2
       - run: pnpm install --frozen-lockfile && pnpm build && sh scripts/embed-ui.sh
         shell: bash
-      - run: go build -trimpath -ldflags "-s -w -H windowsgui -X main.version=${GITHUB_REF_NAME#agent-v}" -o modfield-agent.exe ./cmd/modfield-agent
+      - run: go build -trimpath -ldflags "-s -w -H windowsgui -X main.version=${GITHUB_REF_NAME#v}" -o modfield-agent.exe ./cmd/modfield-agent
         working-directory: agent
         shell: bash
         env: { GOARCH: "${{ matrix.arch == 'x64' && 'amd64' || 'arm64' }}" }
       - name: Sign executable (Authenticode)
         if: ${{ secrets.WINDOWS_SIGNING_CERT != '' }}
         run: echo "sign agent/modfield-agent.exe with the chosen provider"
-      - run: iscc /DVersion=${{ github.ref_name }} /DArch=${{ matrix.arch }} /DBinary=..\..\modfield-agent.exe agent\installer\windows\modfield-agent.iss
+      - run: iscc /DVersion=${GITHUB_REF_NAME#v} /DArch=${{ matrix.arch }} /DBinary=..\\..\\modfield-agent.exe agent\\installer\\windows\\modfield-agent.iss
+        shell: bash
 
   darwin:
     needs: build
@@ -66,13 +72,57 @@ jobs:
       - uses: actions/checkout@v5
       - uses: jdx/mise-action@v2
       - run: pnpm install --frozen-lockfile && pnpm build && sh scripts/embed-ui.sh
-      # CGO on: the tray icon needs Cocoa.
+      # CGO on: the tray icon needs Cocoa. Build per-arch (the names the update
+      # manifest and the Home list use), then a universal binary for a future .dmg.
       - run: |
           for arch in arm64 amd64; do
-            CGO_ENABLED=1 GOARCH=$arch go build -trimpath -ldflags "-s -w -X main.version=${GITHUB_REF_NAME#agent-v}" -o modfield-agent-$arch ./cmd/modfield-agent
+            CGO_ENABLED=1 GOARCH=$arch go build -trimpath -ldflags "-s -w -X main.version=${GITHUB_REF_NAME#v}" -o modfield-agent_darwin_$arch ./cmd/modfield-agent
           done
-          lipo -create -output modfield-agent modfield-agent-arm64 modfield-agent-amd64
+          lipo -create -output modfield-agent modfield-agent_darwin_arm64 modfield-agent_darwin_amd64
         working-directory: agent
       - name: Sign and notarize (Developer ID)
         if: ${{ secrets.APPLE_DEVELOPER_ID != '' }}
         run: echo "codesign --options runtime, notarytool submit, staple, then build the .dmg"
+      - name: Stage darwin binaries for the manifest job
+        run: |
+          mkdir -p staging
+          cp agent/modfield-agent_darwin_amd64 agent/modfield-agent_darwin_arm64 staging/
+      - uses: actions/upload-artifact@v4
+        with: { name: bin-darwin, path: staging/ }
+
+  # Gathers all six platform binaries, builds the Windows portable ZIPs, and
+  # produces the two manifests the site and the agent read:
+  #   manifest.json  — the Home download list (version, sizes, SHA-256)
+  #   update.json    — the ed25519-signed auto-update manifest (internal/update)
+  # then uploads them, the darwin binaries and the ZIPs to the release goreleaser
+  # drafted. The release stays a draft until it is published by hand.
+  manifest:
+    needs: [build, darwin]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: jdx/mise-action@v2
+      - uses: actions/download-artifact@v4
+        with: { name: bin-linux-windows, path: agent/dist }
+      - uses: actions/download-artifact@v4
+        with: { name: bin-darwin, path: agent/dist }
+      - name: Windows portable ZIPs
+        run: sh scripts/windows-portable.sh agent/dist "${GITHUB_REF_NAME#v}"
+      - name: Home download list (manifest.json)
+        run: node scripts/gen-download-manifest.mjs agent/dist "${GITHUB_REF_NAME#v}"
+      - name: Signed auto-update manifest (update.json)
+        working-directory: agent
+        run: go run ./cmd/gen-manifest -dist dist -version "${GITHUB_REF_NAME#v}"
+        env:
+          MODFIELD_UPDATE_KEY: ${{ secrets.MODFIELD_UPDATE_KEY }}
+      - name: Upload manifests, darwin binaries and ZIPs to the release
+        run: |
+          gh release upload "$GITHUB_REF_NAME" \
+            agent/dist/modfield-agent_darwin_amd64 \
+            agent/dist/modfield-agent_darwin_arm64 \
+            agent/dist/ModField-Agent-*-portable.zip \
+            agent/dist/manifest.json \
+            agent/dist/update.json \
+            --clobber
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -35,22 +35,7 @@ for target in linux/amd64 linux/arm64 windows/amd64 windows/arm64 darwin/amd64 d
 done
 
 echo "== windows portable zips"
-for arch in amd64 arm64; do
-  tmp="$(mktemp -d)"
-  cp "$DIST/modfield-agent_windows_${arch}.exe" "$tmp/modfield-agent.exe"
-  cat > "$tmp/LEIA-ME.txt" <<TXT
-ModField Agent $VERSION (Windows, $arch), versão portátil.
-
-Não precisa instalar nem de administrador: extraia esta pasta em qualquer lugar
-seu (por exemplo Documentos) e abra modfield-agent.exe. O ícone aparece na
-bandeja; o agente só escuta em 127.0.0.1:47807.
-
-Para iniciar com o Windows, prefira o instalador (ModField-Agent-...-setup.exe),
-que registra a inicialização e o desinstalador só para o seu usuário.
-TXT
-  (cd "$tmp" && zip -q -9 "$DIST/ModField-Agent-${VERSION}-windows-${arch}-portable.zip" modfield-agent.exe LEIA-ME.txt)
-  rm -rf "$tmp"
-done
+sh "$ROOT/scripts/windows-portable.sh" "$DIST" "$VERSION"
 
 echo "== checksums"
 (cd "$DIST" && sha256sum modfield-agent_* ModField-Agent-*.zip > checksums.txt)
@@ -64,16 +49,7 @@ PUB="$ROOT/apps/web/public/downloads"
 rm -rf "$PUB"
 mkdir -p "$PUB"
 cp -R "$DIST"/. "$PUB"/
-node -e '
-const fs = require("fs"), path = require("path"), crypto = require("crypto");
-const dir = process.argv[1], version = process.argv[2];
-const files = fs.readdirSync(dir).filter((f) => /^modfield-agent_|^ModField-Agent-/.test(f)).map((name) => {
-  const m = name.match(/(linux|windows|darwin)[_-](amd64|arm64)/);
-  const buf = fs.readFileSync(path.join(dir, name));
-  return { name, os: m[1], arch: m[2], kind: name.endsWith(".zip") ? "portable" : "binary", bytes: buf.length, sha256: crypto.createHash("sha256").update(buf).digest("hex") };
-});
-fs.writeFileSync(path.join(dir, "manifest.json"), JSON.stringify({ version, files }, null, 2));
-' "$PUB" "$VERSION"
+node "$ROOT/scripts/gen-download-manifest.mjs" "$PUB" "$VERSION"
 echo "published to apps/web/public/downloads (served at /downloads)"
 
 # Signed auto-update manifest (update.json), when the release signing key is set.

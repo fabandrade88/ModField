@@ -58,6 +58,6 @@ release:
   extra_files:
     - glob: ./installer/linux/install.sh
     - glob: ./installer/linux/modfield-agent.service
-  # TODO: also upload manifest.json (Home download list) and the signed
-  # update.json (cmd/gen-manifest) once a job gathers all six platform binaries
-  # — the darwin build comes from the separate macOS runner.
+  # manifest.json (Home download list) and the signed update.json are uploaded
+  # afterwards by the "manifest" job in .github/workflows/release-agent.yml,
+  # once the darwin binaries from the macOS runner join these four.
