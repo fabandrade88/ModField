@@ -46,9 +46,11 @@ export const vercelJson = str(webConfig);
 
 if (argv[1] && fileURLToPath(import.meta.url) === argv[1]) {
   const check = argv.includes("--check");
+  // Compare EOL-insensitively: on Windows git may check these out with CRLF.
+  const norm = (s) => s.replace(/\r\n/g, "\n");
   for (const [path, want, label] of targets) {
     if (check) {
-      if (readFileSync(path, "utf8") !== want) {
+      if (norm(readFileSync(path, "utf8")) !== norm(want)) {
         console.error(`${label} is out of date; run: node scripts/gen-vercel.mjs`);
         process.exit(1);
       }
