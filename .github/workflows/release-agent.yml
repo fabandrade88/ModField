@@ -64,6 +64,14 @@ jobs:
         if: ${{ env.HAS_WIN_CERT == 'true' }}
         run: echo "sign agent/modfield-agent.exe with the chosen provider"
       - run: iscc /DVersion=${{ env.VERSION }} /DArch=${{ matrix.arch }} /DBinary=..\..\modfield-agent.exe agent\installer\windows\modfield-agent.iss
+      - name: Upload the installer to the release
+        shell: bash
+        run: |
+          f=$(find agent/installer/windows -name "ModField-Agent-*-${{ matrix.arch }}-setup.exe" | head -1)
+          test -n "$f" || { echo "installer not found under agent/installer/windows"; exit 1; }
+          gh release upload "$GITHUB_REF_NAME" "$f" --clobber
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   darwin:
     needs: build
