@@ -16,6 +16,13 @@
 #ifndef Binary
   #define Binary "modfield-agent.exe"
 #endif
+; Inno's architecture identifier: x64 has an "...compatible" form (also runs on
+; ARM under emulation); arm64 is just "arm64" — there is no "arm64compatible".
+#if Arch == "arm64"
+  #define ArchId "arm64"
+#else
+  #define ArchId "x64compatible"
+#endif
 
 [Setup]
 AppId={{6C1C4B9E-3E43-4D0B-9C62-5C2E3F7A1D10}
@@ -27,8 +34,8 @@ DisableDirPage=yes
 DisableProgramGroupPage=yes
 PrivilegesRequired=lowest
 PrivilegesRequiredOverridesAllowed=
-ArchitecturesAllowed={#Arch}compatible
-ArchitecturesInstallIn64BitMode={#Arch}compatible
+ArchitecturesAllowed={#ArchId}
+ArchitecturesInstallIn64BitMode={#ArchId}
 OutputBaseFilename=ModField-Agent-{#Version}-{#Arch}-setup
 Compression=lzma2
 SolidCompression=yes
