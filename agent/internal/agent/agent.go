@@ -368,10 +368,16 @@ func (a *Agent) pairBegin(s *Session, raw json.RawMessage) (any, error) {
 	if len(name) > 80 {
 		name = name[:80]
 	}
-	r := a.Pairing.Begin(name, s.Origin)
-	a.Log.Info("pairing requested", "origin", s.Origin, "name", name, "code", r.Code)
-	if a.OpenURL != nil {
-		a.OpenURL(a.BaseURL + "/pair")
+	r, fresh, err := a.Pairing.Begin(name, s.Origin)
+	if err != nil {
+		return nil, &rpcErrorValue{&rpcError{Code: codeNotPaired, Message: err.Error(), Data: errorData{Error: modbus.ErrNotPaired}}}
+	}
+	// Only a genuinely new request opens the page; a loop of pair.begin reuses one.
+	if fresh {
+		a.Log.Info("pairing requested", "origin", s.Origin, "name", name, "code", r.Code)
+		if a.OpenURL != nil {
+			a.OpenURL(a.BaseURL + "/pair")
+		}
 	}
 	return map[string]any{"requestId": r.ID, "expires": r.Expires, "pairUrl": a.BaseURL + "/pair"}, nil
 }

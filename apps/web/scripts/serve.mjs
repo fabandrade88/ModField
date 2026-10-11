@@ -2,6 +2,10 @@
 import { createReadStream, existsSync, statSync } from "node:fs";
 import { createServer } from "node:http";
 import { extname, join, normalize } from "node:path";
+import { SECURITY_HEADERS } from "../lib/security-headers.mjs";
+
+// Mirror the production (Vercel) response headers so the preview and e2e see the same policy.
+const SECURITY = Object.fromEntries(SECURITY_HEADERS.map((h) => [h.key, h.value]));
 
 const ROOT = new URL("../out/", import.meta.url).pathname;
 const PORT = Number(process.env.PORT ?? 3100);
@@ -26,11 +30,11 @@ createServer((req, res) => {
   if (!path.startsWith(ROOT)) return res.writeHead(403).end();
   if (existsSync(path) && statSync(path).isDirectory()) path = join(path, "index.html");
   if (!existsSync(path)) {
-    res.writeHead(404, { "content-type": TYPES[".html"] });
+    res.writeHead(404, { "content-type": TYPES[".html"], ...SECURITY });
     return createReadStream(join(ROOT, "404.html")).pipe(res);
   }
   // The search index is a route handler exported as a file without extension.
   const type = url.pathname === "/api/search" ? "application/json" : (TYPES[extname(path)] ?? "application/octet-stream");
-  res.writeHead(200, { "content-type": type });
+  res.writeHead(200, { "content-type": type, ...SECURITY });
   createReadStream(path).pipe(res);
 }).listen(PORT, "127.0.0.1", () => console.log(`serving out/ on http://127.0.0.1:${PORT}`));

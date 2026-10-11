@@ -196,3 +196,18 @@ test("the author credit links to LinkedIn in the app and the docs", async ({ pag
   await expect(page.getByRole("navigation").getByRole("link", { name: /Fabricio Andrade/ })).toHaveAttribute("target", "_blank");
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", "https://modfield.app/en/docs/");
 });
+
+test("the deployed security headers are served and vercel.json is in sync", async ({ page, request }) => {
+  // serve.mjs mirrors the Vercel headers from the shared list.
+  const res = await request.get("/pt/");
+  const h = res.headers();
+  expect(h["x-frame-options"]).toBe("DENY");
+  expect(h["content-security-policy"]).toContain("frame-ancestors 'none'");
+  expect(h["strict-transport-security"]).toContain("max-age=");
+  expect(h["x-content-type-options"]).toBe("nosniff");
+  expect(h["referrer-policy"]).toBe("strict-origin-when-cross-origin");
+  expect(h["permissions-policy"]).toContain("serial=(self)");
+  // The script policy still rides in the page's <meta>.
+  await page.goto("/pt/");
+  await expect(page.locator('meta[http-equiv="Content-Security-Policy"]')).toHaveAttribute("content", /script-src 'self'/);
+});

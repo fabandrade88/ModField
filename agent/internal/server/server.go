@@ -133,6 +133,9 @@ func (s *Server) Shutdown(ctx context.Context) error {
 func (s *Server) headers(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("X-Content-Type-Options", "nosniff")
+		// Nothing the agent serves (API, pairing pages, embedded SPA) is ever
+		// meant to be framed, so deny it everywhere against clickjacking.
+		w.Header().Set("X-Frame-Options", "DENY")
 		origin := r.Header.Get("Origin")
 		if strings.HasPrefix(r.URL.Path, "/v1") && s.Allowed(origin) {
 			w.Header().Set("Access-Control-Allow-Origin", origin)

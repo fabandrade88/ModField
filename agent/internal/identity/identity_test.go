@@ -4,6 +4,7 @@ import (
 	"crypto/ed25519"
 	"crypto/hmac"
 	"crypto/sha256"
+	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -61,9 +62,17 @@ func TestBrowserAuth(t *testing.T) {
 
 func TestPairing(t *testing.T) {
 	p := NewPairing()
-	r := p.Begin("Chrome", "https://o")
+	r, fresh, err := p.Begin("Chrome", "https://o")
+	if err != nil || !fresh {
+		t.Fatalf("begin: fresh=%v err=%v", fresh, err)
+	}
 	if len(r.Code) != 6 {
 		t.Fatalf("code %q", r.Code)
+	}
+	// A second request from the same origin is its own request (own code) but
+	// not fresh, so the pairing page is not re-opened.
+	if r2, fresh2, _ := p.Begin("Chrome", "https://o"); fresh2 || r2.ID == r.ID {
+		t.Fatalf("expected a distinct non-fresh request, got fresh=%v id=%q", fresh2, r2.ID)
 	}
 	if _, err := p.Complete(r.ID, r.Code, "https://other"); err != ErrWrongOrigin {
 		t.Fatalf("origin: %v", err)
@@ -79,9 +88,21 @@ func TestPairing(t *testing.T) {
 
 	clock := time.Now()
 	p.now = func() time.Time { return clock }
-	r = p.Begin("Firefox", "https://o")
+	r, _, _ = p.Begin("Firefox", "https://o")
 	clock = clock.Add(PairingTTL + time.Second)
 	if _, err := p.Complete(r.ID, r.Code, "https://o"); err != ErrExpired {
 		t.Fatalf("expiry: %v", err)
+	}
+}
+
+func TestPairingPendingCap(t *testing.T) {
+	p := NewPairing()
+	for i := 0; i < MaxPending; i++ {
+		if _, _, err := p.Begin("B", fmt.Sprintf("https://o%d", i)); err != nil {
+			t.Fatalf("begin %d: %v", i, err)
+		}
+	}
+	if _, _, err := p.Begin("B", "https://overflow"); err != ErrTooMany {
+		t.Fatalf("expected ErrTooMany at cap, got %v", err)
 	}
 }
