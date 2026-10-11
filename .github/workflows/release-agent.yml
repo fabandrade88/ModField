@@ -48,6 +48,10 @@ jobs:
   windows-installer:
     needs: build
     runs-on: windows-latest
+    # The secrets context is not allowed in a step `if:`, so surface the presence
+    # of the (optional, paid) signing cert as an env the condition can read.
+    env:
+      HAS_WIN_CERT: ${{ secrets.WINDOWS_SIGNING_CERT != '' }}
     strategy:
       matrix: { arch: [x64, arm64] }
     steps:
@@ -59,15 +63,20 @@ jobs:
         working-directory: agent
         shell: bash
         env: { GOARCH: "${{ matrix.arch == 'x64' && 'amd64' || 'arm64' }}" }
-      - name: Sign executable (Authenticode)
-        if: ${{ secrets.WINDOWS_SIGNING_CERT != '' }}
-        run: echo "sign agent/modfield-agent.exe with the chosen provider"
-      - run: iscc /DVersion=${GITHUB_REF_NAME#v} /DArch=${{ matrix.arch }} /DBinary=..\\..\\modfield-agent.exe agent\\installer\\windows\\modfield-agent.iss
+      - name: Installer version from the tag
         shell: bash
+        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> "$GITHUB_ENV"
+      - name: Sign executable (Authenticode)
+        if: ${{ env.HAS_WIN_CERT == 'true' }}
+        run: echo "sign agent/modfield-agent.exe with the chosen provider"
+      - run: iscc /DVersion=${{ env.VERSION }} /DArch=${{ matrix.arch }} /DBinary=..\..\modfield-agent.exe agent\installer\windows\modfield-agent.iss
 
   darwin:
     needs: build
     runs-on: macos-latest
+    # As above: the signing condition reads an env, not the secrets context.
+    env:
+      HAS_APPLE_ID: ${{ secrets.APPLE_DEVELOPER_ID != '' }}
     steps:
       - uses: actions/checkout@v5
       - uses: jdx/mise-action@v2
@@ -81,7 +90,7 @@ jobs:
           lipo -create -output modfield-agent modfield-agent_darwin_arm64 modfield-agent_darwin_amd64
         working-directory: agent
       - name: Sign and notarize (Developer ID)
-        if: ${{ secrets.APPLE_DEVELOPER_ID != '' }}
+        if: ${{ env.HAS_APPLE_ID == 'true' }}
         run: echo "codesign --options runtime, notarytool submit, staple, then build the .dmg"
       - name: Stage darwin binaries for the manifest job
         run: |
