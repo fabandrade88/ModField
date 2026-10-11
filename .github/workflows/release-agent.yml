@@ -35,15 +35,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           MODFIELD_UPDATE_KEYRING: ${{ secrets.MODFIELD_UPDATE_KEYRING }}
           MINISIGN_PASSWORD: ${{ secrets.MINISIGN_PASSWORD }}
-      # Hand the four linux/windows binaries to the manifest job (goreleaser has
-      # already uploaded them to the release itself).
-      - name: Stage binaries for the manifest job
-        run: |
-          mkdir -p staging
-          cp agent/dist/modfield-agent_linux_amd64 agent/dist/modfield-agent_linux_arm64 \
-             agent/dist/modfield-agent_windows_amd64.exe agent/dist/modfield-agent_windows_arm64.exe staging/
-      - uses: actions/upload-artifact@v4
-        with: { name: bin-linux-windows, path: staging/ }
+      # goreleaser uploads the four linux/windows binaries, checksums, install.sh
+      # and the unit file to the (draft) release itself; the manifest job reads
+      # them back from there, so nothing more to hand off here.
 
   windows-installer:
     needs: build
@@ -92,12 +86,10 @@ jobs:
       - name: Sign and notarize (Developer ID)
         if: ${{ env.HAS_APPLE_ID == 'true' }}
         run: echo "codesign --options runtime, notarytool submit, staple, then build the .dmg"
-      - name: Stage darwin binaries for the manifest job
-        run: |
-          mkdir -p staging
-          cp agent/modfield-agent_darwin_amd64 agent/modfield-agent_darwin_arm64 staging/
-      - uses: actions/upload-artifact@v4
-        with: { name: bin-darwin, path: staging/ }
+      - name: Upload darwin binaries to the release
+        run: gh release upload "$GITHUB_REF_NAME" agent/modfield-agent_darwin_amd64 agent/modfield-agent_darwin_arm64 --clobber
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   # Gathers all six platform binaries, builds the Windows portable ZIPs, and
   # produces the two manifests the site and the agent read:
@@ -111,10 +103,14 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - uses: jdx/mise-action@v2
-      - uses: actions/download-artifact@v4
-        with: { name: bin-linux-windows, path: agent/dist }
-      - uses: actions/download-artifact@v4
-        with: { name: bin-darwin, path: agent/dist }
+      - name: Gather the six released binaries
+        run: |
+          mkdir -p agent/dist
+          gh release download "$GITHUB_REF_NAME" -D agent/dist --clobber \
+            -p 'modfield-agent_linux_*' -p 'modfield-agent_windows_*' \
+            -p 'modfield-agent_darwin_amd64' -p 'modfield-agent_darwin_arm64'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Windows portable ZIPs
         run: sh scripts/windows-portable.sh agent/dist "${GITHUB_REF_NAME#v}"
       - name: Home download list (manifest.json)
