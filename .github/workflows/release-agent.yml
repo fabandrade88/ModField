@@ -106,17 +106,19 @@ jobs:
   # then uploads them, the darwin binaries and the ZIPs to the release goreleaser
   # drafted. The release stays a draft until it is published by hand.
   manifest:
-    needs: [build, darwin]
+    # Also after windows-installer, so the installers are on the release to list.
+    needs: [build, darwin, windows-installer]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
       - uses: jdx/mise-action@v2
-      - name: Gather the six released binaries
+      - name: Gather the released binaries and installers
         run: |
           mkdir -p agent/dist
           gh release download "$GITHUB_REF_NAME" -D agent/dist --clobber \
             -p 'modfield-agent_linux_*' -p 'modfield-agent_windows_*' \
-            -p 'modfield-agent_darwin_amd64' -p 'modfield-agent_darwin_arm64'
+            -p 'modfield-agent_darwin_amd64' -p 'modfield-agent_darwin_arm64' \
+            -p 'ModField-Agent-*-setup.exe'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Windows portable ZIPs
