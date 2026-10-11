@@ -1,6 +1,7 @@
 /** Strings of the Home screen. */
 export const ptHome = {
   "module.home": "Início",
+  "credit.by": "Criado por",
   "help.k.home": "Tela inicial",
   "home.title": "ModField: diagnóstico Modbus no navegador",
   "home.lead": "Leia, escreva, varra e registre equipamentos Modbus RTU e TCP, e gere o relatório de comissionamento. Por USB-RS485 funciona sem instalar nada; o agente local acrescenta rede TCP e coleta com a aba fechada.",
@@ -78,6 +79,7 @@ export type DictHome = typeof ptHome;
 
 export const enHome: DictHome = {
   "module.home": "Home",
+  "credit.by": "Created by",
   "help.k.home": "Home screen",
   "home.title": "ModField: Modbus diagnostics in the browser",
   "home.lead": "Read, write, scan and log Modbus RTU and TCP devices, and produce the commissioning report. Over USB-RS485 it works with nothing to install; the local agent adds TCP networks and logging with the tab closed.",
@@ -153,6 +155,7 @@ export const enHome: DictHome = {
 
 export const deHome: DictHome = {
   "module.home": "Start",
+  "credit.by": "Erstellt von",
   "help.k.home": "Startseite",
   "home.title": "ModField: Modbus-Diagnose im Browser",
   "home.lead": "Modbus-RTU- und -TCP-Geräte lesen, schreiben, scannen und aufzeichnen und das Inbetriebnahmeprotokoll erstellen. Über USB-RS485 ohne Installation; der lokale Agent ergänzt TCP-Netzwerke und Aufzeichnung bei geschlossenem Tab.",

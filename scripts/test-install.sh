@@ -1,6 +1,6 @@
 #!/bin/sh
 # End-to-end test of agent/installer/linux/install.sh against agent/dist/latest
-# served locally (instead of https://modfield.app/agent). Run scripts/dist-agent.sh first.
+# served locally (instead of https://modfield.app/downloads). Run scripts/dist-agent.sh first.
 # Nothing touches the real user: HOME is a temp dir and systemctl is a fake
 # that only records its calls.
 set -eu

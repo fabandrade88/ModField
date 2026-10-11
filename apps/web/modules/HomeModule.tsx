@@ -2,6 +2,8 @@
 import { BookOpen, Cable, ClipboardCopy, Download, FileText, LineChart, Network, PlayCircle, Plug, Table2, type LucideIcon } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { Button, Kbd, Section, cx } from "@/components/controls";
+import { Credit } from "@/components/Credit";
+import { DOWNLOADS_PATH, SITE_URL } from "@/lib/site";
 import { useLang, useT } from "@/components/i18n";
 import type { Key, Lang } from "@/lib/i18n";
 import { NUMBERED_MODULES } from "@/lib/modules";
@@ -76,6 +78,10 @@ export function HomeModule() {
           </ul>
         </div>
       </Section>
+
+      <div className="border-t border-border pt-3">
+        <Credit label={t("credit.by")} />
+      </div>
     </div>
   );
 }
@@ -247,7 +253,11 @@ function AgentDownload() {
   }, []);
 
   const origin = typeof location === "undefined" ? "" : location.origin;
-  const command = `curl -fsSL ${origin}/downloads/latest/install.sh | MODFIELD_BASE=${origin}/downloads sh`;
+  // install.sh defaults to the official site; a self-hosted copy points it at itself.
+  const command =
+    origin === SITE_URL
+      ? `curl -fsSL ${SITE_URL}${DOWNLOADS_PATH}/latest/install.sh | sh`
+      : `curl -fsSL ${origin}${DOWNLOADS_PATH}/latest/install.sh | MODFIELD_BASE=${origin}${DOWNLOADS_PATH} sh`;
   const files = manifest?.files ?? [];
   // Windows: the portable ZIP; elsewhere the plain binary.
   const pick = (os: OsId, arch: string): DownloadFile | undefined =>

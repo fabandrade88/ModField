@@ -30,7 +30,8 @@ import (
 // Set by the release build.
 var (
 	// ManifestURL is where the signed manifest lives.
-	ManifestURL = "https://modfield.app/agent/manifest.json"
+	// Beside the downloads; not manifest.json, which is the site list of files.
+	ManifestURL = "https://modfield.app/downloads/update.json"
 	// Keyring is "id:base64url-pubkey,id:base64url-pubkey": the current key and the next one.
 	Keyring = ""
 )

@@ -1,11 +1,17 @@
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
+import { AUTHOR, SITE_URL } from "@/lib/site";
 import { UI_STORAGE_KEY } from "@/lib/storage-keys";
 import "./globals.css";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: "ModField",
   description: "Diagnóstico, simulação e registro Modbus no navegador.",
+  applicationName: "ModField",
+  authors: [{ name: AUTHOR.name, url: AUTHOR.url }],
+  creator: AUTHOR.name,
+  openGraph: { type: "website", siteName: "ModField", url: SITE_URL },
 };
 
 export const viewport: Viewport = { colorScheme: "dark light" };

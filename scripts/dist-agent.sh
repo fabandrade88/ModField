@@ -55,7 +55,7 @@ done
 echo "== checksums"
 (cd "$DIST" && sha256sum modfield-agent_* ModField-Agent-*.zip > checksums.txt)
 
-# What https://modfield.app/agent/latest/ would serve to install.sh.
+# What https://modfield.app/downloads/latest/ serves to install.sh.
 cp "$DIST"/modfield-agent_linux_* "$DIST/checksums.txt" "$DIST/latest/"
 cp "$ROOT/agent/installer/linux/modfield-agent.service" "$ROOT/agent/installer/linux/install.sh" "$DIST/latest/"
 

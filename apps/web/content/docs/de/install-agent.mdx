@@ -27,7 +27,7 @@ Die `.dmg` öffnen, die App nach `~/Applications` (oder einen eigenen Ordner) zi
 ## Linux (inklusive Raspberry Pi)
 
 ```sh
-curl -fsSL https://modfield.app/agent/install.sh | sh
+curl -fsSL https://modfield.app/downloads/latest/install.sh | sh
 ```
 
 Das Skript prüft die SHA-256 (und die minisign-Signatur, falls vorhanden), installiert nach `~/.local/bin` und aktiviert eine `systemd --user`-Unit. Ohne Bildschirm den Agenten mit `--headless` starten und den Kopplungscode mit `modfield-agent pair` anzeigen.

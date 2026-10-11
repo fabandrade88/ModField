@@ -186,3 +186,13 @@ test("the docs switch language on the same page", async ({ page }) => {
   await expect(page).toHaveURL(/\/en\/docs\/hardware\/$/);
   await expect(page.locator("html")).toHaveAttribute("lang", "en");
 });
+
+test("the author credit links to LinkedIn in the app and the docs", async ({ page }) => {
+  await page.goto("/pt/");
+  const link = page.getByRole("navigation").getByRole("link", { name: /Fabricio Andrade/ });
+  await expect(link).toHaveAttribute("href", "https://www.linkedin.com/in/fabriciodeandrade/");
+  await expect(page.getByRole("navigation")).toContainText("Criado por Fabricio Andrade");
+  await page.goto("/en/docs/");
+  await expect(page.getByRole("navigation").getByRole("link", { name: /Fabricio Andrade/ })).toHaveAttribute("target", "_blank");
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", "https://modfield.app/en/docs/");
+});

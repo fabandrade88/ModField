@@ -1,11 +1,11 @@
 #!/bin/sh
 # ModField agent installer for Linux, without sudo:
-#   curl -fsSL https://modfield.app/agent/install.sh | sh
+#   curl -fsSL https://modfield.app/downloads/latest/install.sh | sh
 # Installs to ~/.local/bin, verifies SHA-256 and the minisign signature
 # (when minisign is available), and enables a systemd --user unit.
 set -eu
 
-BASE="${MODFIELD_BASE:-https://modfield.app/agent}"
+BASE="${MODFIELD_BASE:-https://modfield.app/downloads}"
 # Public minisign key of the release process (set when the key is created).
 MINISIGN_KEY="${MODFIELD_MINISIGN_KEY:-}"
 

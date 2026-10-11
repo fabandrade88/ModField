@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { mdxComponents } from "@/components/docs/mdx";
 import { DICTS, isLang } from "@/lib/i18n";
+import { languageAlternates } from "@/lib/site";
 import { source } from "@/lib/source";
 
 export const dynamicParams = false;
@@ -13,7 +14,8 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Promise<{ lang: string; slug?: string[] }> }): Promise<Metadata> {
   const { lang, slug } = await params;
   const page = source.getPage(slug, lang);
-  return { title: page ? `${page.data.title} · ModField` : "ModField", description: page?.data.description };
+  const rest = slug?.length ? `docs/${slug.join("/")}/` : "docs/";
+  return { title: page ? `${page.data.title} · ModField` : "ModField", description: page?.data.description, alternates: languageAlternates(lang, rest) };
 }
 
 export default async function DocPage({ params }: { params: Promise<{ lang: string; slug?: string[] }> }) {
