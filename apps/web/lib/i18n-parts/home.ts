@@ -48,6 +48,8 @@ export const ptHome = {
   "home.dl.linuxCmd": "Ou instale com um comando (sem sudo):",
   "home.dl.others": "Outros sistemas e checksums",
   "home.dl.macNote": "Nesta versão o agente de macOS roda sem ícone na bandeja; abra-o pelo Terminal.",
+  "home.dl.winNote":
+    "O instalador não tem assinatura digital paga de editor, então ao abri-lo o Windows mostra um aviso azul (“O Windows protegeu o seu PC”, editor desconhecido). É esperado e seguro: clique em “Mais informações” e depois em “Executar assim mesmo”. Se quiser conferir, compare o SHA-256 do arquivo com o checksums.txt.",
   "home.dl.guide": "Guia de instalação (Windows, macOS, Linux)",
   "home.steps": "Em 4 passos",
   "home.step.connect": "Conectar",
@@ -127,6 +129,8 @@ export const enHome: DictHome = {
   "home.dl.linuxCmd": "Or install with one command (no sudo):",
   "home.dl.others": "Other systems and checksums",
   "home.dl.macNote": "In this version the macOS agent runs without a tray icon; start it from Terminal.",
+  "home.dl.winNote":
+    "The installer isn’t signed with a paid publisher certificate, so when you open it Windows shows a blue warning (“Windows protected your PC”, unknown publisher). This is expected and safe: click “More info”, then “Run anyway”. To double-check, compare the file’s SHA-256 against checksums.txt.",
   "home.dl.guide": "Installation guide (Windows, macOS, Linux)",
   "home.steps": "In 4 steps",
   "home.step.connect": "Connect",
@@ -204,6 +208,8 @@ export const deHome: DictHome = {
   "home.dl.linuxCmd": "Oder mit einem Befehl installieren (ohne sudo):",
   "home.dl.others": "Andere Systeme und Prüfsummen",
   "home.dl.macNote": "In dieser Version läuft der macOS-Agent ohne Symbol in der Menüleiste; im Terminal starten.",
+  "home.dl.winNote":
+    "Der Installer hat kein kostenpflichtiges Herausgeber-Zertifikat, daher zeigt Windows beim Öffnen eine blaue Warnung („Der Computer wurde durch Windows geschützt“, unbekannter Herausgeber). Das ist erwartet und sicher: auf „Weitere Informationen“ und dann „Trotzdem ausführen“ klicken. Zur Kontrolle die SHA-256 der Datei mit checksums.txt vergleichen.",
   "home.dl.guide": "Installationsanleitung (Windows, macOS, Linux)",
   "home.steps": "In 4 Schritten",
   "home.step.connect": "Verbinden",

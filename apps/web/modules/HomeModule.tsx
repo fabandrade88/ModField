@@ -307,6 +307,9 @@ function AgentDownload() {
                   {t("home.dl.for", { what: label(recommended) })}
                 </a>
               )}
+              {platform?.os === "windows" && (
+                <p className="border-l-2 border-border pl-2 text-[12px] text-muted">{t("home.dl.winNote")}</p>
+              )}
               {platform?.os === "linux" && (
                 <div className="flex flex-col gap-1">
                   <span className="text-[12px] text-muted">{t("home.dl.linuxCmd")}</span>
