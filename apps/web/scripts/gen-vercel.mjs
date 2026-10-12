@@ -17,15 +17,12 @@ const headers = [{ source: "/(.*)", headers: SECURITY_HEADERS }];
 const RELEASE = "https://github.com/fabandrade88/ModField/releases/latest/download";
 const redirects = [
   { source: "/downloads/latest/:file", destination: `${RELEASE}/:file` },
-  // Everything except manifest.json (that one is proxied below, see rewrites).
+  // Everything except manifest.json, which the build bakes into the static
+  // output as a same-origin file (scripts/fetch-manifest.mjs) so the Home's
+  // fetch() isn't blocked by the GitHub asset's missing CORS header. Keeping it
+  // out of the redirect lets Vercel serve that static file.
   { source: "/downloads/:file((?!manifest\\.json).+)", destination: `${RELEASE}/:file` },
 ];
-
-// The Home reads manifest.json with fetch(), so it must be same-origin: the
-// GitHub release asset sends no Access-Control-Allow-Origin, so a redirect
-// there would be blocked by CORS and the download list would look "unpublished".
-// Proxy it through the site instead (it's tiny, well under the 4.5 MB limit).
-const rewrites = [{ source: "/downloads/manifest.json", destination: `${RELEASE}/manifest.json` }];
 
 // Static export: serve the post-processed out/ (csp.mjs adds the CSP <meta>,
 // sw.mjs writes the service worker) as plain files, not through a framework
@@ -37,7 +34,6 @@ export const webConfig = {
   buildCommand: "pnpm run build",
   outputDirectory: "out",
   redirects,
-  rewrites,
   headers,
 };
 
@@ -49,7 +45,6 @@ export const rootConfig = {
   buildCommand: "pnpm build",
   outputDirectory: "apps/web/out",
   redirects,
-  rewrites,
   headers,
 };
 

@@ -13,12 +13,6 @@
       "destination": "https://github.com/fabandrade88/ModField/releases/latest/download/:file"
     }
   ],
-  "rewrites": [
-    {
-      "source": "/downloads/manifest.json",
-      "destination": "https://github.com/fabandrade88/ModField/releases/latest/download/manifest.json"
-    }
-  ],
   "headers": [
     {
       "source": "/(.*)",

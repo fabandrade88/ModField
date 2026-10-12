@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "next dev --port 3000",
-    "build": "node scripts/gen-vercel.mjs --check && next build && node scripts/csp.mjs && node scripts/sw.mjs",
+    "build": "node scripts/gen-vercel.mjs --check && next build && node scripts/csp.mjs && node scripts/sw.mjs && node scripts/fetch-manifest.mjs",
     "serve": "node scripts/serve.mjs",
     "typecheck": "tsc -p .",
     "test:e2e": "playwright test"
