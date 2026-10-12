@@ -46,6 +46,14 @@ export const vercelJson = str(webConfig);
 
 if (argv[1] && fileURLToPath(import.meta.url) === argv[1]) {
   const check = argv.includes("--check");
+  // The drift guard runs locally and in CI. Skip it on Vercel: it reads and
+  // normalises vercel.json during the deploy, so the file on disk no longer
+  // matches what we generate, and the deployed redirects/headers come from
+  // that file directly — the check would only (falsely) fail the build.
+  if (check && process.env.VERCEL) {
+    console.log("on Vercel: skipping the vercel.json drift check");
+    process.exit(0);
+  }
   // Compare EOL-insensitively: on Windows git may check these out with CRLF.
   const norm = (s) => s.replace(/\r\n/g, "\n");
   for (const [path, want, label] of targets) {
