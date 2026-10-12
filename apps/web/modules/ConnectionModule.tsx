@@ -366,6 +366,7 @@ function CommonSettings({ profile }: { profile: Profile }) {
       <label className="flex min-h-8 items-center gap-2">
         <input
           type="checkbox"
+          name="forceMultipleWrite"
           className="size-4"
           checked={profile.forceMultipleWrite}
           onChange={(e) => updateProfile(profile.id, { forceMultipleWrite: e.target.checked })}

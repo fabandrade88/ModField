@@ -46,6 +46,7 @@ export const ptHome = {
   "home.dl.portable": "ZIP portátil",
   "home.dl.installer": "instalador",
   "home.dl.cmd": "Ou instale com um comando (sem sudo):",
+  "home.dl.cmdHelp": "Abra o Terminal, cole o comando e aperte Enter. Instala sem administrador e passa a iniciar no login.",
   "home.dl.others": "Outros sistemas e checksums",
   "home.dl.macNote":
     "No Mac, o jeito mais fácil é o comando acima — ele instala sem avisos (arquivos baixados por curl não entram em quarentena do Gatekeeper) e já deixa o agente iniciando no login. Se preferir baixar o binário direto, aí sim o macOS avisa que “não foi possível verificar o desenvolvedor” (não é assinado/notarizado): clique com o botão direito no arquivo → Abrir → Abrir (ou Ajustes do Sistema → Privacidade e Segurança → “Abrir mesmo assim”). Dá pra conferir o SHA-256 no checksums.txt.",
@@ -128,6 +129,7 @@ export const enHome: DictHome = {
   "home.dl.portable": "portable ZIP",
   "home.dl.installer": "installer",
   "home.dl.cmd": "Or install with one command (no sudo):",
+  "home.dl.cmdHelp": "Open Terminal, paste the command and press Enter. No admin, and it starts at login.",
   "home.dl.others": "Other systems and checksums",
   "home.dl.macNote":
     "On Mac the easiest way is the command above — it installs without warnings (curl-downloaded files get no Gatekeeper quarantine) and sets the agent to start at login. If you prefer the binary directly, macOS then warns it “cannot verify the developer” (it isn’t signed or notarized): right-click the file → Open → Open (or System Settings → Privacy & Security → “Open Anyway”). You can check the SHA-256 against checksums.txt.",
@@ -208,6 +210,7 @@ export const deHome: DictHome = {
   "home.dl.portable": "portables ZIP",
   "home.dl.installer": "Installer",
   "home.dl.cmd": "Oder mit einem Befehl installieren (ohne sudo):",
+  "home.dl.cmdHelp": "Terminal öffnen, den Befehl einfügen und Enter drücken. Ohne Admin, startet beim Login.",
   "home.dl.others": "Andere Systeme und Prüfsummen",
   "home.dl.macNote":
     "Auf dem Mac ist der Befehl oben am einfachsten — er installiert ohne Warnungen (per curl geladene Dateien bekommen keine Gatekeeper-Quarantäne) und startet den Agenten beim Login. Wer lieber die Binärdatei direkt lädt: macOS warnt dann, dass „der Entwickler nicht verifiziert werden kann“ (nicht signiert/notarisiert) — Rechtsklick auf die Datei → Öffnen → Öffnen (oder Systemeinstellungen → Datenschutz & Sicherheit → „Trotzdem öffnen“). Die SHA-256 lässt sich mit checksums.txt prüfen.",

@@ -68,15 +68,18 @@ export const inputClass = "min-h-8 rounded-sm border border-border bg-surface px
  * come back asynchronously (IndexedDB) would otherwise reset the field between
  * keystrokes and drop characters. External changes apply when it is not focused.
  */
-export function Input({ className, value, onChange, onFocus, onBlur, ...rest }: ComponentProps<"input">) {
+export function Input({ className, value, onChange, onFocus, onBlur, id, ...rest }: ComponentProps<"input">) {
   const [local, setLocal] = useState(value);
   const focused = useRef(false);
+  // A generated id when none is given, so each field has one (autofill/a11y).
+  const autoId = useId();
   useEffect(() => {
     if (!focused.current) setLocal(value);
   }, [value]);
   return (
     <input
       {...rest}
+      id={id ?? autoId}
       value={value === undefined ? undefined : (local ?? "")}
       onFocus={(e) => {
         focused.current = true;
@@ -97,15 +100,17 @@ export function Input({ className, value, onChange, onFocus, onBlur, ...rest }: 
 }
 
 /** Textarea with the same focus-buffering as Input. */
-export function TextArea({ className, value, onChange, onFocus, onBlur, ...rest }: ComponentProps<"textarea">) {
+export function TextArea({ className, value, onChange, onFocus, onBlur, id, ...rest }: ComponentProps<"textarea">) {
   const [local, setLocal] = useState(value);
   const focused = useRef(false);
+  const autoId = useId();
   useEffect(() => {
     if (!focused.current) setLocal(value);
   }, [value]);
   return (
     <textarea
       {...rest}
+      id={id ?? autoId}
       value={local ?? ""}
       onFocus={(e) => {
         focused.current = true;
@@ -136,10 +141,13 @@ export function Select<V extends string | number>({
   options: readonly (V | { value: V; label: string })[];
   onChange: (v: V) => void;
 }) {
+  const { id, ...selectRest } = rest;
+  const autoId = useId();
   const norm = options.map((o) => (typeof o === "object" ? o : { value: o, label: String(o) }));
   return (
     <select
-      {...rest}
+      {...selectRest}
+      id={id ?? autoId}
       value={String(value)}
       onChange={(e) => {
         const hit = norm.find((o) => String(o.value) === e.target.value);

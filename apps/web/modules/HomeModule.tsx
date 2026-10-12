@@ -263,18 +263,20 @@ function AgentDownload() {
       ? `curl -fsSL ${SITE_URL}${DOWNLOADS_PATH}/latest/install.sh | sh`
       : `curl -fsSL ${origin}${DOWNLOADS_PATH}/latest/install.sh | MODFIELD_BASE=${origin}${DOWNLOADS_PATH} sh`;
   const files = manifest?.files ?? [];
-  // Windows: the installer first, else the portable ZIP; elsewhere the plain binary.
+  // Windows installs from the setup .exe (or the portable ZIP). Linux and macOS
+  // install with the one-line command below — no raw binary to download.
   const pick = (os: OsId, arch: string): DownloadFile | undefined => {
-    const wanted = os === "windows" ? (["installer", "portable"] as const) : (["binary"] as const);
-    for (const kind of wanted) {
+    if (os !== "windows") return undefined;
+    for (const kind of ["installer", "portable"] as const) {
       const f = files.find((x) => x.os === os && x.arch === arch && x.kind === kind);
       if (f) return f;
     }
     return undefined;
   };
   const recommended = platform?.os ? pick(platform.os, platform.arch) : undefined;
-  // Offer every option except the raw Windows binary (that one only feeds auto-update).
-  const others = files.filter((f) => f !== recommended && (f.os !== "windows" || f.kind !== "binary"));
+  // Only installers and portable ZIPs are offered as files; raw binaries feed the
+  // installer, the command and auto-update, so they are not listed for download.
+  const others = files.filter((f) => f !== recommended && f.kind !== "binary");
   const kindLabel = (f: DownloadFile) =>
     f.kind === "portable" ? ` · ${t("home.dl.portable")}` : f.kind === "installer" ? ` · ${t("home.dl.installer")}` : "";
   const label = (f: DownloadFile) => `${OS_LABEL[f.os]} ${f.arch === "arm64" ? "ARM64" : "x64"}${kindLabel(f)} · ${mb(f.bytes)}`;
@@ -325,6 +327,7 @@ function AgentDownload() {
                       {copied ? "✓" : ""}
                     </Button>
                   </div>
+                  <span className="text-[12px] text-muted">{t("home.dl.cmdHelp")}</span>
                 </div>
               )}
               {platform?.os === "windows" && (

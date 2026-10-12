@@ -61,6 +61,14 @@ export function AgentSection() {
               {t("agent.pairing.confirm")}
             </Button>
           </div>
+          <a
+            href={`http://127.0.0.1:${a.endpoint?.port ?? 47807}/pair`}
+            target="_blank"
+            rel="noopener"
+            className="text-[12px] text-accent underline"
+          >
+            {t("agent.pairing.openCode")}
+          </a>
           {a.pairError && <Notice tone="warning">{t("agent.pairing.failed")}</Notice>}
           <p className="text-[12px] text-muted">{t("agent.pairing.headless")}</p>
         </form>
