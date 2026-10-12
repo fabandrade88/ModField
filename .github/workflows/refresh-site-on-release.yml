@@ -1,0 +1,23 @@
+name: Refresh site on release
+
+# When an agent release is published (a draft going live), rebuild the site so
+# scripts/fetch-manifest.mjs re-bakes /downloads/manifest.json from the new
+# "latest" release and the Home shows the new version. Fires on publish, not on
+# the draft the release workflow creates, because only a published release is
+# "latest".
+on:
+  release:
+    types: [published]
+
+jobs:
+  redeploy:
+    runs-on: ubuntu-latest
+    # The secrets context can't be read in a step `if:`, so surface it as an env.
+    env:
+      HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK }}
+    steps:
+      - name: Trigger the Vercel deploy hook
+        if: ${{ env.HOOK != '' }}
+        run: |
+          curl -fsS -X POST "$HOOK" -o /dev/null
+          echo "site redeploy triggered"
