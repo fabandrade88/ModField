@@ -30,12 +30,11 @@ export async function discoverAgent(opts: { ports?: readonly number[]; fetch?: F
     const ac = new AbortController();
     const timer = setTimeout(() => ac.abort(), opts.timeoutMs ?? 1500);
     try {
-      const init: RequestInit = { signal: ac.signal, cache: "no-store" };
-      // targetAddressSpace marks this as a Local Network Access request, which
-      // Chrome now requires to reach 127.0.0.1 over HTTP from the HTTPS site
-      // (otherwise it blocks it). Unknown to other browsers, which ignore it.
-      (init as { targetAddressSpace?: string }).targetAddressSpace = "local";
-      const res = await f(`http://127.0.0.1:${port}/v1/hello`, init);
+      // No targetAddressSpace: asserting one (e.g. "local") hard-fails when it
+      // doesn't match Chrome's classification of 127.0.0.1 ("loopback"). Left
+      // unset, Chrome infers the space and uses its normal Local Network Access
+      // flow (a one-time permission prompt) instead of blocking outright.
+      const res = await f(`http://127.0.0.1:${port}/v1/hello`, { signal: ac.signal, cache: "no-store" });
       if (!res.ok) continue;
       const body = (await res.json()) as { result?: AgentEndpoint["hello"] };
       if (!body.result?.publicKey) continue;
