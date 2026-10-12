@@ -311,15 +311,9 @@ function AgentDownload() {
                   {t("home.dl.for", { what: label(recommended) })}
                 </a>
               )}
-              {platform?.os === "windows" && (
-                <p className="border-l-2 border-border pl-2 text-[12px] text-muted">{t("home.dl.winNote")}</p>
-              )}
-              {platform?.os === "darwin" && files.some((f) => f.os === "darwin") && (
-                <p className="border-l-2 border-border pl-2 text-[12px] text-muted">{t("home.dl.macNote")}</p>
-              )}
-              {platform?.os === "linux" && (
+              {(platform?.os === "linux" || platform?.os === "darwin") && (
                 <div className="flex flex-col gap-1">
-                  <span className="text-[12px] text-muted">{t("home.dl.linuxCmd")}</span>
+                  <span className="text-[12px] text-muted">{t("home.dl.cmd")}</span>
                   <div className="flex items-stretch gap-1">
                     <code className="min-w-0 flex-1 overflow-x-auto border border-border bg-surface-2 px-2 py-1 text-[11px] whitespace-nowrap">{command}</code>
                     <Button
@@ -332,6 +326,12 @@ function AgentDownload() {
                     </Button>
                   </div>
                 </div>
+              )}
+              {platform?.os === "windows" && (
+                <p className="border-l-2 border-border pl-2 text-[12px] text-muted">{t("home.dl.winNote")}</p>
+              )}
+              {platform?.os === "darwin" && files.some((f) => f.os === "darwin") && (
+                <p className="border-l-2 border-border pl-2 text-[12px] text-muted">{t("home.dl.macNote")}</p>
               )}
               <details>
                 <summary className="min-h-8 cursor-pointer py-1 text-[12px] text-muted">{t("home.dl.others")}</summary>

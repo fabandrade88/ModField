@@ -130,7 +130,20 @@ jobs:
         run: go run ./cmd/gen-manifest -dist dist -version "${GITHUB_REF_NAME#v}"
         env:
           MODFIELD_UPDATE_KEY: ${{ secrets.MODFIELD_UPDATE_KEY }}
-      - name: Upload manifests, darwin binaries and ZIPs to the release
+      # goreleaser only checksums the linux/windows binaries it built; rebuild
+      # checksums.txt over every artifact (incl. the darwin binaries and the
+      # installers) so install.sh can verify the macOS download, and re-sign it.
+      - name: Complete, signed checksums over every artifact
+        working-directory: agent/dist
+        run: |
+          sudo apt-get install -y minisign
+          printf '%s' "$MINISIGN_SECRET_KEY" > "$RUNNER_TEMP/minisign.key"
+          sha256sum modfield-agent_* ModField-Agent-* > checksums.txt
+          printf '%s\n' "$MINISIGN_PASSWORD" | minisign -S -s "$RUNNER_TEMP/minisign.key" -m checksums.txt -x checksums.txt.minisig
+        env:
+          MINISIGN_SECRET_KEY: ${{ secrets.MINISIGN_SECRET_KEY }}
+          MINISIGN_PASSWORD: ${{ secrets.MINISIGN_PASSWORD }}
+      - name: Upload manifests, darwin binaries, ZIPs and checksums to the release
         run: |
           gh release upload "$GITHUB_REF_NAME" \
             agent/dist/modfield-agent_darwin_amd64 \
@@ -138,6 +151,8 @@ jobs:
             agent/dist/ModField-Agent-*-portable.zip \
             agent/dist/manifest.json \
             agent/dist/update.json \
+            agent/dist/checksums.txt \
+            agent/dist/checksums.txt.minisig \
             --clobber
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
