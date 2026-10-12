@@ -12,24 +12,44 @@ const headers = [{ source: "/(.*)", headers: SECURITY_HEADERS }];
 // The agent binaries, checksums, install.sh and the signed update.json are too
 // big and too frequently updated to live in the site deploy, so /downloads/*
 // redirects to the latest GitHub Release (its CDN serves the bytes). install.sh
-// (curl -fsSL) and the agent updater both follow redirects.
+// (curl -fsSL) and the agent updater follow redirects, and binary downloads are
+// plain navigations — none of them need CORS.
 const RELEASE = "https://github.com/fabandrade88/ModField/releases/latest/download";
 const redirects = [
   { source: "/downloads/latest/:file", destination: `${RELEASE}/:file` },
-  { source: "/downloads/:file", destination: `${RELEASE}/:file` },
+  // Everything except manifest.json (that one is proxied below, see rewrites).
+  { source: "/downloads/:file((?!manifest\\.json).+)", destination: `${RELEASE}/:file` },
 ];
 
-// Deployed with the Vercel "Root Directory" set to apps/web: build and output
-// are the defaults, so this file only carries the headers.
-export const webConfig = { $schema: "https://openapi.vercel.sh/vercel.json", redirects, headers };
+// The Home reads manifest.json with fetch(), so it must be same-origin: the
+// GitHub release asset sends no Access-Control-Allow-Origin, so a redirect
+// there would be blocked by CORS and the download list would look "unpublished".
+// Proxy it through the site instead (it's tiny, well under the 4.5 MB limit).
+const rewrites = [{ source: "/downloads/manifest.json", destination: `${RELEASE}/manifest.json` }];
 
-// Deployed from the repo root (default Root Directory): also tell Vercel how to
-// build the monorepo and where the static export lands.
+// Static export: serve the post-processed out/ (csp.mjs adds the CSP <meta>,
+// sw.mjs writes the service worker) as plain files, not through a framework
+// adapter that would ignore that post-processing. framework:null = "Other".
+// Root Directory is apps/web, so the build runs there and output is out/.
+export const webConfig = {
+  $schema: "https://openapi.vercel.sh/vercel.json",
+  framework: null,
+  buildCommand: "pnpm run build",
+  outputDirectory: "out",
+  redirects,
+  rewrites,
+  headers,
+};
+
+// Deployed from the repo root (default Root Directory): same, but build the
+// monorepo and point at the static export under apps/web.
 export const rootConfig = {
   $schema: "https://openapi.vercel.sh/vercel.json",
+  framework: null,
   buildCommand: "pnpm build",
   outputDirectory: "apps/web/out",
   redirects,
+  rewrites,
   headers,
 };
 
