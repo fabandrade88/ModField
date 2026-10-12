@@ -6,6 +6,7 @@ import { useUi } from "@/store/ui";
 import { cx } from "./controls";
 import { useLang, useT } from "./i18n";
 import { Credit } from "./Credit";
+import { Logo } from "./Logo";
 import { LangSwitch } from "./LangSwitch";
 
 function Item({ id, n, hint }: { id: ModuleId; n?: number; hint?: string }) {
@@ -42,7 +43,10 @@ export function Sidebar() {
     <nav aria-label={t("nav.label")} className="flex w-11 shrink-0 flex-col md:w-44 justify-between border-r border-border bg-surface">
       <div>
         <div className="flex min-h-8 items-center justify-between gap-1 border-b border-border md:pl-2">
-          <span className="hidden text-[12px] tracking-wider text-muted uppercase md:inline">{t("app.name")}</span>
+          <span className="hidden items-center gap-1.5 text-[12px] tracking-wider text-muted uppercase md:flex">
+            <Logo size={16} className="shrink-0" />
+            {t("app.name")}
+          </span>
           <LangSwitch lang={lang} label={t("settings.language")} />
         </div>
         <ul>

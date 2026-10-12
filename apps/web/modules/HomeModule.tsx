@@ -3,6 +3,7 @@ import { BookOpen, Cable, ClipboardCopy, Download, FileText, LineChart, Network,
 import { useEffect, useState, type ReactNode } from "react";
 import { Button, Kbd, Section, cx } from "@/components/controls";
 import { Credit } from "@/components/Credit";
+import { Logo } from "@/components/Logo";
 import { DOWNLOADS_PATH, SITE_URL } from "@/lib/site";
 import { useLang, useT } from "@/components/i18n";
 import type { Key, Lang } from "@/lib/i18n";
@@ -32,7 +33,10 @@ export function HomeModule() {
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-6 p-4">
       <header className="flex flex-col gap-2 border-b border-border pb-4">
-        <h1 className="text-[20px]">{t("home.title")}</h1>
+        <h1 className="flex items-center gap-2 text-[20px]">
+          <Logo size={26} className="shrink-0" />
+          {t("home.title")}
+        </h1>
         <p className="max-w-3xl text-muted">{t("home.lead")}</p>
         <div className="flex flex-wrap gap-4 text-[12px]">
           <span>

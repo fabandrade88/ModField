@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import type { Node, Root } from "fumadocs-core/page-tree";
 import { DocsSearch } from "@/components/docs/Search";
 import { Credit } from "@/components/Credit";
+import { Logo } from "@/components/Logo";
 import { LangSwitch } from "@/components/LangSwitch";
 import { DICTS, isLang, type Lang } from "@/lib/i18n";
 import { source } from "@/lib/source";
@@ -43,7 +44,8 @@ export default async function DocsLayout({ children, params }: { children: React
           </a>
           <LangSwitch lang={l} label={t["settings.language"]} />
         </div>
-        <a href={`/${l}/docs/`} className="px-2 text-[12px] tracking-widest text-muted uppercase">
+        <a href={`/${l}/docs/`} className="flex items-center gap-1.5 px-2 text-[12px] tracking-widest text-muted uppercase">
+          <Logo size={16} className="shrink-0" />
           ModField · {t["docs.title"]}
         </a>
         <DocsSearch lang={l} />
