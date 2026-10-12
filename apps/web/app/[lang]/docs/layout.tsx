@@ -3,9 +3,11 @@ import type { Node, Root } from "fumadocs-core/page-tree";
 import { DocsSearch } from "@/components/docs/Search";
 import { Credit } from "@/components/Credit";
 import { Logo } from "@/components/Logo";
+import { GithubMark } from "@/components/GithubMark";
 import { LangSwitch } from "@/components/LangSwitch";
 import { DICTS, isLang, type Lang } from "@/lib/i18n";
 import { source } from "@/lib/source";
+import { REPO_URL } from "@/lib/site";
 
 function Tree({ nodes }: { nodes: Node[] }) {
   return (
@@ -42,7 +44,19 @@ export default async function DocsLayout({ children, params }: { children: React
           <a href={`/${l}/`} className="min-h-8 px-2 py-1 text-[12px] text-muted hover:text-fg">
             ← {t["docs.backToApp"]}
           </a>
-          <LangSwitch lang={l} label={t["settings.language"]} />
+          <span className="flex items-center gap-1">
+            <a
+              href={REPO_URL}
+              target="_blank"
+              rel="noopener"
+              title={t["nav.source"]}
+              aria-label={t["nav.source"]}
+              className="inline-flex min-h-8 items-center px-1 text-muted hover:text-fg"
+            >
+              <GithubMark size={16} />
+            </a>
+            <LangSwitch lang={l} label={t["settings.language"]} />
+          </span>
         </div>
         <a href={`/${l}/docs/`} className="flex items-center gap-1.5 px-2 text-[12px] tracking-widest text-muted uppercase">
           <Logo size={16} className="shrink-0" />

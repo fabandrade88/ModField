@@ -1,6 +1,8 @@
 "use client";
 import { BookOpen } from "lucide-react";
 import { HOME, NUMBERED_MODULES, type ModuleId } from "@/lib/modules";
+import { REPO_URL } from "@/lib/site";
+import { GithubMark } from "./GithubMark";
 import { MODULE_ICONS } from "@/modules/registry";
 import { useUi } from "@/store/ui";
 import { cx } from "./controls";
@@ -72,6 +74,19 @@ export function Sidebar() {
             <span className="hidden w-3 md:inline" />
             <BookOpen size={16} strokeWidth={1.5} aria-hidden />
             <span className="sr-only md:not-sr-only">{t("module.docs")} ↗</span>
+          </a>
+        </li>
+        <li>
+          <a
+            href={REPO_URL}
+            target="_blank"
+            rel="noopener"
+            title={t("nav.source")}
+            className="flex min-h-8 w-full items-center gap-2 border-l-2 border-transparent px-2 text-muted hover:bg-surface-2 hover:text-fg"
+          >
+            <span className="hidden w-3 md:inline" />
+            <GithubMark size={16} />
+            <span className="sr-only md:not-sr-only">GitHub ↗</span>
           </a>
         </li>
         <li className="hidden px-2 pt-1 md:block">

@@ -13,3 +13,6 @@ export function languageAlternates(lang: string, rest: string) {
 }
 
 export const AUTHOR = { name: "Fabricio Andrade", url: "https://www.linkedin.com/in/fabriciodeandrade/" } as const;
+
+/** The project's source on GitHub (open-source). */
+export const REPO_URL = "https://github.com/fabandrade88/ModField";

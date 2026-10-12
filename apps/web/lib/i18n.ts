@@ -15,6 +15,7 @@ export function isLang(s: string | undefined): s is Lang {
 const pt = {
   "app.name": "ModField",
   "nav.label": "Módulos",
+  "nav.source": "Código no GitHub",
   "module.connection": "Conexão",
   "module.read": "Leitura",
   "module.write": "Escrita",
@@ -170,6 +171,7 @@ type BaseDict = typeof pt;
 const en: BaseDict = {
   "app.name": "ModField",
   "nav.label": "Modules",
+  "nav.source": "Source on GitHub",
   "module.connection": "Connection",
   "module.read": "Read",
   "module.write": "Write",
@@ -311,6 +313,7 @@ const en: BaseDict = {
 const de: BaseDict = {
   "app.name": "ModField",
   "nav.label": "Module",
+  "nav.source": "Quelltext auf GitHub",
   "module.connection": "Verbindung",
   "module.read": "Lesen",
   "module.write": "Schreiben",
