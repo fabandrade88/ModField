@@ -310,6 +310,9 @@ function AgentDownload() {
               {platform?.os === "windows" && (
                 <p className="border-l-2 border-border pl-2 text-[12px] text-muted">{t("home.dl.winNote")}</p>
               )}
+              {platform?.os === "darwin" && files.some((f) => f.os === "darwin") && (
+                <p className="border-l-2 border-border pl-2 text-[12px] text-muted">{t("home.dl.macNote")}</p>
+              )}
               {platform?.os === "linux" && (
                 <div className="flex flex-col gap-1">
                   <span className="text-[12px] text-muted">{t("home.dl.linuxCmd")}</span>
@@ -343,7 +346,6 @@ function AgentDownload() {
                   </li>
                 </ul>
               </details>
-              {files.some((f) => f.os === "darwin") && platform?.os === "darwin" && <p className="text-[12px] text-muted">{t("home.dl.macNote")}</p>}
             </>
           )}
           <span className="text-[12px]">

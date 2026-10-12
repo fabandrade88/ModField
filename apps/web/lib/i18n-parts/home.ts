@@ -47,7 +47,8 @@ export const ptHome = {
   "home.dl.installer": "instalador",
   "home.dl.linuxCmd": "Ou instale com um comando (sem sudo):",
   "home.dl.others": "Outros sistemas e checksums",
-  "home.dl.macNote": "Nesta versão o agente de macOS roda sem ícone na bandeja; abra-o pelo Terminal.",
+  "home.dl.macNote":
+    "O agente de macOS não é assinado nem notarizado (o certificado da Apple é pago), então o macOS avisa que “não foi possível verificar o desenvolvedor”. Para liberar: no Finder, clique com o botão direito no arquivo → Abrir → Abrir (ou em Ajustes do Sistema → Privacidade e Segurança → “Abrir mesmo assim”). Nesta versão ele roda sem ícone na bandeja; inicie-o pelo Terminal. Se quiser conferir, compare o SHA-256 com o checksums.txt.",
   "home.dl.winNote":
     "O instalador não tem assinatura digital paga de editor, então ao abri-lo o Windows mostra um aviso azul (“O Windows protegeu o seu PC”, editor desconhecido). É esperado e seguro: clique em “Mais informações” e depois em “Executar assim mesmo”. Se quiser conferir, compare o SHA-256 do arquivo com o checksums.txt.",
   "home.dl.guide": "Guia de instalação (Windows, macOS, Linux)",
@@ -128,7 +129,8 @@ export const enHome: DictHome = {
   "home.dl.installer": "installer",
   "home.dl.linuxCmd": "Or install with one command (no sudo):",
   "home.dl.others": "Other systems and checksums",
-  "home.dl.macNote": "In this version the macOS agent runs without a tray icon; start it from Terminal.",
+  "home.dl.macNote":
+    "The macOS agent isn’t signed or notarized (Apple’s certificate is paid), so macOS warns that it “cannot verify the developer”. To allow it: in Finder, right-click the file → Open → Open (or in System Settings → Privacy & Security → “Open Anyway”). In this version it runs without a tray icon; start it from Terminal. To double-check, compare the SHA-256 against checksums.txt.",
   "home.dl.winNote":
     "The installer isn’t signed with a paid publisher certificate, so when you open it Windows shows a blue warning (“Windows protected your PC”, unknown publisher). This is expected and safe: click “More info”, then “Run anyway”. To double-check, compare the file’s SHA-256 against checksums.txt.",
   "home.dl.guide": "Installation guide (Windows, macOS, Linux)",
@@ -207,7 +209,8 @@ export const deHome: DictHome = {
   "home.dl.installer": "Installer",
   "home.dl.linuxCmd": "Oder mit einem Befehl installieren (ohne sudo):",
   "home.dl.others": "Andere Systeme und Prüfsummen",
-  "home.dl.macNote": "In dieser Version läuft der macOS-Agent ohne Symbol in der Menüleiste; im Terminal starten.",
+  "home.dl.macNote":
+    "Der macOS-Agent ist nicht signiert oder notarisiert (Apples Zertifikat ist kostenpflichtig), daher warnt macOS, dass „der Entwickler nicht verifiziert werden kann“. Zum Freigeben: im Finder mit Rechtsklick auf die Datei → Öffnen → Öffnen (oder in Systemeinstellungen → Datenschutz & Sicherheit → „Trotzdem öffnen“). In dieser Version läuft er ohne Symbol in der Menüleiste; im Terminal starten. Zur Kontrolle die SHA-256 mit checksums.txt vergleichen.",
   "home.dl.winNote":
     "Der Installer hat kein kostenpflichtiges Herausgeber-Zertifikat, daher zeigt Windows beim Öffnen eine blaue Warnung („Der Computer wurde durch Windows geschützt“, unbekannter Herausgeber). Das ist erwartet und sicher: auf „Weitere Informationen“ und dann „Trotzdem ausführen“ klicken. Zur Kontrolle die SHA-256 der Datei mit checksums.txt vergleichen.",
   "home.dl.guide": "Installationsanleitung (Windows, macOS, Linux)",
