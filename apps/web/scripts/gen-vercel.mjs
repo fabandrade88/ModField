@@ -16,6 +16,10 @@ const headers = [{ source: "/(.*)", headers: SECURITY_HEADERS }];
 // plain navigations — none of them need CORS.
 const RELEASE = "https://github.com/fabandrade88/ModField/releases/latest/download";
 const redirects = [
+  // Send the raw Vercel deployment URL to the real domain. The agent only trusts
+  // https://modfield.app as an origin, so pairing has to happen there — anyone
+  // landing on modfield.vercel.app would otherwise get an origin/CORS rejection.
+  { source: "/:path*", has: [{ type: "host", value: "modfield.vercel.app" }], destination: "https://modfield.app/:path*", permanent: true },
   { source: "/downloads/latest/:file", destination: `${RELEASE}/:file` },
   // Everything except manifest.json, which the build bakes into the static
   // output as a same-origin file (scripts/fetch-manifest.mjs) so the Home's

@@ -5,6 +5,17 @@
   "outputDirectory": "out",
   "redirects": [
     {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "modfield.vercel.app"
+        }
+      ],
+      "destination": "https://modfield.app/:path*",
+      "permanent": true
+    },
+    {
       "source": "/downloads/latest/:file",
       "destination": "https://github.com/fabandrade88/ModField/releases/latest/download/:file"
     },
