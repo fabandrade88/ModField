@@ -8,10 +8,12 @@ import { useLang, useT } from "@/components/i18n";
 import { TrendChart, type Range } from "@/components/TrendChart";
 import { registerCommand } from "@/lib/commands";
 import { db, type LogSession } from "@/lib/db";
+import { ensureDemoSession } from "@/lib/demoData";
 import { download, stamp } from "@/lib/download";
 import { describeError } from "@/lib/errors";
 import { useProfile, useTags } from "@/lib/hooks";
 import { numericTags } from "@/lib/logger";
+import { DEMO_PROFILE_ID } from "@/lib/seed";
 import { useConnection } from "@/store/connection";
 import { useLogger } from "@/store/logger";
 import { useUi } from "@/store/ui";
@@ -28,6 +30,7 @@ function duration(ms: number): string {
 
 export function LoggerModule({ pane }: { pane: number }) {
   const t = useT();
+  const lang = useLang();
   const profile = useProfile();
   const running = useLogger((s) => s.session);
   const sessions = useLiveQuery(
@@ -38,9 +41,20 @@ export function LoggerModule({ pane }: { pane: number }) {
   const [viewId, setViewId] = useState<string>();
   const view: LogSession | undefined = running ?? sessions.find((s) => s.id === viewId) ?? sessions[0];
 
+  const loadDemo = async () => {
+    if (!profile) return;
+    const id = await ensureDemoSession(profile.id, lang);
+    if (id) setViewId(id);
+  };
+
   return (
     <div className="flex flex-col gap-4 p-3">
       {running ? <RunningBar /> : <StartForm pane={pane} />}
+      {!running && profile?.id === DEMO_PROFILE_ID && (
+        <div>
+          <Button onClick={() => void loadDemo()}>{t("logger.demo")}</Button>
+        </div>
+      )}
       {sessions.length > 0 && (
         <Field label={t("logger.session")}>
           <Select

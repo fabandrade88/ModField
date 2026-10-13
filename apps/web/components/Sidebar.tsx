@@ -7,7 +7,6 @@ import { MODULE_ICONS } from "@/modules/registry";
 import { useUi } from "@/store/ui";
 import { cx } from "./controls";
 import { useLang, useT } from "./i18n";
-import { Credit } from "./Credit";
 import { Logo } from "./Logo";
 import { LangSwitch } from "./LangSwitch";
 
@@ -88,9 +87,6 @@ export function Sidebar() {
             <GithubMark size={16} />
             <span className="sr-only md:not-sr-only">GitHub ↗</span>
           </a>
-        </li>
-        <li className="hidden px-2 pt-1 md:block">
-          <Credit label={t("credit.by")} />
         </li>
       </ul>
     </nav>

@@ -2,7 +2,6 @@
 import { BookOpen, Cable, ClipboardCopy, Download, FileText, LineChart, Network, PlayCircle, Plug, Table2, type LucideIcon } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { Button, Kbd, Section, cx } from "@/components/controls";
-import { Credit } from "@/components/Credit";
 import { Logo } from "@/components/Logo";
 import { DOWNLOADS_PATH, SITE_URL } from "@/lib/site";
 import { useLang, useT } from "@/components/i18n";
@@ -84,10 +83,6 @@ export function HomeModule() {
           </ul>
         </div>
       </Section>
-
-      <div className="border-t border-border pt-3">
-        <Credit label={t("credit.by")} />
-      </div>
     </div>
   );
 }

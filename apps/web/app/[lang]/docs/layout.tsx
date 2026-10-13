@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
 import type { Node, Root } from "fumadocs-core/page-tree";
 import { DocsSearch } from "@/components/docs/Search";
-import { Credit } from "@/components/Credit";
 import { Logo } from "@/components/Logo";
 import { GithubMark } from "@/components/GithubMark";
 import { LangSwitch } from "@/components/LangSwitch";
@@ -64,7 +63,6 @@ export default async function DocsLayout({ children, params }: { children: React
         </a>
         <DocsSearch lang={l} />
         <Tree nodes={tree.children} />
-        <Credit label={t["credit.by"]} className="mt-auto border-t border-border px-2 pt-2" />
       </nav>
       <div className="min-w-0 flex-1">{children}</div>
     </div>

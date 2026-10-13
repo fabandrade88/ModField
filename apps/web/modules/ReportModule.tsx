@@ -6,8 +6,10 @@ import { Button, ErrorBox, Field, Input, Notice, Section, Select, Tabs, TextArea
 import { useLang, useT } from "@/components/i18n";
 import { registerCommand } from "@/lib/commands";
 import { db, newId, type ReportDraft } from "@/lib/db";
+import { ensureDemoReport } from "@/lib/demoData";
 import { download } from "@/lib/download";
 import { useProfile, useTags } from "@/lib/hooks";
+import { DEMO_PROFILE_ID } from "@/lib/seed";
 import { LANG_NAMES } from "@/lib/i18n";
 import { buildReport, newDraft, renderPdf } from "@/lib/report";
 import { trendImage } from "@/lib/trendImage";
@@ -74,17 +76,18 @@ function ReportEditor({ pane }: { pane: number }) {
     setLocal(d);
   };
 
-  const build = async () => {
+  const build = async (id = draft!.id) => {
     await saving.current;
-    const d = await db.reports.get(draft!.id);
+    const d = await db.reports.get(id);
     return buildReport(d!, (pens, ms, gapMs) => trendImage(pens, ms, { gapMs, locale: d!.lang }));
   };
-  const refreshPreview = async () => {
-    if (!draft) return;
+  const refreshPreview = async (id?: string) => {
+    const target = id ?? draft?.id;
+    if (!target) return;
     setBusy("preview");
     setError(undefined);
     try {
-      const blob = await renderPdf(await build());
+      const blob = await renderPdf(await build(target));
       if (previewUrl.current) URL.revokeObjectURL(previewUrl.current);
       previewUrl.current = URL.createObjectURL(blob);
       setPreview(previewUrl.current);
@@ -99,12 +102,25 @@ function ReportEditor({ pane }: { pane: number }) {
     setBusy("pdf");
     setError(undefined);
     try {
-      const blob = await renderPdf(await build());
+      const blob = await renderPdf(await build(draft.id));
       download(`${draft.number}.pdf`, blob, "application/pdf");
     } catch (e) {
       setError(e);
     } finally {
       setBusy(undefined);
+    }
+  };
+  // Demo profile: a fully-filled example report (with a logged session), previewed at once.
+  const loadDemo = async () => {
+    if (!profile) return;
+    setError(undefined);
+    try {
+      const id = await ensureDemoReport(profile.id, draft?.lang ?? lang);
+      setDraftId(id);
+      setLocal(await db.reports.get(id));
+      void refreshPreview(id);
+    } catch (e) {
+      setError(e);
     }
   };
   useEffect(() => registerCommand("report.generate", pane, () => void generate()));
@@ -164,6 +180,11 @@ function ReportEditor({ pane }: { pane: number }) {
           <Button variant={drafts.length ? "default" : "primary"} onClick={() => void create()}>
             {t("report.new")}
           </Button>
+          {profile.id === DEMO_PROFILE_ID && (
+            <Button variant={drafts.length ? "default" : "primary"} onClick={() => void loadDemo()}>
+              {t("report.demo")}
+            </Button>
+          )}
         </div>
         {!draft ? (
           <p className="text-muted">{t("report.empty")}</p>

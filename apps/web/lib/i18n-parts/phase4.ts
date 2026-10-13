@@ -1,6 +1,7 @@
 /** Strings added in phase 4: data logger, trends, storage, project file. */
 export const pt4 = {
   "logger.session": "Sessão",
+  "logger.demo": "Carregar exemplo",
   "logger.name": "Nome",
   "logger.name.placeholder": "ex.: Start-up bomba 2",
   "logger.defaultName": "Registro {date}",
@@ -82,6 +83,7 @@ export type Dict4 = typeof pt4;
 
 export const en4: Dict4 = {
   "logger.session": "Session",
+  "logger.demo": "Load example",
   "logger.name": "Name",
   "logger.name.placeholder": "e.g. Pump 2 start-up",
   "logger.defaultName": "Log {date}",
@@ -161,6 +163,7 @@ export const en4: Dict4 = {
 
 export const de4: Dict4 = {
   "logger.session": "Sitzung",
+  "logger.demo": "Beispiel laden",
   "logger.name": "Name",
   "logger.name.placeholder": "z. B. Inbetriebnahme Pumpe 2",
   "logger.defaultName": "Aufzeichnung {date}",
