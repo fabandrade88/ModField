@@ -52,6 +52,8 @@ export const ptHome = {
   "home.dl.others": "Outros sistemas e checksums",
   "home.dl.macNote":
     "No Mac, o jeito mais fácil é o comando acima — ele instala sem avisos (arquivos baixados por curl não entram em quarentena do Gatekeeper) e já deixa o agente iniciando no login. Se preferir baixar o binário direto, aí sim o macOS avisa que “não foi possível verificar o desenvolvedor” (não é assinado/notarizado): clique com o botão direito no arquivo → Abrir → Abrir (ou Ajustes do Sistema → Privacidade e Segurança → “Abrir mesmo assim”). Dá pra conferir o SHA-256 no checksums.txt.",
+  "home.dl.winFlag": "O navegador vai marcar este download como “não seguro” e o Windows mostra o aviso azul ao abrir — prefira o comando acima, que não dá aviso nenhum.",
+  "home.dl.zipNote": "O ZIP portátil normalmente não é bloqueado no download, mas ao executar o .exe o SmartScreen ainda aparece (“Mais informações” › “Executar assim mesmo”). Sem aviso só pelo comando acima.",
   "home.dl.winNote":
     "Prefere o instalador .exe? Como ele não tem assinatura digital paga, o navegador pode marcar o download como “perigoso” — clique nos três pontinhos do download e em “Manter”. Ao abrir, o Windows mostra um aviso azul (“O Windows protegeu o seu PC”, editor desconhecido): clique em “Mais informações” e depois em “Executar assim mesmo”. O comando acima evita os dois avisos. Pra conferir, compare o SHA-256 do arquivo com o checksums.txt.",
   "home.dl.guide": "Guia de instalação (Windows, macOS, Linux)",
@@ -147,6 +149,8 @@ export const enHome: DictHome = {
   "home.dl.others": "Other systems and checksums",
   "home.dl.macNote":
     "On Mac the easiest way is the command above — it installs without warnings (curl-downloaded files get no Gatekeeper quarantine) and sets the agent to start at login. If you prefer the binary directly, macOS then warns it “cannot verify the developer” (it isn’t signed or notarized): right-click the file → Open → Open (or System Settings → Privacy & Security → “Open Anyway”). You can check the SHA-256 against checksums.txt.",
+  "home.dl.winFlag": "The browser will flag this download as “not safe” and Windows shows the blue warning when you open it — prefer the command above, which shows no warning at all.",
+  "home.dl.zipNote": "The portable ZIP is usually not blocked on download, but when you run the .exe SmartScreen still appears (“More info” › “Run anyway”). Only the command above is warning-free.",
   "home.dl.winNote":
     "Prefer the .exe installer? Because it isn’t signed with a paid publisher certificate, the browser may flag the download as “dangerous” — click the download’s three-dot menu and choose “Keep”. When you open it, Windows shows a blue warning (“Windows protected your PC”, unknown publisher): click “More info”, then “Run anyway”. The command above avoids both warnings. To double-check, compare the file’s SHA-256 against checksums.txt.",
   "home.dl.guide": "Installation guide (Windows, macOS, Linux)",
@@ -240,6 +244,8 @@ export const deHome: DictHome = {
   "home.dl.others": "Andere Systeme und Prüfsummen",
   "home.dl.macNote":
     "Auf dem Mac ist der Befehl oben am einfachsten — er installiert ohne Warnungen (per curl geladene Dateien bekommen keine Gatekeeper-Quarantäne) und startet den Agenten beim Login. Wer lieber die Binärdatei direkt lädt: macOS warnt dann, dass „der Entwickler nicht verifiziert werden kann“ (nicht signiert/notarisiert) — Rechtsklick auf die Datei → Öffnen → Öffnen (oder Systemeinstellungen → Datenschutz & Sicherheit → „Trotzdem öffnen“). Die SHA-256 lässt sich mit checksums.txt prüfen.",
+  "home.dl.winFlag": "Der Browser markiert diesen Download als „nicht sicher“ und Windows zeigt beim Öffnen die blaue Warnung — besser den Befehl oben verwenden, der gar keine Warnung zeigt.",
+  "home.dl.zipNote": "Das portable ZIP wird beim Download meist nicht blockiert, aber beim Ausführen der .exe erscheint weiterhin SmartScreen („Weitere Informationen“ › „Trotzdem ausführen“). Ohne Warnung nur über den Befehl oben.",
   "home.dl.winNote":
     "Lieber den .exe-Installer? Da er kein kostenpflichtiges Herausgeber-Zertifikat hat, markiert der Browser den Download eventuell als „gefährlich“ — im Drei-Punkte-Menü des Downloads auf „Beibehalten“ klicken. Beim Öffnen zeigt Windows eine blaue Warnung („Der Computer wurde durch Windows geschützt“, unbekannter Herausgeber): auf „Weitere Informationen“ und dann „Trotzdem ausführen“ klicken. Der Befehl oben vermeidet beide Warnungen. Zur Kontrolle die SHA-256 der Datei mit checksums.txt vergleichen.",
   "home.dl.guide": "Installationsanleitung (Windows, macOS, Linux)",

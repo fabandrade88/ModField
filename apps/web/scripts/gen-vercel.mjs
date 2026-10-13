@@ -20,12 +20,16 @@ const redirects = [
   // https://modfield.app as an origin, so pairing has to happen there — anyone
   // landing on modfield.vercel.app would otherwise get an origin/CORS rejection.
   { source: "/:path*", has: [{ type: "host", value: "modfield.vercel.app" }], destination: "https://modfield.app/:path*", permanent: true },
-  { source: "/downloads/latest/:file", destination: `${RELEASE}/:file` },
+  // 307 (temporary), not 308: "latest" moves with every release, so the redirect
+  // is genuinely temporary — and Windows PowerShell 5.1's Invoke-WebRequest (the
+  // default powershell.exe) refuses to follow a 308, breaking the install.ps1
+  // one-liner. It follows 307, curl -L and browsers follow both.
+  { source: "/downloads/latest/:file", destination: `${RELEASE}/:file`, permanent: false },
   // Everything except manifest.json, which the build bakes into the static
   // output as a same-origin file (scripts/fetch-manifest.mjs) so the Home's
   // fetch() isn't blocked by the GitHub asset's missing CORS header. Keeping it
   // out of the redirect lets Vercel serve that static file.
-  { source: "/downloads/:file((?!manifest\\.json).+)", destination: `${RELEASE}/:file` },
+  { source: "/downloads/:file((?!manifest\\.json).+)", destination: `${RELEASE}/:file`, permanent: false },
 ];
 
 // Static export: serve the post-processed out/ (csp.mjs adds the CSP <meta>,

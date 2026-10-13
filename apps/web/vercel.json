@@ -17,11 +17,13 @@
     },
     {
       "source": "/downloads/latest/:file",
-      "destination": "https://github.com/fabandrade88/ModField/releases/latest/download/:file"
+      "destination": "https://github.com/fabandrade88/ModField/releases/latest/download/:file",
+      "permanent": false
     },
     {
       "source": "/downloads/:file((?!manifest\\.json).+)",
-      "destination": "https://github.com/fabandrade88/ModField/releases/latest/download/:file"
+      "destination": "https://github.com/fabandrade88/ModField/releases/latest/download/:file",
+      "permanent": false
     }
   ],
   "headers": [

@@ -381,17 +381,20 @@ function AgentDownload() {
                 </div>
               )}
               {recommended && (
-                <a
-                  href={`/downloads/${recommended.name}`}
-                  download
-                  className={cx(
-                    "inline-flex min-h-8 items-center gap-2 border bg-surface-2 px-3",
-                    isWin ? "border-border text-muted" : "border-accent",
-                  )}
-                >
-                  <Download size={16} strokeWidth={1.5} aria-hidden />
-                  {t("home.dl.for", { what: label(recommended) })}
-                </a>
+                <div className="flex flex-col gap-1">
+                  <a
+                    href={`/downloads/${recommended.name}`}
+                    download
+                    className={cx(
+                      "inline-flex min-h-8 items-center gap-2 self-start border bg-surface-2 px-3",
+                      isWin ? "border-border text-muted" : "border-accent",
+                    )}
+                  >
+                    <Download size={16} strokeWidth={1.5} aria-hidden />
+                    {t("home.dl.for", { what: label(recommended) })}
+                  </a>
+                  {isWin && <span className="text-[12px] text-warning">{t("home.dl.winFlag")}</span>}
+                </div>
               )}
               {platform?.os === "windows" && (
                 <p className="border-l-2 border-border pl-2 text-[12px] text-muted">{t("home.dl.winNote")}</p>
@@ -415,6 +418,9 @@ function AgentDownload() {
                     </a>
                   </li>
                 </ul>
+                {others.some((f) => f.os === "windows" && f.kind === "portable") && (
+                  <p className="mt-1 border-l-2 border-border pl-2 text-[12px] text-muted">{t("home.dl.zipNote")}</p>
+                )}
               </details>
             </>
           )}
