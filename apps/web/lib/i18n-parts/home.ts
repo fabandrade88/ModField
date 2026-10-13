@@ -57,6 +57,7 @@ export const ptHome = {
   "home.dl.winNote":
     "Prefere o instalador .exe? Como ele não tem assinatura digital paga, o navegador pode marcar o download como “perigoso” — clique nos três pontinhos do download e em “Manter”. Ao abrir, o Windows mostra um aviso azul (“O Windows protegeu o seu PC”, editor desconhecido): clique em “Mais informações” e depois em “Executar assim mesmo”. O comando acima evita os dois avisos. Pra conferir, compare o SHA-256 do arquivo com o checksums.txt.",
   "home.dl.guide": "Guia de instalação (Windows, macOS, Linux)",
+  "home.dl.uninstall": "Como remover o agente",
   "home.next": "O que fazer agora",
   "home.next.connect": "Passo 1 — conecte-se a um equipamento. Sem hardware agora? Abra a demonstração para conhecer a ferramenta.",
   "home.next.connect.demo": "Abrir a demonstração",
@@ -154,6 +155,7 @@ export const enHome: DictHome = {
   "home.dl.winNote":
     "Prefer the .exe installer? Because it isn’t signed with a paid publisher certificate, the browser may flag the download as “dangerous” — click the download’s three-dot menu and choose “Keep”. When you open it, Windows shows a blue warning (“Windows protected your PC”, unknown publisher): click “More info”, then “Run anyway”. The command above avoids both warnings. To double-check, compare the file’s SHA-256 against checksums.txt.",
   "home.dl.guide": "Installation guide (Windows, macOS, Linux)",
+  "home.dl.uninstall": "How to remove the agent",
   "home.next": "What to do now",
   "home.next.connect": "Step 1 — connect to a device. No hardware right now? Open the demo to get to know the tool.",
   "home.next.connect.demo": "Open the demo",
@@ -249,6 +251,7 @@ export const deHome: DictHome = {
   "home.dl.winNote":
     "Lieber den .exe-Installer? Da er kein kostenpflichtiges Herausgeber-Zertifikat hat, markiert der Browser den Download eventuell als „gefährlich“ — im Drei-Punkte-Menü des Downloads auf „Beibehalten“ klicken. Beim Öffnen zeigt Windows eine blaue Warnung („Der Computer wurde durch Windows geschützt“, unbekannter Herausgeber): auf „Weitere Informationen“ und dann „Trotzdem ausführen“ klicken. Der Befehl oben vermeidet beide Warnungen. Zur Kontrolle die SHA-256 der Datei mit checksums.txt vergleichen.",
   "home.dl.guide": "Installationsanleitung (Windows, macOS, Linux)",
+  "home.dl.uninstall": "Agent entfernen",
   "home.next": "Was jetzt zu tun ist",
   "home.next.connect": "Schritt 1 — mit einem Gerät verbinden. Gerade keine Hardware? Öffnen Sie die Demo, um das Werkzeug kennenzulernen.",
   "home.next.connect.demo": "Demo öffnen",

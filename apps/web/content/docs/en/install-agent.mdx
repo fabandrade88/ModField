@@ -1,28 +1,29 @@
 ---
-title: Install the agent without administrator rights
-description: Windows, macOS and Linux; and what to do if IT blocks it.
+title: Install and remove the agent without administrator
+description: Windows, macOS and Linux; how to uninstall; and what to do if IT blocks it.
 ---
 
-The agent is a single executable that only listens on 127.0.0.1 (ports 47807 to 47809) and never asks for administrator rights. It adds Modbus TCP, the system's port names, logging with the tab closed, the slave simulator and the signature of the report hash.
+The agent is a single executable that listens on 127.0.0.1 only (ports 47807 to 47809) and never asks for administrator rights. It adds Modbus TCP, the system's port names, logging with the tab closed, the slave simulator and the report hash signature.
 
 ## Windows 10 and 11
 
-<Steps>
-<li>
-Run the `ModField-Agent-…-setup.exe` installer (or the portable ZIP).
-<Result>It installs into `%LOCALAPPDATA%\Programs\ModField` without asking for an administrator password.</Result>
-</li>
-<li>
-Leave **Start the agent now** checked.
-<Result>The icon appears in the tray; it starts by itself at the next login (HKCU\…\Run key).</Result>
-</li>
-</Steps>
+The recommended way is a command — it does not hit the browser's download block or the SmartScreen warning. Open **PowerShell** (Start menu › type "PowerShell"), paste and press Enter:
 
-Uninstall through "Installed apps", like any per-user program.
+```powershell
+irm https://modfield.app/downloads/latest/install.ps1 | iex
+```
+
+It installs to `%LOCALAPPDATA%\Programs\ModField` (no administrator password), starts the agent and sets it to start at login (`HKCU\…\Run` key).
+
+If you prefer the `ModField-Agent-…-setup.exe` installer or the portable ZIP: the browser will flag the download as "not safe" and Windows shows the blue warning when you open it — see [unknown-publisher warning](#unsigned). The command above avoids both.
 
 ## macOS 12 or later
 
-Open the `.dmg`, drag the app into `~/Applications` (or any folder of yours) and open it once. The LaunchAgent in `~/Library/LaunchAgents` starts it at login.
+```sh
+curl -fsSL https://modfield.app/downloads/latest/install.sh | sh
+```
+
+Installs to `~/.local/bin`, checks the SHA-256 and creates a LaunchAgent in `~/Library/LaunchAgents` that starts it at login. Files downloaded with `curl` get no Gatekeeper quarantine, so the "developer cannot be verified" warning does not appear.
 
 ## Linux (including Raspberry Pi)
 
@@ -30,19 +31,52 @@ Open the `.dmg`, drag the app into `~/Applications` (or any folder of yours) and
 curl -fsSL https://modfield.app/downloads/latest/install.sh | sh
 ```
 
-The script checks the SHA-256 (and the minisign signature, when available), installs into `~/.local/bin` and enables a `systemd --user` unit. Without a screen, run the agent with `--headless` and see the pairing code with `modfield-agent pair`.
+The script checks the SHA-256 (and the minisign signature, when available), installs to `~/.local/bin` and enables a `systemd --user` unit. With no screen, run the agent with `--headless` and see the pairing code with `modfield-agent pair`.
 
-To use the serial port, the user must be in the group that owns it, once: `dialout` on Debian, Ubuntu and Raspberry Pi OS; `uucp` on Arch. See [permission denied](/en/docs/troubleshooting#permission-denied).
+To use the serial port, the user must be in the group that owns the port, once: `dialout` on Debian, Ubuntu and Raspberry Pi OS; `uucp` on Arch. See [permission denied](/en/docs/troubleshooting#permission-denied).
 
-## "Unknown publisher" warning [#unsigned]
+## Remove the agent [#uninstall]
 
-The binaries are not OS code-signed, so Windows (SmartScreen) and macOS (Gatekeeper) warn that the publisher is unknown on first run. This is expected.
+First, **Connection (1) › Forget pairing** to drop this browser's trust. Then remove the program:
 
-- **Windows:** click **More info › Run anyway**.
-- **macOS:** right-click the app › **Open** › **Open**.
+**Windows** — if you installed with the command or the ZIP, paste in PowerShell:
 
-Integrity does not rely on that signature: every file's SHA-256 is in `checksums.txt`, and `checksums.txt` is signed with minisign (the Linux installer verifies it automatically).
+```powershell
+Get-Process modfield-agent -EA SilentlyContinue | Stop-Process -Force
+Remove-ItemProperty 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run' ModFieldAgent -EA SilentlyContinue
+Remove-Item "$env:LOCALAPPDATA\Programs\ModField","$env:LOCALAPPDATA\ModField" -Recurse -Force -EA SilentlyContinue
+```
+
+If you installed with `setup.exe`, you can also uninstall from **Settings › Apps › Installed apps › ModField Agent**.
+
+**macOS**:
+
+```sh
+launchctl unload -w ~/Library/LaunchAgents/app.modfield.agent.plist
+rm -f ~/Library/LaunchAgents/app.modfield.agent.plist ~/.local/bin/modfield-agent
+rm -rf ~/Library/Application\ Support/ModField
+```
+
+**Linux**:
+
+```sh
+systemctl --user disable --now modfield-agent
+rm -f ~/.config/systemd/user/modfield-agent.service ~/.local/bin/modfield-agent
+systemctl --user daemon-reload
+rm -rf ~/.local/share/modfield
+```
+
+The last line of each block deletes the data folder (keys, tokens and logs); drop it if you want to reinstall and keep the pairing.
+
+## Unknown-publisher warning [#unsigned]
+
+The binaries are not code-signed with the operating system, so Windows (SmartScreen) and macOS (Gatekeeper) warn that the publisher is unknown when the file is downloaded by the browser. This is expected. The install commands above do not go through this warning.
+
+- **Windows (`.exe` installer):** on the download, click the three-dot menu › **Keep**; when you open it, **More info › Run anyway**.
+- **macOS (binary directly):** right-click the file › **Open** › **Open**.
+
+Integrity does not depend on that signature: each file has its SHA-256 in `checksums.txt`, and `checksums.txt` is signed with minisign (the installer verifies it automatically).
 
 ## If IT blocks it [#it-blocked]
 
-Policies such as AppLocker, WDAC or an EDR can block executables in the user's folder. There is no way around it: ask IT to allow it, giving the file's SHA-256. Meanwhile, the agentless mode keeps working for RTU over USB.
+Policies such as AppLocker, WDAC or an EDR can stop executables in the user's folder. There is no way around it: ask IT to allow it, giving them the file's SHA-256. Meanwhile, the agentless mode keeps working for RTU over USB.

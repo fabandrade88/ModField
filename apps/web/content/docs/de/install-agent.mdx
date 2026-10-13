@@ -1,48 +1,82 @@
 ---
-title: Agent ohne Administratorrechte installieren
-description: Windows, macOS und Linux; und was tun, wenn die IT blockiert.
+title: Agent ohne Administrator installieren und entfernen
+description: Windows, macOS und Linux; Deinstallation; und was tun, wenn die IT blockiert.
 ---
 
-Der Agent ist eine einzelne ausführbare Datei, die nur auf 127.0.0.1 lauscht (Ports 47807 bis 47809) und nie Administratorrechte verlangt. Er ergänzt Modbus TCP, die Portnamen des Systems, Aufzeichnung bei geschlossenem Tab, den Slave-Simulator und die Signatur des Berichts-Hashes.
+Der Agent ist eine einzige ausführbare Datei, die nur auf 127.0.0.1 lauscht (Ports 47807 bis 47809) und nie Administratorrechte verlangt. Er ergänzt Modbus TCP, die Portnamen des Systems, die Aufzeichnung bei geschlossenem Tab, den Slave-Simulator und die Signatur des Bericht-Hashes.
 
 ## Windows 10 und 11
 
-<Steps>
-<li>
-Das Installationsprogramm `ModField-Agent-…-setup.exe` (oder das portable ZIP) ausführen.
-<Result>Installiert nach `%LOCALAPPDATA%\Programs\ModField`, ohne nach einem Administratorkennwort zu fragen.</Result>
-</li>
-<li>
-**Agent jetzt starten** angehakt lassen.
-<Result>Das Symbol erscheint im Infobereich; es startet bei der nächsten Anmeldung selbst (Schlüssel HKCU\…\Run).</Result>
-</li>
-</Steps>
+Empfohlen wird ein Befehl — er umgeht die Download-Sperre des Browsers und die SmartScreen-Warnung. Öffnen Sie **PowerShell** (Startmenü › „PowerShell“ eingeben), einfügen und Enter drücken:
 
-Deinstallation über „Installierte Apps“, wie bei jedem Programm des Benutzers.
+```powershell
+irm https://modfield.app/downloads/latest/install.ps1 | iex
+```
+
+Installiert nach `%LOCALAPPDATA%\Programs\ModField` (ohne Administratorkennwort), startet den Agenten und richtet den Start beim Login ein (Schlüssel `HKCU\…\Run`).
+
+Wer lieber den Installer `ModField-Agent-…-setup.exe` oder das portable ZIP nimmt: Der Browser markiert den Download als „nicht sicher“ und Windows zeigt beim Öffnen die blaue Warnung — siehe [Warnung „unbekannter Herausgeber“](#unsigned). Der Befehl oben vermeidet beides.
 
 ## macOS 12 oder neuer
-
-Die `.dmg` öffnen, die App nach `~/Applications` (oder einen eigenen Ordner) ziehen und einmal öffnen. Der LaunchAgent in `~/Library/LaunchAgents` startet ihn bei der Anmeldung.
-
-## Linux (inklusive Raspberry Pi)
 
 ```sh
 curl -fsSL https://modfield.app/downloads/latest/install.sh | sh
 ```
 
-Das Skript prüft die SHA-256 (und die minisign-Signatur, falls vorhanden), installiert nach `~/.local/bin` und aktiviert eine `systemd --user`-Unit. Ohne Bildschirm den Agenten mit `--headless` starten und den Kopplungscode mit `modfield-agent pair` anzeigen.
+Installiert nach `~/.local/bin`, prüft die SHA-256 und legt einen LaunchAgent in `~/Library/LaunchAgents` an, der ihn beim Login startet. Mit `curl` geladene Dateien bekommen keine Gatekeeper-Quarantäne, daher erscheint die Warnung „Entwickler nicht verifiziert“ nicht.
 
-Für den seriellen Port muss der Benutzer einmalig in der Gruppe sein, der der Port gehört: `dialout` unter Debian, Ubuntu und Raspberry Pi OS; `uucp` unter Arch. Siehe [Zugriff verweigert](/de/docs/troubleshooting#permission-denied).
+## Linux (inkl. Raspberry Pi)
 
-## Warnung "Unbekannter Herausgeber" [#unsigned]
+```sh
+curl -fsSL https://modfield.app/downloads/latest/install.sh | sh
+```
 
-Die Binärdateien sind nicht per OS-Code-Signatur signiert, daher warnen Windows (SmartScreen) und macOS (Gatekeeper) beim ersten Start vor einem unbekannten Herausgeber. Das ist zu erwarten.
+Das Skript prüft die SHA-256 (und die minisign-Signatur, falls verfügbar), installiert nach `~/.local/bin` und aktiviert eine `systemd --user`-Unit. Ohne Bildschirm den Agenten mit `--headless` starten und den Kopplungscode mit `modfield-agent pair` ansehen.
 
-- **Windows:** auf **Weitere Informationen › Trotzdem ausführen** klicken.
-- **macOS:** Rechtsklick auf die App › **Öffnen** › **Öffnen**.
+Für den seriellen Port muss der Benutzer einmalig in der Gruppe sein, der der Port gehört: `dialout` bei Debian, Ubuntu und Raspberry Pi OS; `uucp` bei Arch. Siehe [Zugriff verweigert](/de/docs/troubleshooting#permission-denied).
 
-Die Integrität hängt nicht von dieser Signatur ab: Jede Datei hat ihre SHA-256 in `checksums.txt`, und `checksums.txt` ist mit minisign signiert (das Linux-Installationsskript prüft es automatisch).
+## Agent entfernen [#uninstall]
+
+Zuerst **Verbindung (1) › Kopplung vergessen**, um das Vertrauen dieses Browsers zu löschen. Dann das Programm entfernen:
+
+**Windows** — bei Installation per Befehl oder ZIP, in PowerShell einfügen:
+
+```powershell
+Get-Process modfield-agent -EA SilentlyContinue | Stop-Process -Force
+Remove-ItemProperty 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run' ModFieldAgent -EA SilentlyContinue
+Remove-Item "$env:LOCALAPPDATA\Programs\ModField","$env:LOCALAPPDATA\ModField" -Recurse -Force -EA SilentlyContinue
+```
+
+Bei Installation per `setup.exe` geht die Deinstallation auch über **Einstellungen › Apps › Installierte Apps › ModField Agent**.
+
+**macOS**:
+
+```sh
+launchctl unload -w ~/Library/LaunchAgents/app.modfield.agent.plist
+rm -f ~/Library/LaunchAgents/app.modfield.agent.plist ~/.local/bin/modfield-agent
+rm -rf ~/Library/Application\ Support/ModField
+```
+
+**Linux**:
+
+```sh
+systemctl --user disable --now modfield-agent
+rm -f ~/.config/systemd/user/modfield-agent.service ~/.local/bin/modfield-agent
+systemctl --user daemon-reload
+rm -rf ~/.local/share/modfield
+```
+
+Die letzte Zeile jedes Blocks löscht den Datenordner (Schlüssel, Tokens und Protokolle); weglassen, wenn Sie neu installieren und die Kopplung behalten möchten.
+
+## Warnung „unbekannter Herausgeber“ [#unsigned]
+
+Die Binärdateien sind nicht vom Betriebssystem codesigniert, daher warnen Windows (SmartScreen) und macOS (Gatekeeper) beim Download über den Browser vor einem unbekannten Herausgeber. Das ist erwartet. Die Installationsbefehle oben gehen nicht durch diese Warnung.
+
+- **Windows (`.exe`-Installer):** beim Download im Drei-Punkte-Menü › **Beibehalten**; beim Öffnen **Weitere Informationen › Trotzdem ausführen**.
+- **macOS (Binärdatei direkt):** Rechtsklick auf die Datei › **Öffnen** › **Öffnen**.
+
+Die Integrität hängt nicht von dieser Signatur ab: Jede Datei hat ihre SHA-256 in `checksums.txt`, und `checksums.txt` ist mit minisign signiert (der Installer prüft es automatisch).
 
 ## Wenn die IT blockiert [#it-blocked]
 
-Richtlinien wie AppLocker, WDAC oder ein EDR können ausführbare Dateien im Benutzerordner blockieren. Es gibt keinen Umweg: Bei der IT die Freigabe mit SHA-256 der Datei beantragen. Bis dahin funktioniert der Modus ohne Agent weiter für RTU über USB.
+Richtlinien wie AppLocker, WDAC oder ein EDR können ausführbare Dateien im Benutzerordner verhindern. Es gibt keinen Umweg: Bitten Sie die IT um Freigabe und nennen Sie die SHA-256 der Datei. In der Zwischenzeit funktioniert der Modus ohne Agent weiter für RTU über USB.

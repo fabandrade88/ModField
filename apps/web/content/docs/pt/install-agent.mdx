@@ -1,28 +1,29 @@
 ---
-title: Instalar o agente sem administrador
-description: Windows, macOS e Linux; e o que fazer se a TI bloquear.
+title: Instalar e remover o agente sem administrador
+description: Windows, macOS e Linux; como desinstalar; e o que fazer se a TI bloquear.
 ---
 
 O agente é um único executável que só escuta em 127.0.0.1 (portas 47807 a 47809) e nunca pede administrador. Ele acrescenta Modbus TCP, os nomes de porta do sistema, a coleta com a aba fechada, o simulador de escravo e a assinatura do hash do relatório.
 
 ## Windows 10 e 11
 
-<Steps>
-<li>
-Execute o instalador `ModField-Agent-…-setup.exe` (ou o ZIP portátil).
-<Result>Instala em `%LOCALAPPDATA%\Programs\ModField`, sem pedir senha de administrador.</Result>
-</li>
-<li>
-Deixe marcado **Iniciar o agente agora**.
-<Result>O ícone aparece na bandeja; ele inicia sozinho no próximo login (chave HKCU\…\Run).</Result>
-</li>
-</Steps>
+A forma recomendada é um comando — não passa pelo bloqueio de download do navegador nem pelo aviso do SmartScreen. Abra o **PowerShell** (menu Iniciar › digite "PowerShell"), cole e aperte Enter:
 
-Desinstale por "Aplicativos instalados", como qualquer programa do usuário.
+```powershell
+irm https://modfield.app/downloads/latest/install.ps1 | iex
+```
+
+Instala em `%LOCALAPPDATA%\Programs\ModField` (sem senha de administrador), inicia o agente e o deixa iniciando no login (chave `HKCU\…\Run`).
+
+Se preferir o instalador `ModField-Agent-…-setup.exe` ou o ZIP portátil: o navegador vai marcar o download como "não seguro" e o Windows mostra o aviso azul ao abrir — veja [aviso de editor desconhecido](#unsigned). O comando acima evita os dois.
 
 ## macOS 12 ou superior
 
-Abra o `.dmg`, arraste o app para `~/Applications` (ou qualquer pasta sua) e abra uma vez. O LaunchAgent em `~/Library/LaunchAgents` o inicia no login.
+```sh
+curl -fsSL https://modfield.app/downloads/latest/install.sh | sh
+```
+
+Instala em `~/.local/bin`, confere o SHA-256 e cria um LaunchAgent em `~/Library/LaunchAgents` que o inicia no login. Arquivos baixados por `curl` não entram em quarentena do Gatekeeper, então não aparece o aviso de "desenvolvedor não verificado".
 
 ## Linux (inclui Raspberry Pi)
 
@@ -34,14 +35,47 @@ O script confere o SHA-256 (e a assinatura minisign, se disponível), instala em
 
 Para usar a porta serial, o usuário precisa estar no grupo dono da porta, uma vez só: `dialout` no Debian, Ubuntu e Raspberry Pi OS; `uucp` no Arch. Veja [permissão negada](/pt/docs/troubleshooting#permission-denied).
 
+## Remover o agente [#uninstall]
+
+Primeiro, em **Conexão (1) › Esquecer pareamento** para apagar a confiança deste navegador. Depois, remova o programa:
+
+**Windows** — se instalou pelo comando ou pelo ZIP, cole no PowerShell:
+
+```powershell
+Get-Process modfield-agent -EA SilentlyContinue | Stop-Process -Force
+Remove-ItemProperty 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run' ModFieldAgent -EA SilentlyContinue
+Remove-Item "$env:LOCALAPPDATA\Programs\ModField","$env:LOCALAPPDATA\ModField" -Recurse -Force -EA SilentlyContinue
+```
+
+Se instalou pelo `setup.exe`, dá para desinstalar também por **Configurações › Aplicativos › Aplicativos instalados › ModField Agent**.
+
+**macOS**:
+
+```sh
+launchctl unload -w ~/Library/LaunchAgents/app.modfield.agent.plist
+rm -f ~/Library/LaunchAgents/app.modfield.agent.plist ~/.local/bin/modfield-agent
+rm -rf ~/Library/Application\ Support/ModField
+```
+
+**Linux**:
+
+```sh
+systemctl --user disable --now modfield-agent
+rm -f ~/.config/systemd/user/modfield-agent.service ~/.local/bin/modfield-agent
+systemctl --user daemon-reload
+rm -rf ~/.local/share/modfield
+```
+
+A última linha de cada bloco apaga a pasta de dados (chaves, tokens e registros); omita-a se quiser reinstalar mantendo o pareamento.
+
 ## Aviso de "editor desconhecido" [#unsigned]
 
-Os binários não têm assinatura de código do sistema operacional, então o Windows (SmartScreen) e o macOS (Gatekeeper) avisam que o editor é desconhecido na primeira execução. É esperado.
+Os binários não têm assinatura de código do sistema operacional, então o Windows (SmartScreen) e o macOS (Gatekeeper) avisam que o editor é desconhecido quando o arquivo é baixado pelo navegador. É esperado. Os comandos de instalação acima não passam por esse aviso.
 
-- **Windows:** clique em **Mais informações › Executar assim mesmo**.
-- **macOS:** clique com o botão direito no app › **Abrir** › **Abrir**.
+- **Windows (instalador `.exe`):** no download, clique nos três pontinhos › **Manter**; ao abrir, **Mais informações › Executar assim mesmo**.
+- **macOS (binário direto):** clique com o botão direito no arquivo › **Abrir** › **Abrir**.
 
-A integridade não depende dessa assinatura: cada arquivo tem o SHA-256 em `checksums.txt`, e o `checksums.txt` é assinado com minisign (o instalador do Linux verifica sozinho).
+A integridade não depende dessa assinatura: cada arquivo tem o SHA-256 em `checksums.txt`, e o `checksums.txt` é assinado com minisign (o instalador verifica sozinho).
 
 ## Se a TI bloquear [#it-blocked]
 

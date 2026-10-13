@@ -424,9 +424,10 @@ function AgentDownload() {
               </details>
             </>
           )}
-          <span className="text-[12px]">
+          <div className="flex flex-wrap gap-x-4 gap-y-1 text-[12px]">
             <DocLink slug="install-agent">{t("home.dl.guide")}</DocLink>
-          </span>
+            <DocLink slug="install-agent#uninstall">{t("home.dl.uninstall")}</DocLink>
+          </div>
         </div>
       </div>
     </Section>
