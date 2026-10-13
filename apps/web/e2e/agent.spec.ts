@@ -79,7 +79,7 @@ test("IP range scan through the agent finds the simulator", async ({ page }) => 
   const scan = pane(page, 2);
   await scan.getByRole("tab", { name: "Faixa de IP" }).click();
   await scan.getByLabel("De", { exact: true }).fill("127.0.0.1");
-  await scan.getByLabel("Até").fill("127.0.0.2");
+  await scan.getByLabel("Até", { exact: true }).fill("127.0.0.2");
   await scan.getByLabel("Porta TCP").fill("5020");
   await scan.getByLabel("Unit IDs").fill("1, 2, 9");
   await scan.getByRole("button", { name: "Iniciar varredura" }).click();
