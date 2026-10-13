@@ -1,7 +1,7 @@
 "use client";
 import { describeFrame, functionName, toHex } from "@modfield/protocol";
 import type { TrafficFrame } from "@modfield/transport";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button, Select, cx } from "@/components/controls";
 import { useT } from "@/components/i18n";
 import { download, stamp } from "@/lib/download";
@@ -29,16 +29,25 @@ export function TrafficModule() {
   const [paused, setPaused] = useState<TrafficFrame[] | undefined>();
   const [onlyErrors, setOnlyErrors] = useState(false);
   const [fc, setFc] = useState(0);
+  const filtering = onlyErrors || fc !== 0;
+
+  // The unfiltered view only copies the last VISIBLE frames (cheap, fine per rAF).
+  // With a filter on, it must scan the whole 50k ring, so refresh that a few times
+  // a second instead of on every traffic bump (version), which can fire ~60×/s.
+  const [filterTick, setFilterTick] = useState(0);
+  useEffect(() => {
+    if (!filtering || paused) return;
+    const id = setInterval(() => setFilterTick((n) => n + 1), 250);
+    return () => clearInterval(id);
+  }, [filtering, paused]);
 
   const fcOf = (f: TrafficFrame) => ((f.framing === "tcp" ? f.bytes[7] : f.bytes[1]) ?? 0) & 0x7f;
   const filter = (f: TrafficFrame) => (!onlyErrors || Boolean(f.error)) && (!fc || fcOf(f) === fc);
   const frames = useMemo(() => {
-    void version;
-    const filtering = onlyErrors || fc !== 0;
     const all = paused ?? traffic.last(filtering ? traffic.size : VISIBLE);
     return (filtering ? all.filter(filter) : all).slice(-VISIBLE).reverse();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [version, paused, onlyErrors, fc]);
+  }, [filtering ? filterTick : version, paused, onlyErrors, fc]);
 
   const all = () => (paused ?? traffic.last(traffic.size)).filter(filter);
 

@@ -1,6 +1,6 @@
 "use client";
 import { BYTE_ORDERS, DATA_TYPES, describePdu, type ByteOrder, type DataType, type Table } from "@modfield/protocol";
-import { DEMO_SLAVES, fromHex, type Generator, type SimPoint, type SimSlaveConfig } from "@modfield/transport";
+import { DEMO_SLAVES, fromHex, type AgentClient, type Generator, type SimPoint, type SimSlaveConfig } from "@modfield/transport";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useEffect, useState } from "react";
 import { Button, ErrorBox, Field, Input, Notice, Section, Select, cx } from "@/components/controls";
@@ -69,18 +69,12 @@ export function SimModule() {
   }, [stored, local?.id]);
   const setup = local && local.id === stored?.id ? local : stored;
   const [running, setRunning] = useState<Running[]>([]);
-  const [log, setLog] = useState<RequestLog[]>([]);
   const [error, setError] = useState<unknown>();
   const client = agent.status === "paired" ? agent.client : undefined;
 
   useEffect(() => {
     if (!client) return;
     void client.call<Running[]>("sim.list").then(setRunning).catch(() => undefined);
-    return client.on("notification", (n) => {
-      if (n.method !== "sim.request") return;
-      const p = n.params as RequestLog & { simId: string };
-      setLog((l) => [p, ...l].slice(0, 300));
-    });
   }, [client]);
 
   if (!client) {
@@ -231,29 +225,50 @@ export function SimModule() {
         </>
       )}
 
-      <Section title={t("sim.log")}>
-        {log.length === 0 ? (
-          <p className="text-muted">{t("sim.log.empty")}</p>
-        ) : (
-          <table className="w-full text-left text-[12px]">
-            <tbody>
-              {log.slice(0, 100).map((r, i) => {
-                const req = describePdu(r.unitId, fromHex(r.pdu), "tx");
-                const res = r.response ? describePdu(r.unitId, fromHex(r.response), "rx") : undefined;
-                return (
-                  <tr key={`${r.t}-${i}`} className="border-b border-border/40">
-                    <td className="pr-2 text-muted tabular-nums">{new Date(r.t).toLocaleTimeString(undefined, { hour12: false })}</td>
-                    <td className="pr-2 tabular-nums">{r.unitId}</td>
-                    <td className="pr-2">{req.text}</td>
-                    <td className={cx(res?.exception !== undefined ? "text-warning" : res ? "" : "text-muted")}>{res ? res.text : t("sim.log.silent")}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        )}
-      </Section>
+      <RequestLog client={client} />
     </div>
+  );
+}
+
+/**
+ * The live request log, isolated from the rest of SimModule: a running simulator
+ * can fire many sim.request notifications, and re-rendering only this table keeps
+ * the (heavy) map editor from reconciling on every request.
+ */
+function RequestLog({ client }: { client: AgentClient }) {
+  const t = useT();
+  const [log, setLog] = useState<RequestLog[]>([]);
+  useEffect(() => {
+    return client.on("notification", (n) => {
+      if (n.method !== "sim.request") return;
+      const p = n.params as RequestLog & { simId: string };
+      setLog((l) => [p, ...l].slice(0, 300));
+    });
+  }, [client]);
+
+  return (
+    <Section title={t("sim.log")}>
+      {log.length === 0 ? (
+        <p className="text-muted">{t("sim.log.empty")}</p>
+      ) : (
+        <table className="w-full text-left text-[12px]">
+          <tbody>
+            {log.slice(0, 100).map((r, i) => {
+              const req = describePdu(r.unitId, fromHex(r.pdu), "tx");
+              const res = r.response ? describePdu(r.unitId, fromHex(r.response), "rx") : undefined;
+              return (
+                <tr key={`${r.t}-${i}`} className="border-b border-border/40">
+                  <td className="pr-2 text-muted tabular-nums">{new Date(r.t).toLocaleTimeString(undefined, { hour12: false })}</td>
+                  <td className="pr-2 tabular-nums">{r.unitId}</td>
+                  <td className="pr-2">{req.text}</td>
+                  <td className={cx(res?.exception !== undefined ? "text-warning" : res ? "" : "text-muted")}>{res ? res.text : t("sim.log.silent")}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      )}
+    </Section>
   );
 }
 

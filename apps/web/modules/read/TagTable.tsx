@@ -1,17 +1,56 @@
 "use client";
 import { formatClassic, formatTagValue, isBitTable } from "@modfield/protocol";
-import { useEffect, useState } from "react";
+import { memo, useEffect, useState } from "react";
+import { useShallow } from "zustand/shallow";
 import { Button, ErrorBox, Field, Input, Notice, cx } from "@/components/controls";
 import { useT } from "@/components/i18n";
 import { registerCommand } from "@/lib/commands";
+import type { TagRow } from "@/lib/db";
 import { describeError } from "@/lib/errors";
 import { useTags } from "@/lib/hooks";
 import { addTag } from "@/lib/tags";
 import { useConnection } from "@/store/connection";
 import { usePolling } from "@/store/polling";
-import { useSelection } from "@/store/selection";
+import { useSelection, type Selection } from "@/store/selection";
 import { useUi } from "@/store/ui";
 import { ImportDialog } from "./ImportDialog";
+
+/**
+ * One tag row, subscribing to just the display-relevant fields of its own latest
+ * sample. useShallow ignores the per-cycle timestamp, so a row re-renders (and
+ * re-runs formatTagValue) only when its value, quality or error actually change.
+ */
+const TagLine = memo(function TagLine({ tag, selected, select }: { tag: TagRow; selected: boolean; select: (s: Selection) => void }) {
+  const t = useT();
+  const s = usePolling(
+    useShallow((st) => {
+      const x = st.latest[tag.id];
+      return x ? { value: x.value, quality: x.quality, errTag: x.error?.tag, errCode: x.error?.code } : undefined;
+    }),
+  );
+  const stale = s?.quality === "bad";
+  return (
+    <tr
+      aria-selected={selected}
+      onClick={() => select({ kind: "tag", tagId: tag.id })}
+      className={cx("h-8 cursor-default border-b border-border/50 hover:bg-surface-2", selected && "bg-surface-2 outline-1 -outline-offset-1 outline-accent")}
+    >
+      <td className="pr-3">{tag.name}</td>
+      <td className="pr-3 tabular-nums">{tag.unitId}</td>
+      <td className="pr-3 whitespace-nowrap text-muted tabular-nums">{formatClassic(tag.table, tag.offset)}</td>
+      <td className="pr-3 whitespace-nowrap text-muted">
+        {isBitTable(tag.table) ? "BIT" : `${tag.type}${tag.order !== "ABCD" && tag.type !== "STRING" ? ` ${tag.order}` : ""}`}
+      </td>
+      <td className={cx("pr-3 text-[15px] whitespace-nowrap tabular-nums", stale && "text-stale")}>
+        <span key={String(s?.value)} className="value-changed px-1">
+          {formatTagValue(tag, s?.value)}
+        </span>
+        {stale && s?.value !== undefined && <span title={t("read.stale")}> ?</span>}
+      </td>
+      <td className={cx("text-[12px]", s?.errCode === "MODBUS_EXCEPTION" ? "text-warning" : "text-comm")}>{s?.errTag ? `! ${s.errTag}` : ""}</td>
+    </tr>
+  );
+});
 
 export function TagTable({ pane }: { pane: number }) {
   const t = useT();
@@ -100,36 +139,9 @@ export function TagTable({ pane }: { pane: number }) {
               </tr>
             </thead>
             <tbody>
-              {tags.map((tag) => {
-                const s = p.latest[tag.id];
-                const stale = s?.quality === "bad";
-                const selected = sel?.kind === "tag" && sel.tagId === tag.id;
-                return (
-                  <tr
-                    key={tag.id}
-                    aria-selected={selected}
-                    onClick={() => select({ kind: "tag", tagId: tag.id })}
-                    className={cx(
-                      "h-8 cursor-default border-b border-border/50 hover:bg-surface-2",
-                      selected && "bg-surface-2 outline-1 -outline-offset-1 outline-accent",
-                    )}
-                  >
-                    <td className="pr-3">{tag.name}</td>
-                    <td className="pr-3 tabular-nums">{tag.unitId}</td>
-                    <td className="pr-3 whitespace-nowrap text-muted tabular-nums">{formatClassic(tag.table, tag.offset)}</td>
-                    <td className="pr-3 whitespace-nowrap text-muted">{isBitTable(tag.table) ? "BIT" : `${tag.type}${tag.order !== "ABCD" && tag.type !== "STRING" ? ` ${tag.order}` : ""}`}</td>
-                    <td className={cx("pr-3 text-[15px] whitespace-nowrap tabular-nums", stale && "text-stale")}>
-                      <span key={String(s?.value)} className="value-changed px-1">
-                        {formatTagValue(tag, s?.value)}
-                      </span>
-                      {stale && s?.value !== undefined && <span title={t("read.stale")}> ?</span>}
-                    </td>
-                    <td className={cx("text-[12px]", s?.error?.code === "MODBUS_EXCEPTION" ? "text-warning" : "text-comm")}>
-                      {s?.error ? `! ${s.error.tag}` : ""}
-                    </td>
-                  </tr>
-                );
-              })}
+              {tags.map((tag) => (
+                <TagLine key={tag.id} tag={tag} selected={sel?.kind === "tag" && sel.tagId === tag.id} select={select} />
+              ))}
             </tbody>
           </table>
         )}
