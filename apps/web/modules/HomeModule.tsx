@@ -363,12 +363,6 @@ function AgentDownload() {
                 {t("home.dl.version", { v: manifest.version })}
                 {platform?.os ? ` · ${t("home.dl.detected", { os: OS_LABEL[platform.os] })}` : ""}
               </span>
-              {recommended && (
-                <a href={`/downloads/${recommended.name}`} download className="inline-flex min-h-8 items-center gap-2 border border-accent bg-surface-2 px-3">
-                  <Download size={16} strokeWidth={1.5} aria-hidden />
-                  {t("home.dl.for", { what: label(recommended) })}
-                </a>
-              )}
               {(platform?.os === "linux" || platform?.os === "darwin" || isWin) && (
                 <div className="flex flex-col gap-1">
                   <span className="text-[12px] text-muted">{t(isWin ? "home.dl.cmdWin" : "home.dl.cmd")}</span>
@@ -385,6 +379,19 @@ function AgentDownload() {
                   </div>
                   <span className="text-[12px] text-muted">{t(isWin ? "home.dl.cmdHelpWin" : "home.dl.cmdHelp")}</span>
                 </div>
+              )}
+              {recommended && (
+                <a
+                  href={`/downloads/${recommended.name}`}
+                  download
+                  className={cx(
+                    "inline-flex min-h-8 items-center gap-2 border bg-surface-2 px-3",
+                    isWin ? "border-border text-muted" : "border-accent",
+                  )}
+                >
+                  <Download size={16} strokeWidth={1.5} aria-hidden />
+                  {t("home.dl.for", { what: label(recommended) })}
+                </a>
               )}
               {platform?.os === "windows" && (
                 <p className="border-l-2 border-border pl-2 text-[12px] text-muted">{t("home.dl.winNote")}</p>
