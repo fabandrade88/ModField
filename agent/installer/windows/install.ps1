@@ -18,12 +18,17 @@ $tmp  = Join-Path $env:TEMP $file
 Write-Host "Downloading $file..."
 Invoke-WebRequest -Uri "$base/latest/$file" -OutFile $tmp -UseBasicParsing
 
-# Verify the SHA-256 against the published checksums.txt.
+# Verify the SHA-256 against the published checksums.txt. Parse each "<hash>  <file>"
+# line into tokens and match the file name exactly, so trailing CR or extra spaces
+# never break the lookup.
 $sums = (Invoke-WebRequest -Uri "$base/latest/checksums.txt" -UseBasicParsing).Content
-$line = ($sums -split "`n") | Where-Object { $_ -match "\s$([regex]::Escape($file))\s*$" } | Select-Object -First 1
-if (-not $line) { throw "No checksum for $file in checksums.txt" }
-$want = (($line -split '\s+') | Select-Object -First 1).ToLower()
-$got  = (Get-FileHash -Algorithm SHA256 $tmp).Hash.ToLower()
+$want = $null
+foreach ($ln in ($sums -split '\r?\n')) {
+  $t = $ln.Trim() -split '\s+'
+  if ($t.Length -ge 2 -and $t[$t.Length - 1] -ieq $file) { $want = $t[0].ToLower(); break }
+}
+if (-not $want) { throw "No checksum for $file in checksums.txt" }
+$got = (Get-FileHash -LiteralPath $tmp -Algorithm SHA256).Hash.ToLower()
 if ($got -ne $want) { throw "SHA-256 mismatch for $file (expected $want, got $got)" }
 
 # Stop a running copy, install, clean up.
