@@ -18,15 +18,18 @@ $tmp  = Join-Path $env:TEMP $file
 Write-Host "Downloading $file..."
 Invoke-WebRequest -Uri "$base/latest/$file" -OutFile $tmp -UseBasicParsing
 
-# Verify the SHA-256 against the published checksums.txt. Parse each "<hash>  <file>"
-# line into tokens and match the file name exactly, so trailing CR or extra spaces
-# never break the lookup.
-$sums = (Invoke-WebRequest -Uri "$base/latest/checksums.txt" -UseBasicParsing).Content
+# Verify the SHA-256 against the published checksums.txt. GitHub serves the asset
+# as application/octet-stream, which Invoke-WebRequest returns as a byte array (not
+# text) on Windows PowerShell 5.1, so download to a file and read it with
+# Get-Content as lines. Match the file name token exactly (tolerant of CR/spaces).
+$csum = Join-Path $env:TEMP 'modfield-checksums.txt'
+Invoke-WebRequest -Uri "$base/latest/checksums.txt" -OutFile $csum -UseBasicParsing
 $want = $null
-foreach ($ln in ($sums -split '\r?\n')) {
+foreach ($ln in (Get-Content -LiteralPath $csum)) {
   $t = $ln.Trim() -split '\s+'
   if ($t.Length -ge 2 -and $t[$t.Length - 1] -ieq $file) { $want = $t[0].ToLower(); break }
 }
+Remove-Item -LiteralPath $csum -Force
 if (-not $want) { throw "No checksum for $file in checksums.txt" }
 $got = (Get-FileHash -LiteralPath $tmp -Algorithm SHA256).Hash.ToLower()
 if ($got -ne $want) { throw "SHA-256 mismatch for $file (expected $want, got $got)" }
