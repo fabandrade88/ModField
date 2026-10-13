@@ -306,11 +306,18 @@ function AgentDownload() {
   }, []);
 
   const origin = typeof location === "undefined" ? "" : location.origin;
-  // install.sh defaults to the official site; a self-hosted copy points it at itself.
-  const command =
-    origin === SITE_URL
+  const isWin = platform?.os === "windows";
+  // The install scripts default to the official site; a self-hosted copy points them
+  // at itself. On Windows the PowerShell command avoids the browser/SmartScreen block
+  // because Invoke-WebRequest does not flag the file as downloaded from the internet.
+  const selfBase = `${origin}${DOWNLOADS_PATH}`;
+  const command = isWin
+    ? origin === SITE_URL
+      ? `irm ${SITE_URL}${DOWNLOADS_PATH}/latest/install.ps1 | iex`
+      : `$env:MODFIELD_BASE='${selfBase}'; irm ${selfBase}/latest/install.ps1 | iex`
+    : origin === SITE_URL
       ? `curl -fsSL ${SITE_URL}${DOWNLOADS_PATH}/latest/install.sh | sh`
-      : `curl -fsSL ${origin}${DOWNLOADS_PATH}/latest/install.sh | MODFIELD_BASE=${origin}${DOWNLOADS_PATH} sh`;
+      : `curl -fsSL ${selfBase}/latest/install.sh | MODFIELD_BASE=${selfBase} sh`;
   const files = manifest?.files ?? [];
   // Windows installs from the setup .exe (or the portable ZIP). Linux and macOS
   // install with the one-line command below — no raw binary to download.
@@ -362,9 +369,9 @@ function AgentDownload() {
                   {t("home.dl.for", { what: label(recommended) })}
                 </a>
               )}
-              {(platform?.os === "linux" || platform?.os === "darwin") && (
+              {(platform?.os === "linux" || platform?.os === "darwin" || isWin) && (
                 <div className="flex flex-col gap-1">
-                  <span className="text-[12px] text-muted">{t("home.dl.cmd")}</span>
+                  <span className="text-[12px] text-muted">{t(isWin ? "home.dl.cmdWin" : "home.dl.cmd")}</span>
                   <div className="flex items-stretch gap-1">
                     <code className="min-w-0 flex-1 overflow-x-auto border border-border bg-surface-2 px-2 py-1 text-[11px] whitespace-nowrap">{command}</code>
                     <Button
@@ -376,7 +383,7 @@ function AgentDownload() {
                       {copied ? "✓" : ""}
                     </Button>
                   </div>
-                  <span className="text-[12px] text-muted">{t("home.dl.cmdHelp")}</span>
+                  <span className="text-[12px] text-muted">{t(isWin ? "home.dl.cmdHelpWin" : "home.dl.cmdHelp")}</span>
                 </div>
               )}
               {platform?.os === "windows" && (

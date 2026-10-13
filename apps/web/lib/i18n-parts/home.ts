@@ -47,11 +47,13 @@ export const ptHome = {
   "home.dl.installer": "instalador",
   "home.dl.cmd": "Ou instale com um comando (sem sudo):",
   "home.dl.cmdHelp": "Abra o Terminal, cole o comando e aperte Enter. Instala sem administrador e passa a iniciar no login.",
+  "home.dl.cmdWin": "Recomendado — instale com um comando (sem avisos de segurança):",
+  "home.dl.cmdHelpWin": "Abra o PowerShell (menu Iniciar › digite “PowerShell”), cole o comando e aperte Enter. Não precisa de administrador, não aparece o bloqueio do navegador nem o aviso azul do Windows, e o agente passa a iniciar no login.",
   "home.dl.others": "Outros sistemas e checksums",
   "home.dl.macNote":
     "No Mac, o jeito mais fácil é o comando acima — ele instala sem avisos (arquivos baixados por curl não entram em quarentena do Gatekeeper) e já deixa o agente iniciando no login. Se preferir baixar o binário direto, aí sim o macOS avisa que “não foi possível verificar o desenvolvedor” (não é assinado/notarizado): clique com o botão direito no arquivo → Abrir → Abrir (ou Ajustes do Sistema → Privacidade e Segurança → “Abrir mesmo assim”). Dá pra conferir o SHA-256 no checksums.txt.",
   "home.dl.winNote":
-    "O instalador não tem assinatura digital paga de editor, então ao abri-lo o Windows mostra um aviso azul (“O Windows protegeu o seu PC”, editor desconhecido). É esperado e seguro: clique em “Mais informações” e depois em “Executar assim mesmo”. Se quiser conferir, compare o SHA-256 do arquivo com o checksums.txt.",
+    "Prefere o instalador .exe? Como ele não tem assinatura digital paga, o navegador pode marcar o download como “perigoso” — clique nos três pontinhos do download e em “Manter”. Ao abrir, o Windows mostra um aviso azul (“O Windows protegeu o seu PC”, editor desconhecido): clique em “Mais informações” e depois em “Executar assim mesmo”. O comando acima evita os dois avisos. Pra conferir, compare o SHA-256 do arquivo com o checksums.txt.",
   "home.dl.guide": "Guia de instalação (Windows, macOS, Linux)",
   "home.next": "O que fazer agora",
   "home.next.connect": "Passo 1 — conecte-se a um equipamento. Sem hardware agora? Abra a demonstração para conhecer a ferramenta.",
@@ -140,11 +142,13 @@ export const enHome: DictHome = {
   "home.dl.installer": "installer",
   "home.dl.cmd": "Or install with one command (no sudo):",
   "home.dl.cmdHelp": "Open Terminal, paste the command and press Enter. No admin, and it starts at login.",
+  "home.dl.cmdWin": "Recommended — install with one command (no security warnings):",
+  "home.dl.cmdHelpWin": "Open PowerShell (Start menu › type “PowerShell”), paste the command and press Enter. No admin rights, no browser block and no blue Windows warning, and the agent starts at login.",
   "home.dl.others": "Other systems and checksums",
   "home.dl.macNote":
     "On Mac the easiest way is the command above — it installs without warnings (curl-downloaded files get no Gatekeeper quarantine) and sets the agent to start at login. If you prefer the binary directly, macOS then warns it “cannot verify the developer” (it isn’t signed or notarized): right-click the file → Open → Open (or System Settings → Privacy & Security → “Open Anyway”). You can check the SHA-256 against checksums.txt.",
   "home.dl.winNote":
-    "The installer isn’t signed with a paid publisher certificate, so when you open it Windows shows a blue warning (“Windows protected your PC”, unknown publisher). This is expected and safe: click “More info”, then “Run anyway”. To double-check, compare the file’s SHA-256 against checksums.txt.",
+    "Prefer the .exe installer? Because it isn’t signed with a paid publisher certificate, the browser may flag the download as “dangerous” — click the download’s three-dot menu and choose “Keep”. When you open it, Windows shows a blue warning (“Windows protected your PC”, unknown publisher): click “More info”, then “Run anyway”. The command above avoids both warnings. To double-check, compare the file’s SHA-256 against checksums.txt.",
   "home.dl.guide": "Installation guide (Windows, macOS, Linux)",
   "home.next": "What to do now",
   "home.next.connect": "Step 1 — connect to a device. No hardware right now? Open the demo to get to know the tool.",
@@ -231,11 +235,13 @@ export const deHome: DictHome = {
   "home.dl.installer": "Installer",
   "home.dl.cmd": "Oder mit einem Befehl installieren (ohne sudo):",
   "home.dl.cmdHelp": "Terminal öffnen, den Befehl einfügen und Enter drücken. Ohne Admin, startet beim Login.",
+  "home.dl.cmdWin": "Empfohlen — mit einem Befehl installieren (ohne Sicherheitswarnungen):",
+  "home.dl.cmdHelpWin": "PowerShell öffnen (Startmenü › „PowerShell“ eingeben), den Befehl einfügen und Enter drücken. Keine Adminrechte, keine Browser-Sperre und keine blaue Windows-Warnung, und der Agent startet beim Login.",
   "home.dl.others": "Andere Systeme und Prüfsummen",
   "home.dl.macNote":
     "Auf dem Mac ist der Befehl oben am einfachsten — er installiert ohne Warnungen (per curl geladene Dateien bekommen keine Gatekeeper-Quarantäne) und startet den Agenten beim Login. Wer lieber die Binärdatei direkt lädt: macOS warnt dann, dass „der Entwickler nicht verifiziert werden kann“ (nicht signiert/notarisiert) — Rechtsklick auf die Datei → Öffnen → Öffnen (oder Systemeinstellungen → Datenschutz & Sicherheit → „Trotzdem öffnen“). Die SHA-256 lässt sich mit checksums.txt prüfen.",
   "home.dl.winNote":
-    "Der Installer hat kein kostenpflichtiges Herausgeber-Zertifikat, daher zeigt Windows beim Öffnen eine blaue Warnung („Der Computer wurde durch Windows geschützt“, unbekannter Herausgeber). Das ist erwartet und sicher: auf „Weitere Informationen“ und dann „Trotzdem ausführen“ klicken. Zur Kontrolle die SHA-256 der Datei mit checksums.txt vergleichen.",
+    "Lieber den .exe-Installer? Da er kein kostenpflichtiges Herausgeber-Zertifikat hat, markiert der Browser den Download eventuell als „gefährlich“ — im Drei-Punkte-Menü des Downloads auf „Beibehalten“ klicken. Beim Öffnen zeigt Windows eine blaue Warnung („Der Computer wurde durch Windows geschützt“, unbekannter Herausgeber): auf „Weitere Informationen“ und dann „Trotzdem ausführen“ klicken. Der Befehl oben vermeidet beide Warnungen. Zur Kontrolle die SHA-256 der Datei mit checksums.txt vergleichen.",
   "home.dl.guide": "Installationsanleitung (Windows, macOS, Linux)",
   "home.next": "Was jetzt zu tun ist",
   "home.next.connect": "Schritt 1 — mit einem Gerät verbinden. Gerade keine Hardware? Öffnen Sie die Demo, um das Werkzeug kennenzulernen.",

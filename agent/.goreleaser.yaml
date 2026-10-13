@@ -61,6 +61,7 @@ release:
   extra_files:
     - glob: ./installer/linux/install.sh
     - glob: ./installer/linux/modfield-agent.service
+    - glob: ./installer/windows/install.ps1
   # manifest.json (Home download list) and the signed update.json are uploaded
   # afterwards by the "manifest" job in .github/workflows/release-agent.yml,
   # once the darwin binaries from the macOS runner join these four.
