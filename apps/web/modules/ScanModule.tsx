@@ -479,6 +479,22 @@ function clamp(v: number, min: number, max: number, fallback: number): number {
   return Number.isFinite(v) ? Math.min(max, Math.max(min, Math.trunc(v))) : fallback;
 }
 
+/** Turn a CIDR like 192.168.0.0/24 into the first..last host range (network and broadcast dropped for /30 or wider). */
+function cidrToRange(cidr: string): { from: string; to: string } | null {
+  const m = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})\/(\d{1,2})$/.exec(cidr.trim());
+  if (!m) return null;
+  const octets = [m[1], m[2], m[3], m[4]].map(Number);
+  const bits = Number(m[5]);
+  if (octets.some((o) => o > 255) || bits < 1 || bits > 32) return null;
+  const base = ((octets[0]! << 24) | (octets[1]! << 16) | (octets[2]! << 8) | octets[3]!) >>> 0;
+  const mask = bits === 0 ? 0 : (0xffffffff << (32 - bits)) >>> 0;
+  const network = (base & mask) >>> 0;
+  const broadcast = (network | (~mask >>> 0)) >>> 0;
+  const wide = broadcast - network >= 2;
+  const fmt = (n: number) => [(n >>> 24) & 255, (n >>> 16) & 255, (n >>> 8) & 255, n & 255].join(".");
+  return { from: fmt(wide ? network + 1 : network), to: fmt(wide ? broadcast - 1 : broadcast) };
+}
+
 interface IpHit {
   ip: string;
   unitId: number;
@@ -493,6 +509,7 @@ function IpScan() {
   const profile = useProfile();
   const [from, setFrom] = useState("192.168.0.1");
   const [to, setTo] = useState("192.168.0.254");
+  const [cidr, setCidr] = useState("");
   const [port, setPort] = useState(502);
   const [units, setUnits] = useState("1");
   const [timeoutMs, setTimeoutMs] = useState(300);
@@ -555,10 +572,22 @@ function IpScan() {
     useUi.getState().openModule("connection");
   };
 
+  const applyCidr = (v: string) => {
+    setCidr(v);
+    const r = cidrToRange(v);
+    if (r) {
+      setFrom(r.from);
+      setTo(r.to);
+    }
+  };
+
   return (
     <div className="flex flex-col gap-3">
       <p className="text-muted">{t("scan.ip.help")}</p>
       <div className="flex flex-wrap items-end gap-2">
+        <Field label={t("scan.ip.cidr")} hint={t("scan.ip.cidrHelp")}>
+          <Input value={cidr} onChange={(e) => applyCidr(e.target.value)} placeholder="192.168.0.0/24" className="w-40" />
+        </Field>
         <Field label={t("scan.from")}>
           <Input value={from} onChange={(e) => setFrom(e.target.value.trim())} className="w-36" />
         </Field>
@@ -604,7 +633,9 @@ function IpScan() {
                   {h.answer === "ok" ? t("scan.answer.ok") : t("scan.answer.exception", { code: String(h.exception ?? 0).padStart(2, "0") })}
                 </td>
                 <td>
-                  <Button onClick={() => use(h)}>{t("scan.ip.use")}</Button>
+                  <Button variant="primary" onClick={() => use(h)} title={t("scan.ip.useHelp")}>
+                    {t("scan.ip.use")}
+                  </Button>
                 </td>
               </tr>
             ))}

@@ -450,6 +450,7 @@ function EquipmentSection({ profile }: { profile: Profile }) {
 
   return (
     <Section title={t("eq.title")} actions={<Button onClick={() => void add()}>{t("eq.add")}</Button>}>
+      <p className="mb-2 text-[12px] text-muted">{t("eq.help")}</p>
       {equipment.length === 0 ? (
         <p className="text-muted">{t("eq.empty")}</p>
       ) : (

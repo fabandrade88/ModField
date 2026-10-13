@@ -10,6 +10,7 @@ import type { Key, Lang } from "@/lib/i18n";
 import { NUMBERED_MODULES } from "@/lib/modules";
 import { detectPlatform, loadDownloads, mb, type DownloadFile, type DownloadManifest, type OsId } from "@/lib/platform";
 import { DEMO_PROFILE_ID } from "@/lib/seed";
+import { useTags } from "@/lib/hooks";
 import { useAgent } from "@/store/agent";
 import { useConnection } from "@/store/connection";
 import { useUi } from "@/store/ui";
@@ -50,6 +51,7 @@ export function HomeModule() {
         </div>
       </header>
 
+      <NextStep />
       <StartPaths />
       <Diagram />
       <AgentDownload />
@@ -120,6 +122,53 @@ function Path({
         <span className="text-[12px]">{guide}</span>
       </div>
     </div>
+  );
+}
+
+/** A single, state-aware "do this next" card, so the first-time user is never unsure what to do. */
+function NextStep() {
+  const t = useT();
+  const ui = useUi();
+  const connected = useConnection((s) => s.state === "connected");
+  const connectDemo = useConnection((s) => s.connectDemo);
+  const hasTags = useTags().length > 0;
+  const openDemo = () => {
+    ui.set({ connTab: "demo", profileId: DEMO_PROFILE_ID, readTab: "tags" });
+    ui.setLayout(2);
+    ui.setPane(1, "traffic");
+    ui.setPane(0, "read");
+    void connectDemo();
+  };
+  const stage = !connected ? "connect" : !hasTags ? "read" : "done";
+  return (
+    <Section title={t("home.next")}>
+      <div className="flex flex-col gap-3 border-l-2 border-accent bg-surface p-3">
+        <p>{t(stage === "connect" ? "home.next.connect" : stage === "read" ? "home.next.read" : "home.next.done")}</p>
+        <div className="flex flex-wrap gap-2">
+          {stage === "connect" && (
+            <>
+              <Button variant="primary" onClick={openDemo}>
+                {t("home.next.connect.demo")}
+              </Button>
+              <Button onClick={() => useUi.getState().openModule("connection")}>{t("home.next.connect.go")}</Button>
+            </>
+          )}
+          {stage === "read" && (
+            <Button variant="primary" onClick={() => useUi.getState().openModule("read")}>
+              {t("home.next.read.go")}
+            </Button>
+          )}
+          {stage === "done" && (
+            <>
+              <Button variant="primary" onClick={() => useUi.getState().openModule("logger")}>
+                {t("home.next.done.log")}
+              </Button>
+              <Button onClick={() => useUi.getState().openModule("report")}>{t("home.next.done.report")}</Button>
+            </>
+          )}
+        </div>
+      </div>
+    </Section>
   );
 }
 
@@ -366,10 +415,12 @@ function AgentDownload() {
 
 function FourSteps() {
   const t = useT();
+  const connected = useConnection((s) => s.state === "connected");
+  const hasTags = useTags().length > 0;
   const open = (m: (typeof NUMBERED_MODULES)[number]) => useUi.getState().openModule(m);
-  const steps: { icon: LucideIcon; title: Key; desc: Key; keys: string[]; module: (typeof NUMBERED_MODULES)[number]; doc: string }[] = [
-    { icon: Plug, title: "home.step.connect", desc: "home.step.connect.desc", keys: ["1", "Ctrl+Enter"], module: "connection", doc: "quick-start-usb" },
-    { icon: Table2, title: "home.step.read", desc: "home.step.read.desc", keys: ["2", "R", "P"], module: "read", doc: "guides/float32" },
+  const steps: { icon: LucideIcon; title: Key; desc: Key; keys: string[]; module: (typeof NUMBERED_MODULES)[number]; doc: string; done?: boolean }[] = [
+    { icon: Plug, title: "home.step.connect", desc: "home.step.connect.desc", keys: ["1", "Ctrl+Enter"], module: "connection", doc: "quick-start-usb", done: connected },
+    { icon: Table2, title: "home.step.read", desc: "home.step.read.desc", keys: ["2", "R", "P"], module: "read", doc: "guides/float32", done: hasTags },
     { icon: LineChart, title: "home.step.log", desc: "home.step.log.desc", keys: ["7", "L", "M"], module: "logger", doc: "guides/log-24h" },
     { icon: FileText, title: "home.step.report", desc: "home.step.report.desc", keys: ["8", "G"], module: "report", doc: "guides/report" },
   ];
@@ -379,7 +430,15 @@ function FourSteps() {
         {steps.map((s, i) => (
           <li key={s.title} className="flex flex-col gap-2 border border-border p-3">
             <span className="flex items-center gap-2">
-              <span className="flex size-6 items-center justify-center border border-border text-[12px] text-muted">{i + 1}</span>
+              <span
+                className={cx(
+                  "flex size-6 items-center justify-center border text-[12px]",
+                  s.done ? "border-accent text-accent" : "border-border text-muted",
+                )}
+                title={s.done ? t("home.step.doneMark") : undefined}
+              >
+                {s.done ? "✓" : i + 1}
+              </span>
               <s.icon size={16} strokeWidth={1.5} aria-hidden className="text-muted" />
               <span>{t(s.title)}</span>
             </span>

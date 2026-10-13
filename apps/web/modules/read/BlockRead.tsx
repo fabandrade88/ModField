@@ -14,6 +14,7 @@ import { Button, ErrorBox, Field, HelpTip, Input, Notice, Select, cx } from "@/c
 import { useT } from "@/components/i18n";
 import { registerCommand } from "@/lib/commands";
 import { describeError } from "@/lib/errors";
+import { useEquipment } from "@/lib/hooks";
 import { useBlock } from "@/store/block";
 import { useConnection } from "@/store/connection";
 import { useSelection } from "@/store/selection";
@@ -39,6 +40,7 @@ export function BlockRead({ pane }: { pane: number }) {
   const timeoutMs = useConnection((s) => s.timeoutMs);
   const select = useSelection((s) => s.select);
   const sel = useSelection((s) => s.sel);
+  const equipment = useEquipment();
   const b = useBlock();
 
   const [intervalMs, setIntervalMs] = useState(1000);
@@ -131,7 +133,23 @@ export function BlockRead({ pane }: { pane: number }) {
         }}
       >
         <Field label={t("read.unit")} help={<HelpTip tip="tip.unit" doc="guides/find-slave" />}>
-          <Input type="number" min={1} max={247} value={b.unitId} onChange={(e) => b.setBlock({ unitId: int(e.target.valueAsNumber, 1, 247, 1) })} />
+          <Input
+            type="number"
+            min={1}
+            max={247}
+            value={b.unitId}
+            list={equipment.length ? "read-unit-equipment" : undefined}
+            onChange={(e) => b.setBlock({ unitId: int(e.target.valueAsNumber, 1, 247, 1) })}
+          />
+          {equipment.length > 0 && (
+            <datalist id="read-unit-equipment">
+              {equipment.map((eq) => (
+                <option key={eq.id} value={eq.unitId}>
+                  {[eq.tag, eq.model, eq.manufacturer].filter(Boolean).join(" · ") || t("eq.unitList")}
+                </option>
+              ))}
+            </datalist>
+          )}
         </Field>
         <Field label={t("read.table")}>
           <Select

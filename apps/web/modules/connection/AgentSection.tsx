@@ -39,13 +39,22 @@ export function AgentSection() {
       )}
       {a.status === "pairing" && (
         <form
-          className="flex flex-col gap-2"
+          className="flex flex-col gap-3"
           onSubmit={(e) => {
             e.preventDefault();
             void a.completePairing(code).then((ok) => ok && setCode(""));
           }}
         >
           <p>{t("agent.pairing.help")}</p>
+          {/* A small picture of the flow: the code shows in the agent's window, you copy it here. */}
+          <div className="flex flex-wrap items-center gap-3 border border-border bg-surface-2 p-3 text-[12px]">
+            <div className="flex flex-col items-center gap-1">
+              <span className="text-muted">{t("agent.pairing.codeFrom")}</span>
+              <span className="border border-border bg-surface px-3 py-1 font-mono text-[18px] tracking-[0.3em] text-muted">1 2 3 4 5 6</span>
+            </div>
+            <span aria-hidden className="text-[20px] text-accent">→</span>
+            <span className="font-medium text-accent">{t("agent.pairing.pasteHere")}</span>
+          </div>
           <div className="flex items-center gap-2">
             <Input
               autoFocus
@@ -61,14 +70,19 @@ export function AgentSection() {
               {t("agent.pairing.confirm")}
             </Button>
           </div>
-          <a
-            href={`http://127.0.0.1:${a.endpoint?.port ?? 47807}/pair`}
-            target="_blank"
-            rel="noopener"
-            className="text-[12px] text-accent underline"
+          <button
+            type="button"
+            className="self-start text-[12px] text-accent underline"
+            onClick={() =>
+              window.open(
+                `http://127.0.0.1:${a.endpoint?.port ?? 47807}/pair`,
+                "modfield-pair",
+                "popup,width=420,height=320",
+              )
+            }
           >
             {t("agent.pairing.openCode")}
-          </a>
+          </button>
           {a.pairError && <Notice tone="warning">{t("agent.pairing.failed")}</Notice>}
           <p className="text-[12px] text-muted">{t("agent.pairing.headless")}</p>
         </form>

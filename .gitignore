@@ -19,3 +19,5 @@ apps/web/public/downloads/
 # Compiled agent binaries from `go build` in agent/ (dist/ already ignored)
 /agent/modfield-agent
 /agent/gen-manifest
+.vercel
+.env*
