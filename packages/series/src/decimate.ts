@@ -1,5 +1,29 @@
 import { Q_BAD, type Series } from "./block";
 
+/** First index i with t[i] >= target (t is sorted ascending); t.length if none. */
+export function lowerBound(t: ArrayLike<number>, target: number): number {
+  let lo = 0;
+  let hi = t.length;
+  while (lo < hi) {
+    const mid = (lo + hi) >>> 1;
+    if (t[mid]! < target) lo = mid + 1;
+    else hi = mid;
+  }
+  return lo;
+}
+
+/** First index i with t[i] > target (t is sorted ascending); t.length if none. */
+export function upperBound(t: ArrayLike<number>, target: number): number {
+  let lo = 0;
+  let hi = t.length;
+  while (lo < hi) {
+    const mid = (lo + hi) >>> 1;
+    if (t[mid]! <= target) lo = mid + 1;
+    else hi = mid;
+  }
+  return lo;
+}
+
 export interface Plot {
   /** Seconds (uPlot's x unit). */
   x: number[];
@@ -15,10 +39,10 @@ export interface Plot {
 export function plotPoints(s: Series, opts: { from?: number; to?: number; buckets: number; gapMs: number }): Plot {
   const from = opts.from ?? -Infinity;
   const to = opts.to ?? Infinity;
-  let lo = 0;
-  while (lo < s.t.length && s.t[lo]! < from) lo++;
-  let hi = s.t.length - 1;
-  while (hi >= lo && s.t[hi]! > to) hi--;
+  // s.t is sorted ascending: binary-search the window bounds instead of walking
+  // the whole series on every redraw (O(log n) vs O(n) as a session grows).
+  const lo = lowerBound(s.t, from);
+  const hi = upperBound(s.t, to) - 1;
   const x: number[] = [];
   const y: (number | null)[] = [];
   const count = hi - lo + 1;

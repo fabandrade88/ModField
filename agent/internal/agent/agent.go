@@ -406,6 +406,13 @@ func (a *Agent) pairComplete(s *Session, raw json.RawMessage) (any, error) {
 
 func (a *Agent) onFrame(c *Conn, f modbus.Frame) {
 	c.mu.Lock()
+	// The common case is no traffic monitor open: skip building the event (map,
+	// hex string, time format) entirely rather than allocating it per frame on
+	// the polling hot path.
+	if len(c.taps) == 0 {
+		c.mu.Unlock()
+		return
+	}
 	taps := make([]*Session, 0, len(c.taps))
 	for s := range c.taps {
 		taps = append(taps, s)

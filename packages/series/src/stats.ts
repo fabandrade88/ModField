@@ -1,4 +1,5 @@
 import { Q_BAD, type Series } from "./block";
+import { lowerBound } from "./decimate";
 
 export interface Stats {
   min: number;
@@ -20,9 +21,9 @@ export function windowStats(s: Series, from = -Infinity, to = Infinity): Stats {
   let m2 = 0;
   let min = Infinity;
   let max = -Infinity;
-  for (let i = 0; i < s.t.length; i++) {
-    const t = s.t[i]!;
-    if (t < from || t > to) continue;
+  // s.t is sorted ascending: start at the first in-window sample and stop past
+  // the last, so this is O(window) rather than O(total) as a session grows.
+  for (let i = lowerBound(s.t, from); i < s.t.length && s.t[i]! <= to; i++) {
     const v = s.v[i]!;
     if (s.q[i] === Q_BAD || !Number.isFinite(v)) {
       bad++;
